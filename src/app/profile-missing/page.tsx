@@ -26,9 +26,9 @@ export default async function ProfileMissingPage() {
           <div className="rounded-lg bg-surface-container-low p-4 space-y-2 text-sm font-body">
             <p className="font-semibold text-primary">Next Steps:</p>
             <ol className="list-decimal list-inside space-y-1 ml-2">
-              <li>Contact your administrator to create a profile for your account</li>
-              <li>Your profile must be linked to an organization</li>
-              <li>Once your profile is created, refresh this page</li>
+              <li>Click <strong>Set Up Profile</strong> below</li>
+              <li>Select an existing organization or create a new one</li>
+              <li>Submit the form to finish onboarding</li>
             </ol>
           </div>
 

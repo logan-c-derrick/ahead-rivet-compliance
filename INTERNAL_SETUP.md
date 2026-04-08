@@ -37,30 +37,25 @@ If you are missing env files, contact the maintainer.
 npm install
 ```
 
-## 4) Database migrations
+## 4) Database setup for internal testers
 
-Run Supabase migrations in order from `supabase/migrations` (001, 002, 003, ...).
+No action required for internal testers using the shared Supabase project:
 
-Recommended method:
+- Migrations are already applied
+- Core tables already exist
+- RLS policies are already configured
 
-1. Open Supabase Dashboard
-2. Go to SQL Editor
-3. Execute each migration file sequentially
+Run migrations only if you are setting up a brand-new database/project.
 
-## 5) Create a test user profile
+## 5) User profile setup
 
-After creating/signing up a user in Supabase Auth, insert a matching `profiles` row.
+No manual SQL required for normal internal users.
 
-```sql
-INSERT INTO profiles (id, organization_id, email, full_name, role)
-VALUES (
-  'AUTH_USER_UUID',
-  '00000000-0000-0000-0000-000000000001',
-  'user@ahead.com',
-  'Internal Tester',
-  'user'
-);
-```
+When a new user signs in:
+
+- If a profile exists, they continue to the app
+- If not, they are redirected to `/profile-missing/setup`
+- They can create/select an organization and complete profile setup in-app
 
 ## 6) Run the app
 
@@ -86,7 +81,15 @@ Open [http://localhost:3000](http://localhost:3000) and sign in via `/login`.
 - `npm run build`
 - `npm run start`
 
-## Troubleshooting
+## 9) Admin-only: fresh environment bootstrap (optional)
+
+Use this section only when creating a brand-new Supabase project.
+
+1. Run migrations from `supabase/migrations` in order (`001`, `002`, `003`, ...).
+2. Ensure storage bucket `outreach-uploads` exists.
+3. Start app and create first user via Auth.
+
+## 10) Troubleshooting
 
 - If Next.js chunks fail (`Cannot find module './NNN.js'`), clear build output:
 
