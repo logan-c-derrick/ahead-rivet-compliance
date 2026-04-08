@@ -1,135 +1,75 @@
-# ComplianceHub (Next.js + Supabase)
+# ComplianceHub
 
-Internal setup guide for running the app in a local development environment.
+ComplianceHub is an internal compliance operations platform for managing products, components, suppliers, regulations, and supplier outreach in one workflow.
 
-## 1) Prerequisites
+It is built with Next.js + Supabase and supports multi-tenant organization scoping with RLS.
 
-- `Node.js` 20.x LTS (recommended)
-- `npm` 10+ (comes with modern Node installs)
-- A Supabase project you can access
-- Git (for cloning/updating this repo)
+## What This Project Does
 
-Quick version check:
+- Tracks products and BOM/component data
+- Stores supplier records and multiple supplier contacts
+- Maps products/components to regulatory requirements
+- Launches outreach campaigns to suppliers for documentation
+- Accepts supplier uploads through secure tokenized links
+- Supports review and follow-up cycles for missing/rejected documents
 
-```bash
-node -v
-npm -v
-```
+## Core Workflows
 
-## 2) Install dependencies
+- **BOM ingest and mapping**
+  - Upload BOM CSVs
+  - Map source headers to target fields
+  - Upsert components and attach to products
+  - Skip duplicate component rows during import
 
-From the project root:
+- **Supplier management**
+  - Create/edit suppliers
+  - Manage multiple contacts per supplier
+  - Bulk import supplier/contact data from CSV
 
-```bash
-npm install
-```
+- **Outreach and response**
+  - Build campaigns targeted by all suppliers, selected suppliers, product BOM, or explicit components
+  - Include one or more regulations in each request
+  - Send test email override flows (currently restricted to `@ahead.com`)
+  - Receive supplier document uploads via one-time response links
+  - Associate uploaded files to specific components
+  - Send follow-up links that include requested regulations
 
-## 3) Configure environment variables
+- **Compliance review loop**
+  - Review supplier submissions against regulation rows
+  - Approve/reject per regulation
+  - Trigger follow-up uploads when needed
 
-Create a `.env.local` file in the project root:
+## Tech Stack
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+- **Frontend/app:** Next.js 14, React 18, TypeScript
+- **Styling/UI:** Tailwind CSS, Material Symbols
+- **Backend/data:** Supabase (Postgres, Auth, Storage, RLS)
+- **CSV/Docs:** PapaParse, PDF utilities
+- **Email:** Resend integration
 
-# Base URL used in generated email/upload links (recommended in dev)
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+## Architecture Highlights
 
-# Required for supplier upload links and signed download URLs
-SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+- Server actions handle most mutations
+- RLS enforces organization-level data isolation
+- Supabase storage bucket `outreach-uploads` backs supplier docs
+- Token-based supplier response endpoints support secure external uploads
+- Campaigns can scope regulations and component coverage
 
-# Required only when sending outreach emails from the app
-RESEND_API_KEY=YOUR_RESEND_API_KEY
-```
+## Repository Structure
 
-### Env var notes
+- `src/app` - Next.js routes, pages, and server actions
+- `src/lib` - domain services (BOM, outreach, supplier docs, auth helpers)
+- `supabase/migrations` - schema and policy migrations
+- `docs` - supporting project documentation and data artifacts
+- `stitch` - UI exploration/prototype assets
 
-- `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are required to boot the app.
-- `SUPABASE_SERVICE_ROLE_KEY` is required for secure supplier response flows (token validation, storage upload, signed URLs).
-- `RESEND_API_KEY` is required for campaign/test email delivery.
-- After changing env vars, restart the dev server.
+## Internal Setup
 
-## 4) Set up the database (Supabase)
+For local dev setup and internal onboarding, see `INTERNAL_SETUP.md`.
 
-Run SQL migrations from `supabase/migrations` in order (001, 002, 003, ...).
+## Useful Scripts
 
-Fastest path:
-- Open Supabase Dashboard -> SQL Editor
-- Execute each migration file in sequence
-
-This sets up:
-- schema and relationships
-- RLS policies
-- helper functions
-- outreach, campaign, and supplier document tables
-
-## 5) Create at least one auth user + profile row
-
-After creating a user in Supabase Auth, insert their profile row so app RLS can scope data:
-
-```sql
-INSERT INTO profiles (id, organization_id, email, full_name, role)
-VALUES (
-  'AUTH_USER_UUID',
-  '00000000-0000-0000-0000-000000000001',
-  'user@ahead.com',
-  'Internal Tester',
-  'user'
-);
-```
-
-If you used seed data, `00000000-0000-0000-0000-000000000001` maps to the seeded org.
-
-## 6) Run the app
-
-```bash
-npm run dev
-```
-
-Then open:
-
-- [http://localhost:3000](http://localhost:3000)
-- Sign in via `/login`
-
-## 7) Useful scripts
-
-- `npm run dev` - start local dev server
-- `npm run lint` - run lint checks
-- `npm run build` - production build validation
-- `npm run start` - run production build locally
-
-## 8) Email/testing behavior
-
-- Outreach campaign "test email override" requires a valid email and currently allows `@ahead.com` addresses.
-- Supplier follow-up and response workflows depend on:
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `NEXT_PUBLIC_APP_URL`
-- Outbound email sending requires `RESEND_API_KEY`.
-
-## 9) Common troubleshooting
-
-- Build artifacts look corrupted (`Cannot find module './NNN.js'`, route chunks missing):
-  1. Stop dev server
-  2. Delete `.next`
-  3. Run `npm run dev` again
-
-- Login works but app redirects to profile-missing:
-  - Ensure a matching row exists in `profiles` for the authenticated user.
-
-- Supplier upload links fail or downloads unavailable:
-  - Verify `SUPABASE_SERVICE_ROLE_KEY` is set.
-  - Verify Supabase storage bucket `outreach-uploads` exists.
-
-- Emails do not send:
-  - Verify `RESEND_API_KEY`.
-  - Check server logs for delivery errors.
-
-## 10) Shareable quick-start for internal testers
-
-1. Install Node 20 LTS
-2. Clone repo
-3. Add `.env.local` (see section 3)
-4. Apply Supabase migrations
-5. Create Auth user + `profiles` row
-6. Run `npm install && npm run dev`
-7. Sign in at `/login`
+- `npm run dev` - start dev server
+- `npm run lint` - lint code
+- `npm run build` - production build check
+- `npm run start` - run production build
