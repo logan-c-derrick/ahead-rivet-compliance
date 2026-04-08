@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EcoLedger | Compliance Certificate Generator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "primary": "#003358",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#00497b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-tint": "#296195",
+                        "primary-fixed": "#d0e4ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-primary-container": "#87baf3",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "on-tertiary-container": "#55ca99",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container": "#e5eeff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#001d35",
+                        "on-surface-variant": "#42474f",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "outline-variant": "#c1c7d0",
+                        "on-secondary-container": "#57657a",
+                        "inverse-primary": "#9ccaff",
+                        "tertiary": "#003925",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "secondary": "#515f74",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#9ccaff",
+                        "outline": "#727780",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#d5e3fc",
+                        "tertiary-container": "#005238",
+                        "surface-container-high": "#dce9ff",
+                        "inverse-surface": "#213145",
+                        "background": "#f8f9ff",
+                        "primary-container": "#004a7c",
+                        "on-tertiary-fixed": "#002114",
+                        "on-error": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .tonal-shift {
+            transition: background-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background antialiased selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-transparent bg-slate-50/60 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col py-6 px-4 z-50 font-manrope text-sm tracking-tight">
+<div class="mb-10 px-2">
+<h1 class="text-xl font-bold tracking-tighter text-blue-900 dark:text-blue-50">EcoLedger</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-semibold mt-1">Data Integrity Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="table_chart">table_chart</span>
+<span>Compliance Tables</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span>Mapping Workflow</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="campaign">campaign</span>
+<span>Outreach Campaigns</span>
+</a>
+<!-- Active Navigation Mapping: Document Tools -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 font-bold shadow-sm translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Document Tools</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-200/30 space-y-1">
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</button>
+<button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-200/50 transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Support</span>
+</button>
+<div class="mt-4 p-3 bg-surface-container-low rounded-xl flex items-center gap-3">
+<img alt="Environmental Compliance Officer Profile" class="w-8 h-8 rounded-full bg-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClx9l96xs9hKvdkhsDcb_J9DT2qjPtTnEi6tJkWg4KPOzUIVA1YU7fUuNmoJgZq4-CVpEsEA4F9Jgq4hu3Q6H7rJRvTJN7OwIAvJoauJJAe8yRZxOIEvG3iLFLPw6xLgvu3BaUAM0RFYEbQlzBe3Nh1JapoI4czPha3Q_GkZPAPJ10NYtBPC4hzNgJgAldnntt69x11f3ZYHQm-_slxoDU_mhrY3IxqKZOAUqwv632Jj_Ux7k5J24FMGoTAphgUNPumxmqHZVPlKVg"/>
+<div class="overflow-hidden">
+<p class="text-xs font-bold truncate">Sarah Jenkins</p>
+<p class="text-[10px] text-slate-500 truncate">Senior Auditor</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-8 font-manrope text-base">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary">search</span>
+<input class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-100 transition-all outline-none" placeholder="Search compliance records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-slate-600 hover:text-blue-900 transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-600 hover:text-blue-900 transition-all">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+</div>
+<div class="h-8 w-px bg-slate-200"></div>
+<div class="flex items-center gap-3">
+<span class="text-sm font-medium text-slate-700">Environmental Compliance Manager</span>
+<img alt="User Profile Avatar" class="w-8 h-8 rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnYFxdYTTOJRX-ND_zgOkW-nQJW17ZqRXQ_JMdzF5HfqCOKpItmkMQXIIyHr8_Hq59CmKQht5whnmfPyhJlT6WbAMvLtI1DzIpD74wZ3C6JrtsGS-EDNZLKMh9rYMAFLDxQSBvYagDQmuso0753hX6AVW3WkNQ1jpf0PvRjr_xt_GaMIIG-JncH6ur6BvvsxGHhO6D_R_IaYLrT-dGn70lmcuc0_gS9II1oI0mv2LHHOqX2rIZJ_mBinWKPBk40sIpmlNnxZnXjX8e"/>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-64 pt-24 px-10 pb-16 min-h-screen">
+<!-- Header Section -->
+<header class="mb-12">
+<nav class="flex gap-2 text-[10px] font-bold tracking-widest text-primary/60 uppercase mb-4">
+<span>Documents</span>
+<span class="material-symbols-outlined text-[12px]">chevron_right</span>
+<span class="text-primary">Certificate Generator</span>
+</nav>
+<h2 class="text-4xl font-extrabold font-headline tracking-tight text-on-background">Compliance Certificate Generator</h2>
+<p class="mt-2 text-on-surface-variant max-w-2xl font-light leading-relaxed">
+                Create verified Environmental Passports and Declarations of Conformity based on your latest site audits and product lifecycle data.
+            </p>
+</header>
+<!-- Asymmetrical Layout: Generator & Preview -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Left Column: Configuration (5 cols) -->
+<section class="col-span-12 lg:col-span-5 space-y-6">
+<!-- Step 1: Product Selection -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm space-y-6">
+<div class="flex items-center gap-3 border-b border-surface-container-low pb-4">
+<span class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">1</span>
+<h3 class="font-headline font-bold text-lg">Product Identity</h3>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Select Model Range</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium appearance-none">
+<option>AeroFlow Turbine X-Series</option>
+<option>HydroLogix System Pro</option>
+<option>Solaris Photovoltaic Unit V3</option>
+<option>TerraFilter Industrial Core</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-bold uppercase tracking-wider text-on-surface-variant">Production Batch / Serial ID</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none font-medium" type="text" value="BATCH-2024-QX-8821"/>
+</div>
+</div>
+</div>
+<!-- Step 2: Regulation Scoping -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm space-y-6">
+<div class="flex items-center gap-3 border-b border-surface-container-low pb-4">
+<span class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">2</span>
+<h3 class="font-headline font-bold text-lg">Regulation Toggles</h3>
+</div>
+<div class="space-y-4">
+<label class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg cursor-pointer group hover:bg-surface-container-highest transition-colors">
+<div class="flex flex-col">
+<span class="text-sm font-bold">EU REACH Compliance</span>
+<span class="text-[10px] text-on-surface-variant">Chemical registration and evaluation</span>
+</div>
+<input checked="" class="w-5 h-5 rounded border-none text-primary focus:ring-primary/20 bg-white" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg cursor-pointer group hover:bg-surface-container-highest transition-colors">
+<div class="flex flex-col">
+<span class="text-sm font-bold">RoHS Directive (2011/65/EU)</span>
+<span class="text-[10px] text-on-surface-variant">Restriction of Hazardous Substances</span>
+</div>
+<input checked="" class="w-5 h-5 rounded border-none text-primary focus:ring-primary/20 bg-white" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg cursor-pointer group hover:bg-surface-container-highest transition-colors">
+<div class="flex flex-col">
+<span class="text-sm font-bold">Ecodesign Directive</span>
+<span class="text-[10px] text-on-surface-variant">Energy-related Products framework</span>
+</div>
+<input class="w-5 h-5 rounded border-none text-primary focus:ring-primary/20 bg-white" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg cursor-pointer group hover:bg-surface-container-highest transition-colors">
+<div class="flex flex-col">
+<span class="text-sm font-bold">WEEE Disposal Protocol</span>
+<span class="text-[10px] text-on-surface-variant">Waste Electrical &amp; Electronic Equipment</span>
+</div>
+<input checked="" class="w-5 h-5 rounded border-none text-primary focus:ring-primary/20 bg-white" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Generation Actions -->
+<div class="flex gap-4">
+<button class="flex-1 bg-gradient-to-br from-primary to-primary-container text-white py-4 px-6 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all">
+<span class="material-symbols-outlined">auto_awesome</span>
+                        Generate Document
+                    </button>
+<button class="bg-surface-container-high text-on-secondary-container py-4 px-6 rounded-lg font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all">
+<span class="material-symbols-outlined">refresh</span>
+                        Reset
+                    </button>
+</div>
+</section>
+<!-- Right Column: Document Preview (7 cols) -->
+<section class="col-span-12 lg:col-span-7 sticky top-24">
+<div class="bg-white border-8 border-surface-container-low shadow-2xl rounded-xl overflow-hidden aspect-[1/1.414] flex flex-col">
+<!-- Preview Header -->
+<div class="bg-slate-50 px-10 py-6 flex justify-between items-center border-b border-slate-100">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-primary rounded-md flex items-center justify-center text-white font-bold">EL</div>
+<div>
+<h4 class="font-headline font-extrabold text-sm leading-none">EcoLedger</h4>
+<p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Certified Data Integrity</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-bold uppercase text-slate-400 tracking-tighter">Document ID</p>
+<p class="text-xs font-mono font-bold">CERT-AERO-2024-00192</p>
+</div>
+</div>
+<!-- Document Canvas -->
+<div class="flex-1 p-12 overflow-y-auto font-body text-slate-800">
+<div class="max-w-xl mx-auto space-y-10">
+<header class="text-center space-y-4">
+<h1 class="text-3xl font-headline font-extrabold uppercase tracking-tight text-primary">Declaration of Conformity</h1>
+<p class="text-sm font-medium text-slate-500 italic">Issued in accordance with ISO/IEC 17050-1:2004</p>
+</header>
+<section class="space-y-4">
+<div class="grid grid-cols-2 gap-8 text-sm">
+<div class="space-y-1">
+<h5 class="text-[10px] font-black uppercase text-slate-400">Manufacturer</h5>
+<p class="font-bold">EcoSystems Global Ltd.</p>
+<p class="text-slate-500 leading-tight">1200 Greenway Blvd<br/>Stuttgart, BW 70173, DE</p>
+</div>
+<div class="space-y-1">
+<h5 class="text-[10px] font-black uppercase text-slate-400">Product Model</h5>
+<p class="font-bold">AeroFlow Turbine X-Series</p>
+<p class="text-slate-500">SN: BATCH-2024-QX-8821</p>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<h5 class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100 pb-2">Directives and Standards</h5>
+<div class="space-y-3">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-lg">check_circle</span>
+<div>
+<p class="text-sm font-bold">2011/65/EU (RoHS 2)</p>
+<p class="text-xs text-slate-500">Restriction of hazardous substances in electrical equipment.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-lg">check_circle</span>
+<div>
+<p class="text-sm font-bold">1907/2006/EC (REACH)</p>
+<p class="text-xs text-slate-500">SVHC content declaration verified at &lt;0.1% weight by weight.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-lg">check_circle</span>
+<div>
+<p class="text-sm font-bold">2012/19/EU (WEEE)</p>
+<p class="text-xs text-slate-500">End-of-life recovery and recycling protocol compliance.</p>
+</div>
+</div>
+</div>
+</section>
+<section class="pt-8 grid grid-cols-2 gap-12 border-t border-slate-100">
+<div class="space-y-4">
+<img class="w-32 h-16 object-contain opacity-80 grayscale contrast-125" data-alt="Digital holographic signature of SARAH JENKINS" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt51NSHA83cBQPfzkTovJZ7QL5GRhJXv1ZYni3ZjLhI_lEK3ploEZbEgyyOCbCVC-kUmBS3p4R5MIR9_urd2RERAiDQjXB9DgyU-rqsNJ6wrYOXBXsBPP0Os--6xqg_aYL3zKasGvbHAhaxKmDlW3tfQoQcUXE5AgM_Oz4C1gNx0TkZqeuaArKnTI-qH3iBN62m7BZmleCDKEmRyMRnwxJLyV0Zp9C6sbfBMzgF-tEzddPI8pqDqoyEDjLegeQrIScKuE38T_Qb8zt"/>
+<div class="border-t border-slate-900 pt-2">
+<p class="text-[10px] font-bold">SARAH JENKINS</p>
+<p class="text-[9px] text-slate-400">Chief Compliance Auditor</p>
+</div>
+</div>
+<div class="flex flex-col justify-end">
+<div class="text-[9px] text-slate-400 leading-tight">
+<p>Digital Verification Hash:</p>
+<p class="font-mono truncate">8f22-19bc-31da-ee92-a1b2-cf04</p>
+<p class="mt-2">Generated on: Oct 24, 2024</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Preview Footer / Export Bar -->
+<div class="bg-surface-container-high px-8 py-4 flex items-center justify-between gap-4">
+<span class="text-xs font-bold text-on-secondary-container flex items-center gap-2">
+<span class="material-symbols-outlined text-base">verified_user</span>
+                            Preview Mode: Changes unsaved
+                        </span>
+<div class="flex gap-2">
+<button class="bg-white text-primary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm">link</span>
+                                Secure Link
+                            </button>
+<button class="bg-primary text-white px-6 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-primary-container transition-colors shadow-lg shadow-primary/10">
+<span class="material-symbols-outlined text-sm">download</span>
+                                Export PDF
+                            </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Recent Generation Activity - Bento Style -->
+<section class="mt-20">
+<h3 class="font-headline font-bold text-2xl mb-8">Recent Generations</h3>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-low p-6 rounded-xl border border-transparent hover:border-primary/10 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim rounded-lg">
+<span class="material-symbols-outlined">description</span>
+</span>
+<span class="text-[10px] font-bold text-slate-400">2 HOURS AGO</span>
+</div>
+<h4 class="font-bold text-sm">AeroFlow X-2</h4>
+<p class="text-xs text-slate-500 mt-1">Full Environmental Passport</p>
+<div class="mt-4 flex gap-2">
+<span class="px-2 py-1 bg-white text-[9px] font-bold rounded">EU RoHS</span>
+<span class="px-2 py-1 bg-white text-[9px] font-bold rounded">REACH</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-transparent hover:border-primary/10 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined">verified</span>
+</span>
+<span class="text-[10px] font-bold text-slate-400">YESTERDAY</span>
+</div>
+<h4 class="font-bold text-sm">Solaris PV-V3</h4>
+<p class="text-xs text-slate-500 mt-1">Declaration of Conformity</p>
+<div class="mt-4 flex gap-2">
+<span class="px-2 py-1 bg-white text-[9px] font-bold rounded">Energy Star</span>
+<span class="px-2 py-1 bg-white text-[9px] font-bold rounded">CE Mark</span>
+</div>
+</div>
+<div class="bg-primary-container p-6 rounded-xl text-on-primary-container relative overflow-hidden group cursor-pointer">
+<div class="relative z-10">
+<span class="material-symbols-outlined text-4xl mb-4">analytics</span>
+<h4 class="font-bold text-lg leading-tight">Compliance Tracking Dashboard</h4>
+<p class="text-xs opacity-80 mt-2">View real-time status of all active certificates across your fleet.</p>
+<button class="mt-6 flex items-center gap-2 text-xs font-bold group-hover:gap-4 transition-all">
+                            Open Analytics <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
+<span class="material-symbols-outlined text-[160px]">shield</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>

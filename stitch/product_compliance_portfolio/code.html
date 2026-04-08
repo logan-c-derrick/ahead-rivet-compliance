@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary-fixed-variant": "#3a485b",
+            "surface-tint": "#296195",
+            "surface": "#f8f9ff",
+            "on-surface": "#0b1c30",
+            "on-secondary-fixed": "#0d1c2e",
+            "secondary-fixed-dim": "#b9c7df",
+            "error-container": "#ffdad6",
+            "surface-container-lowest": "#ffffff",
+            "on-tertiary-fixed-variant": "#005137",
+            "error": "#ba1a1a",
+            "primary": "#003358",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#002114",
+            "on-background": "#0b1c30",
+            "primary-container": "#004a7c",
+            "on-error": "#ffffff",
+            "inverse-on-surface": "#eaf1ff",
+            "inverse-primary": "#9ccaff",
+            "surface-container-high": "#dce9ff",
+            "primary-fixed-dim": "#9ccaff",
+            "outline": "#727780",
+            "outline-variant": "#c1c7d0",
+            "surface-container": "#e5eeff",
+            "surface-container-highest": "#d3e4fe",
+            "tertiary": "#003925",
+            "on-primary-fixed-variant": "#00497b",
+            "on-secondary": "#ffffff",
+            "on-primary": "#ffffff",
+            "tertiary-fixed": "#85f8c4",
+            "surface-bright": "#f8f9ff",
+            "on-tertiary-container": "#55ca99",
+            "on-primary-fixed": "#001d35",
+            "surface-dim": "#cbdbf5",
+            "tertiary-container": "#005238",
+            "surface-container-low": "#eff4ff",
+            "secondary-fixed": "#d5e3fc",
+            "on-tertiary": "#ffffff",
+            "background": "#f8f9ff",
+            "surface-variant": "#d3e4fe",
+            "primary-fixed": "#d0e4ff",
+            "on-surface-variant": "#42474f",
+            "secondary-container": "#d5e3fc",
+            "on-primary-container": "#87baf3",
+            "tertiary-fixed-dim": "#68dba9",
+            "on-secondary-container": "#57657a",
+            "inverse-surface": "#213145",
+            "secondary": "#515f74"
+          },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .pill-shadow {
+      box-shadow: 0 4px 12px rgba(11, 28, 48, 0.04);
+    }
+  </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-slate-200/20 bg-white/60 backdrop-blur-xl flex flex-col py-6 z-50 shadow-[20px_0_40px_rgba(11,28,48,0.03)]">
+<div class="px-6 mb-10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-[#004A7C] tracking-tighter leading-tight">EcoStratum</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Enterprise Compliance</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 bg-[#eff4ff] text-[#004A7C] font-bold rounded-lg text-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+        Products
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+        Components
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">factory</span>
+        Suppliers
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">gavel</span>
+        Regulations
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+        Audit Logs
+      </a>
+</nav>
+<div class="mt-auto px-2 space-y-1">
+<button class="w-[calc(100%-1rem)] mx-2 mb-6 py-3 px-4 bg-gradient-to-br from-[#003358] to-[#004a7c] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm">add</span>
+        New Assessment
+      </button>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">settings</span>
+        Settings
+      </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-slate-600 hover:bg-[#f8f9ff] transition-all font-medium text-sm" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+        Support
+      </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen">
+<!-- Top Bar -->
+<header class="w-full h-16 sticky top-0 z-40 bg-[#f8f9ff] flex justify-between items-center px-10">
+<div class="flex items-center gap-4">
+<h2 class="font-headline font-extrabold text-xl text-[#004A7C] tracking-tight">Products Registry</h2>
+<span class="h-4 w-[1px] bg-slate-200"></span>
+<div class="flex gap-2">
+<span class="text-xs font-bold bg-surface-container-high text-on-secondary-container px-2 py-0.5 rounded-full">24 Active Items</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">search</span>
+<input class="bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-primary/10 placeholder:text-slate-400" placeholder="Search catalog..." type="text"/>
+</div>
+<div class="flex gap-4 items-center">
+<button class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors">notifications</button>
+<button class="material-symbols-outlined text-slate-500 hover:text-primary transition-colors">help_outline</button>
+<img class="w-8 h-8 rounded-full border-2 border-white shadow-sm object-cover" data-alt="User avatar for compliance officer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHaXVJEdDscNcwqs0_OnZiG_XEGaRN8JLpbftjBree6P6F11yWX6mpwVrV4uQSiEVHP5lUJS6wy5-K1UrOUIVQ7t7VOaUi8MGusQf-v8kvP2JU58LrCfYWFenCszAu3SzYlNUqz1z32QmTODbw9RlsaMpsG5YH9--i25C6py9wBCQb138sfnKzqxOE2zkWz9ONBh38IbFhHUB6JlgJi9LIyzmkAH4R2b0IxXylENMaGzxu_0wXxtUQ0mHuJby2YIA8LQVo4v6Y86BI"/>
+</div>
+</div>
+</header>
+<div class="p-10 space-y-10">
+<!-- Asymmetric Filter & Stats Section -->
+<section class="grid grid-cols-12 gap-8">
+<div class="col-span-8 flex flex-col justify-end">
+<div class="flex gap-4 items-end">
+<div class="flex-1 space-y-2">
+<label class="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">Product Line</label>
+<div class="flex bg-surface-container-low p-1 rounded-xl">
+<button class="px-6 py-2 bg-white shadow-sm rounded-lg text-sm font-bold text-primary">All Units</button>
+<button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors">Consumer Electronics</button>
+<button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors">Industrial Infrastructure</button>
+<button class="px-6 py-2 text-sm font-medium text-slate-500 hover:text-primary transition-colors">Eco-Series</button>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-4 bg-surface-container-low p-6 rounded-2xl flex justify-between items-center relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Health</h4>
+<div class="text-4xl font-headline font-black text-primary mt-1">94.2<span class="text-lg">%</span></div>
+<p class="text-xs text-tertiary-container font-semibold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+              +2.1% from Q3
+            </p>
+</div>
+<div class="w-20 h-20 relative z-10">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#dce9ff" stroke-width="3"></path>
+<path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#004a7c" stroke-dasharray="94, 100" stroke-width="3"></path>
+</svg>
+</div>
+<!-- Decorative Background Element -->
+<div class="absolute -right-4 -bottom-4 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+</div>
+</section>
+<!-- The Architectural Ledger: Product List -->
+<section class="space-y-4">
+<!-- Table Header (Minimalist) -->
+<div class="grid grid-cols-12 px-8 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+<div class="col-span-4">Product Identity &amp; SKU</div>
+<div class="col-span-2">Reg. Status</div>
+<div class="col-span-2">Last Assessment</div>
+<div class="col-span-2 text-center">Integrity Risk</div>
+<div class="col-span-2 text-right">Actions</div>
+</div>
+<!-- Product Row 1 -->
+<div class="grid grid-cols-12 items-center bg-surface-container-lowest p-8 rounded-2xl hover:bg-surface-container transition-colors duration-300 group">
+<div class="col-span-4 flex items-center gap-5">
+<div class="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center group-hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl">smart_toy</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Eco-Smart Home Hub</h3>
+<p class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wider">SKU: ESH-2024-V4</p>
+</div>
+</div>
+<div class="col-span-2 flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-tertiary-fixed-dim text-tertiary text-[10px] font-black rounded-full uppercase">RoHS</span>
+<span class="px-2.5 py-1 bg-tertiary-fixed-dim text-tertiary text-[10px] font-black rounded-full uppercase">REACH</span>
+</div>
+<div class="col-span-2">
+<div class="text-sm font-semibold text-on-surface">Oct 12, 2023</div>
+<div class="text-[10px] text-slate-500 font-medium">Auto-renew active</div>
+</div>
+<div class="col-span-2 flex flex-col items-center">
+<div class="text-xs font-bold text-tertiary-container flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+              0 Components
+            </div>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-white rounded-lg transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Product Row 2 (Non-Compliant example) -->
+<div class="grid grid-cols-12 items-center bg-surface-container-lowest p-8 rounded-2xl hover:bg-surface-container transition-colors duration-300 group">
+<div class="col-span-4 flex items-center gap-5">
+<div class="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center group-hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl">sensors</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Industrial Sensor Array</h3>
+<p class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wider">SKU: ISA-990-MOD</p>
+</div>
+</div>
+<div class="col-span-2 flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-error-container text-error text-[10px] font-black rounded-full uppercase">RoHS</span>
+<span class="px-2.5 py-1 bg-tertiary-fixed-dim text-tertiary text-[10px] font-black rounded-full uppercase">REACH</span>
+</div>
+<div class="col-span-2">
+<div class="text-sm font-semibold text-on-surface">Sep 28, 2023</div>
+<div class="text-[10px] text-error font-bold">Manual audit required</div>
+</div>
+<div class="col-span-2 flex flex-col items-center">
+<div class="text-xs font-bold text-error flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+              3 Non-Compliant
+            </div>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-white rounded-lg transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Product Row 3 -->
+<div class="grid grid-cols-12 items-center bg-surface-container-lowest p-8 rounded-2xl hover:bg-surface-container transition-colors duration-300 group">
+<div class="col-span-4 flex items-center gap-5">
+<div class="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center group-hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl">solar_power</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Grid-Link Solar Inverter</h3>
+<p class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wider">SKU: GL-SOL-PRO-2</p>
+</div>
+</div>
+<div class="col-span-2 flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-secondary-fixed-dim text-on-secondary-container text-[10px] font-black rounded-full uppercase">RoHS</span>
+<span class="px-2.5 py-1 bg-secondary-fixed-dim text-on-secondary-container text-[10px] font-black rounded-full uppercase">REACH</span>
+</div>
+<div class="col-span-2">
+<div class="text-sm font-semibold text-on-surface">Nov 05, 2023</div>
+<div class="text-[10px] text-slate-500 font-medium">Review pending</div>
+</div>
+<div class="col-span-2 flex flex-col items-center">
+<div class="text-xs font-bold text-on-secondary-container flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim"></span>
+              Pending Eval
+            </div>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-white rounded-lg transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Product Row 4 -->
+<div class="grid grid-cols-12 items-center bg-surface-container-lowest p-8 rounded-2xl hover:bg-surface-container transition-colors duration-300 group">
+<div class="col-span-4 flex items-center gap-5">
+<div class="w-14 h-14 bg-surface-container-low rounded-xl flex items-center justify-center group-hover:bg-white transition-colors">
+<span class="material-symbols-outlined text-primary text-3xl">router</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface leading-tight">Secure Edge Router X</h3>
+<p class="text-xs font-mono text-slate-400 mt-1 uppercase tracking-wider">SKU: SER-X-77</p>
+</div>
+</div>
+<div class="col-span-2 flex flex-wrap gap-2">
+<span class="px-2.5 py-1 bg-tertiary-fixed-dim text-tertiary text-[10px] font-black rounded-full uppercase">RoHS</span>
+<span class="px-2.5 py-1 bg-tertiary-fixed-dim text-tertiary text-[10px] font-black rounded-full uppercase">REACH</span>
+</div>
+<div class="col-span-2">
+<div class="text-sm font-semibold text-on-surface">Oct 30, 2023</div>
+<div class="text-[10px] text-slate-500 font-medium">Active verification</div>
+</div>
+<div class="col-span-2 flex flex-col items-center">
+<div class="text-xs font-bold text-tertiary-container flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim"></span>
+              0 Components
+            </div>
+</div>
+<div class="col-span-2 flex justify-end">
+<button class="p-2 text-slate-400 hover:text-primary hover:bg-white rounded-lg transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bottom Pagination (Floating Journal Style) -->
+<footer class="flex justify-between items-center py-6">
+<div class="text-xs text-slate-500 font-medium">
+          Showing <span class="text-on-surface font-bold">1-4</span> of <span class="text-on-surface font-bold">24</span> registry entries
+        </div>
+<div class="flex gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low text-slate-400 cursor-not-allowed">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-primary font-bold shadow-sm border border-slate-100">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">3</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-low text-slate-600 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</footer>
+</div>
+</main>
+<!-- Mobile Bottom Nav Bar (Suppress based on instructions: "On MOBILE (md:hidden), prohibit top-row text links and use the BottomNavBar") -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 flex justify-between items-center z-50">
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] mt-1 font-bold">Dashboard</span>
+</button>
+<button class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="text-[10px] mt-1 font-bold">Products</span>
+</button>
+<button class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white -mt-10 shadow-lg border-4 border-white">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined">factory</span>
+<span class="text-[10px] mt-1 font-bold">Suppliers</span>
+</button>
+<button class="flex flex-col items-center text-slate-400">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="text-[10px] mt-1 font-bold">Logs</span>
+</button>
+</nav>
+</body></html>

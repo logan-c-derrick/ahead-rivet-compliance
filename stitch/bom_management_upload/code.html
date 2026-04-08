@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#9ccaff",
+              "surface-container-high": "#dce9ff",
+              "surface-dim": "#cbdbf5",
+              "on-secondary-fixed-variant": "#3a485b",
+              "surface-variant": "#d3e4fe",
+              "on-primary-container": "#87baf3",
+              "surface-container-highest": "#d3e4fe",
+              "inverse-on-surface": "#eaf1ff",
+              "surface": "#f8f9ff",
+              "on-tertiary-container": "#55ca99",
+              "on-primary-fixed": "#001d35",
+              "primary-container": "#004a7c",
+              "surface-container-low": "#eff4ff",
+              "on-secondary-fixed": "#0d1c2e",
+              "on-secondary": "#ffffff",
+              "secondary-fixed-dim": "#b9c7df",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "secondary-fixed": "#d5e3fc",
+              "on-error": "#ffffff",
+              "outline-variant": "#c1c7d0",
+              "error": "#ba1a1a",
+              "on-surface-variant": "#42474f",
+              "surface-bright": "#f8f9ff",
+              "primary": "#003358",
+              "on-tertiary-fixed": "#002114",
+              "on-tertiary-fixed-variant": "#005137",
+              "surface-container": "#e5eeff",
+              "background": "#f8f9ff",
+              "tertiary-fixed": "#85f8c4",
+              "outline": "#727780",
+              "primary-fixed": "#d0e4ff",
+              "inverse-primary": "#9ccaff",
+              "tertiary-container": "#005238",
+              "secondary": "#515f74",
+              "error-container": "#ffdad6",
+              "tertiary": "#003925",
+              "surface-tint": "#296195",
+              "on-secondary-container": "#57657a",
+              "secondary-container": "#d5e3fc",
+              "on-error-container": "#93000a",
+              "on-surface": "#0b1c30",
+              "on-background": "#0b1c30",
+              "inverse-surface": "#213145",
+              "tertiary-fixed-dim": "#68dba9",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed-variant": "#00497b"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r-0 bg-[#eff4ff] flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="text-xl font-bold tracking-tight text-[#003358]">EcoLedger</h1>
+<p class="text-xs text-on-surface-variant font-medium opacity-70 uppercase tracking-widest">Compliance Portal</p>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label text-sm">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 bg-white text-[#004A7C] font-semibold rounded-l-lg ml-4 shadow-sm translate-x-1 duration-150" href="#">
+<span class="material-symbols-outlined mr-3">inventory_2</span>
+<span class="font-label text-sm">BOM Management</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">handshake</span>
+<span class="font-label text-sm">Supplier Portal</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">memory</span>
+<span class="font-label text-sm">Components</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg group" href="#">
+<span class="material-symbols-outlined mr-3">description</span>
+<span class="font-label text-sm">Reports</span>
+</a>
+</nav>
+<div class="mt-auto px-6 mb-6">
+<button class="w-full bg-gradient-to-br from-[#003358] to-[#004a7c] text-white py-3 rounded-md font-bold text-sm shadow-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Analysis
+            </button>
+</div>
+<div class="px-2 border-t border-slate-200 pt-4">
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label text-sm">Settings</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-500 hover:text-[#004A7C] hover:bg-[#d3e4fe] transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined mr-3">help_outline</span>
+<span class="font-label text-sm">Support</span>
+</a>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="fixed top-0 z-40 h-16 w-[calc(100%-16rem)] ml-64 bg-white/60 backdrop-blur-md flex justify-between items-center px-8 border-b border-[#004A7C]/10 shadow-sm">
+<div class="flex items-center gap-8">
+<span class="font-headline font-extrabold text-[#004A7C] text-lg tracking-tight">Environmental Compliance Manager</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-600 font-label text-sm hover:text-[#004A7C] transition-opacity" href="#">Global View</a>
+<a class="text-[#004A7C] font-label text-sm border-b-2 border-[#004A7C]" href="#">EMEA</a>
+<a class="text-slate-600 font-label text-sm hover:text-[#004A7C] transition-opacity" href="#">APAC</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-surface-container-low px-3 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-slate-400 text-lg mr-2">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 w-48 text-on-surface" placeholder="Search data..." type="text"/>
+</div>
+<button class="p-2 text-slate-600 hover:text-[#004A7C] transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden ring-2 ring-surface-container-high ring-offset-2">
+<img class="w-full h-full object-cover" data-alt="Corporate professional user profile photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4xrEu0XAXcgSScoHBK9HZBb-TYjMv6oXDUkZS0nfcTRm2jxdCVL6qr0-Qp8Sq0d5XRS4RKvKLzVqs7mn28mOApSBpcg77r1c9Hh9Ca3TLU5WcOb-59Ud84hAvj1RquRWpUpgu60WNmppFLIT0lUAsfeXnUki-sPCOFJ_x89HV0KEZNddjVnYxJXu4HQ4lPyWenGEyCuO8-_KWpUETgldK-leMo2yLx1TDRd5mFBCqaHqdEf5O6E7owQP0jjlntNRR2kbTFvUFm0GO"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-[calc(100vh-4rem)]">
+<!-- Header & Breadcrumbs -->
+<div class="mb-10">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant mb-2">
+<span>Compliance Portal</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-[#004A7C] font-semibold">BOM Management</span>
+</div>
+<h2 class="text-3xl font-headline font-extrabold text-primary tracking-tight">Bill of Materials Ledger</h2>
+<p class="text-on-surface-variant mt-2 max-w-2xl leading-relaxed">Centralized inventory of your product structures. Securely upload, map, and analyze component data for global environmental compliance reporting.</p>
+</div>
+<div class="grid grid-cols-12 gap-8">
+<!-- Left: Table and Search (Wide) -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Metrics Bar -->
+<div class="flex gap-4">
+<div class="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-tertiary-fixed-dim">
+<div>
+<p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">Ready for Review</p>
+<p class="text-2xl font-headline font-bold text-primary">12</p>
+</div>
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-3xl opacity-50">check_circle</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-secondary-fixed-dim">
+<div>
+<p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">Processing</p>
+<p class="text-2xl font-headline font-bold text-primary">4</p>
+</div>
+<span class="material-symbols-outlined text-secondary-fixed-dim text-3xl opacity-50">sync</span>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-error">
+<div>
+<p class="text-xs font-label text-on-surface-variant uppercase tracking-wider">With Errors</p>
+<p class="text-2xl font-headline font-bold text-primary">1</p>
+</div>
+<span class="material-symbols-outlined text-error text-3xl opacity-50">warning</span>
+</div>
+</div>
+<!-- Main Table Section -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="px-6 py-4 flex items-center justify-between border-b border-surface-container-low">
+<h3 class="font-headline font-bold text-primary">Uploaded BOM Records</h3>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+                                Filter
+                            </button>
+<button class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+                                Export
+                            </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low/50">
+<tr>
+<th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">BOM Name</th>
+<th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Date Uploaded</th>
+<th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Components</th>
+<th class="px-6 py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-surface-variant">Status</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-primary-container/10 rounded-lg">
+<span class="material-symbols-outlined text-primary-container text-xl">table_chart</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-primary">Quantum-X_V2.0.xlsx</p>
+<p class="text-[10px] text-on-surface-variant">Project: Mainframe Integration</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface">1,248</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-tertiary-fixed-dim/20 text-tertiary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-fixed-dim mr-1.5"></span>
+                                            Ready
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-secondary-container/20 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-xl">history_edu</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-primary">Sensor_Array_BOM.csv</p>
+<p class="text-[10px] text-on-surface-variant">Project: EcoSense Phase 1</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">Oct 25, 2023</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface">432</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-secondary-fixed-dim/30 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim mr-1.5 animate-pulse"></span>
+                                            Processing
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="p-2 text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-error-container/20 rounded-lg">
+<span class="material-symbols-outlined text-error text-xl">report_problem</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-primary">PowerSupply_BOM_Final.xlsx</p>
+<p class="text-[10px] text-on-surface-variant">Project: Power Unit Rev C</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant">Oct 26, 2023</td>
+<td class="px-6 py-5 text-sm font-medium text-on-surface">89</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-error-container text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>
+                                            Errors
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="px-3 py-1 bg-error-container text-error text-[10px] font-bold rounded uppercase hover:bg-error/10">Fix Mapping</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right: Action & Mapping (Narrow) -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Upload Area -->
+<div class="bg-surface-container p-8 rounded-2xl border-2 border-dashed border-primary/20 flex flex-col items-center text-center relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+<div class="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mb-6 relative z-10">
+<span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
+</div>
+<h4 class="font-headline font-bold text-primary text-lg mb-2 relative z-10">Upload New BOM</h4>
+<p class="text-sm text-on-surface-variant mb-6 relative z-10">Drag and drop your engineering file or browse your local directory.</p>
+<div class="flex gap-4 mb-8 relative z-10">
+<div class="flex flex-col items-center px-3 py-2 bg-white/50 rounded-lg">
+<span class="material-symbols-outlined text-slate-400 text-lg mb-1">description</span>
+<span class="text-[9px] font-bold text-slate-500">XLSX</span>
+</div>
+<div class="flex flex-col items-center px-3 py-2 bg-white/50 rounded-lg">
+<span class="material-symbols-outlined text-slate-400 text-lg mb-1">csv</span>
+<span class="text-[9px] font-bold text-slate-500">CSV</span>
+</div>
+<div class="flex flex-col items-center px-3 py-2 bg-white/50 rounded-lg">
+<span class="material-symbols-outlined text-slate-400 text-lg mb-1">integration_instructions</span>
+<span class="text-[9px] font-bold text-slate-500">JSON</span>
+</div>
+</div>
+<button class="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all relative z-10">
+                        Browse Files
+                    </button>
+</div>
+<!-- Component Mapping Preview Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-6 bg-[#003358] text-white">
+<h4 class="font-headline font-bold text-lg mb-1">Mapping Assistant</h4>
+<p class="text-xs text-blue-200 opacity-80">Configure how columns are ingested</p>
+</div>
+<div class="p-6 space-y-6">
+<div class="space-y-4">
+<div class="group">
+<label class="block text-[10px] font-extrabold text-on-surface-variant uppercase tracking-widest mb-2">System Field: Part Number</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-3 px-4 appearance-none focus:ring-primary/20">
+<option>Select Column...</option>
+<option selected="">PART_NO</option>
+<option>SKU_ID</option>
+<option>MPN</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="group">
+<label class="block text-[10px] font-extrabold text-on-surface-variant uppercase tracking-widest mb-2">System Field: Manufacturer</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-3 px-4 appearance-none focus:ring-primary/20">
+<option>Select Column...</option>
+<option>VENDOR</option>
+<option selected="">MFR_NAME</option>
+<option>SOURCE</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="group">
+<label class="block text-[10px] font-extrabold text-on-surface-variant uppercase tracking-widest mb-2">System Field: Description</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg text-sm font-medium py-3 px-4 appearance-none focus:ring-primary/20">
+<option>Select Column...</option>
+<option selected="">LONG_DESC</option>
+<option>PART_DETAILS</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-3 text-slate-400 pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+<div class="p-4 bg-tertiary-fixed-dim/10 rounded-lg flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary-container text-lg mt-0.5" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<div>
+<p class="text-[11px] font-bold text-tertiary-container uppercase">Auto-Suggest Active</p>
+<p class="text-xs text-on-tertiary-fixed-variant leading-relaxed">System has detected high-confidence matches for your file structure.</p>
+</div>
+</div>
+<button class="w-full border-2 border-primary/10 text-primary py-3 rounded-lg font-bold text-sm hover:bg-surface-container-low transition-colors">
+                            Save Mapping Schema
+                        </button>
+</div>
+</div>
+<!-- Recent Activity/Log -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm p-6">
+<h4 class="font-headline font-bold text-primary mb-4">Ingestion Logs</h4>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="w-1 h-8 bg-tertiary-fixed-dim rounded-full"></div>
+<div>
+<p class="text-xs font-bold text-primary">Quantum-X Mapping Complete</p>
+<p class="text-[10px] text-on-surface-variant">Success: 1,248 rows mapped with no errors.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-1 h-8 bg-error rounded-full"></div>
+<div>
+<p class="text-xs font-bold text-primary">PowerSupply Schema Mismatch</p>
+<p class="text-[10px] text-on-surface-variant">Column 'MFR_PART' not found in source file.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB Suppression Rule Applied: Not visible on this Management screen -->
+</body></html>

@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+
+/* Manrope: primary / main copy (matches /stitch headlines & default UI tone) */
+/* Inter: secondary — labels, tables, forms, captions (matches /stitch body utilities) */
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-headline antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-headline;
+  }
+  label,
+  th,
+  caption,
+  figcaption {
+    @apply font-body;
+  }
+  input,
+  textarea,
+  select {
+    @apply font-body;
+  }
+}
+
+a { @apply text-primary; }

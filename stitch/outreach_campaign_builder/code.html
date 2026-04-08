@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Outreach Campaign Builder | EcoLedger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-background": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "primary": "#003358",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#00497b",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-tint": "#296195",
+                        "primary-fixed": "#d0e4ff",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-primary-container": "#87baf3",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "on-tertiary-container": "#55ca99",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#d5e3fc",
+                        "surface-container": "#e5eeff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#001d35",
+                        "on-surface-variant": "#42474f",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "on-surface": "#0b1c30",
+                        "outline-variant": "#c1c7d0",
+                        "on-secondary-container": "#57657a",
+                        "inverse-primary": "#9ccaff",
+                        "tertiary": "#003925",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "secondary": "#515f74",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#9ccaff",
+                        "outline": "#727780",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#d5e3fc",
+                        "tertiary-container": "#005238",
+                        "surface-container-high": "#dce9ff",
+                        "inverse-surface": "#213145",
+                        "background": "#f8f9ff",
+                        "primary-container": "#004a7c",
+                        "on-tertiary-fixed": "#002114",
+                        "on-error": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift {
+            transition: background-color 0.2s ease;
+        }
+        .glass-effect {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+            color: #0b1c30;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-transparent bg-slate-50/60 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col h-full py-6 px-4 z-50">
+<div class="mb-10 px-2">
+<h1 class="text-xl font-bold tracking-tighter text-blue-900 dark:text-blue-50 font-headline">EcoLedger</h1>
+<p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Data Integrity Portal</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors duration-200 font-manrope text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors duration-200 font-manrope text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="table_chart">table_chart</span>
+                Compliance Tables
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors duration-200 font-manrope text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+                Mapping Workflow
+            </a>
+<!-- Active State -->
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white dark:bg-slate-800 text-blue-900 dark:text-blue-100 font-bold shadow-sm translate-x-1 transition-transform duration-200 font-manrope text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="campaign" style="font-variation-settings: 'FILL' 1;">campaign</span>
+                Outreach Campaigns
+            </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors duration-200 font-manrope text-sm tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Document Tools
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-slate-200/30">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-900/10 mb-6 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Compliance Audit
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 font-manrope text-sm hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-500 font-manrope text-sm hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg" data-icon="help">help</span>
+                    Support
+                </a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-16 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex items-center justify-between px-8">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-lg py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all font-body" placeholder="Search regulatory databases..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-slate-600">
+<button class="hover:text-blue-900 transition-all"><span class="material-symbols-outlined" data-icon="history">history</span></button>
+<button class="hover:text-blue-900 transition-all relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
+</button>
+</div>
+<div class="h-8 w-px bg-slate-200"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-bold text-on-surface">Alex Sterling</p>
+<p class="text-[10px] text-slate-500">Compliance Lead</p>
+</div>
+<img alt="Environmental Compliance Officer Profile" class="w-8 h-8 rounded-full object-cover border border-slate-100" data-alt="Professional headshot of a male compliance officer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA80kWGrnqMVXJtotvuk0lr0pi4Nqz1AqVzzJP9OG32uGFy8DqrOZ9dXw1lJrOQRamX78X-760tbwtd7sJBd0e9bpUGURJAoqliJpJBoi3npRuXL86FAKaM9ApVV7olVwgpy_3GiD0pT-IPH92NZk9wy4DK-FQbUEcpzbqdUbNKgirpgSuw4f2UXYGGkF1ZSRQKFZWvGYIO-yTqzRsojzQzk8HXnjrqLIMlQ6MAPHGn9f2p4vxD1MNi-0cvtvZwkrM-3cwMHOlkykZL"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 pb-12 px-12 min-h-screen">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section -->
+<div class="mb-12">
+<div class="flex items-center gap-2 text-slate-500 text-sm mb-2 font-label">
+<span>Campaigns</span>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-primary font-medium">New Outreach Builder</span>
+</div>
+<h2 class="text-4xl font-extrabold tracking-tight text-primary font-headline">Launch Data Request</h2>
+<p class="text-slate-500 mt-2 font-body max-w-2xl">Initialize a new outreach cycle to gather critical environmental declarations. Define your parameters and message cohorts below.</p>
+</div>
+<!-- Asymmetric Grid Layout -->
+<div class="grid grid-cols-12 gap-8 items-start">
+<!-- Left: Main Form Column (8 columns) -->
+<div class="col-span-12 lg:col-span-8 space-y-8">
+<!-- Section: Core Definition -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-2xl shadow-blue-900/5">
+<h3 class="text-lg font-bold text-primary mb-6 flex items-center gap-2 font-headline">
+<span class="material-symbols-outlined text-primary-container" data-icon="settings_input_component">settings_input_component</span>
+                            Campaign Context
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500 font-label">Campaign Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="e.g. Q4 Chemical Inventory Refresh" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500 font-label">Target Regulation</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all appearance-none cursor-pointer">
+<option>REACH 2026 Update</option>
+<option>RoHS 10 Compliance</option>
+<option>PFAS Reporting Initiative</option>
+<option>Proposition 65 Disclosure</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Section: Message Template Editor -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-2xl shadow-blue-900/5">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-lg font-bold text-primary flex items-center gap-2 font-headline">
+<span class="material-symbols-outlined text-primary-container" data-icon="edit_note">edit_note</span>
+                                Communication Template
+                            </h3>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 bg-surface-container-high rounded-lg text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">attach_file</span> Attach Docs
+                                </button>
+<button class="px-3 py-1.5 bg-surface-container-high rounded-lg text-xs font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">preview</span> Preview
+                                </button>
+</div>
+</div>
+<div class="space-y-4">
+<input class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-sm font-bold text-slate-700" type="text" value="Action Required: Compliance Data Refresh for {{regulation_name}}"/>
+<div class="bg-surface-container-low rounded-lg p-1">
+<div class="flex gap-2 border-b border-white/50 p-2 mb-2">
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-lg">format_bold</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-lg">format_italic</span></button>
+<button class="p-1 hover:bg-white rounded transition-colors"><span class="material-symbols-outlined text-lg">link</span></button>
+<div class="w-px h-5 bg-slate-300 self-center mx-1"></div>
+<button class="p-1 hover:bg-white rounded transition-colors flex items-center gap-1 px-2 text-[10px] font-bold uppercase"><span class="material-symbols-outlined text-sm">variables</span> Insert Variable</button>
+</div>
+<textarea class="w-full bg-transparent border-none rounded-lg py-2 px-3 text-sm focus:ring-0 resize-none font-body text-slate-600 leading-relaxed" rows="8">Dear {{supplier_contact}},
+
+To maintain our commitment to the {{regulation_name}} standards, we require updated chemical analysis reports for all materials supplied in the current fiscal year.
+
+Please upload your technical data sheets and declarations by {{deadline_date}} using the secure portal link below:
+
+{{portal_unique_link}}
+
+Failure to comply may impact your preferred supplier status. Thank you for your continued partnership.
+
+Best regards,
+The Global Compliance Team</textarea>
+</div>
+</div>
+</section>
+</div>
+<!-- Right: Configuration & Summary (4 columns) -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- Cohort Selection -->
+<section class="bg-surface-container-low rounded-xl p-6 border-l-4 border-primary/20">
+<h3 class="text-sm font-extrabold text-primary mb-4 flex items-center justify-between font-headline">
+                            SUPPLIER COHORT
+                            <span class="material-symbols-outlined text-blue-400" data-icon="groups">groups</span>
+</h3>
+<div class="space-y-4">
+<div class="bg-white p-4 rounded-lg shadow-sm">
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter block mb-2">Filter by Region</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-full flex items-center gap-1">EMEA <span class="material-symbols-outlined text-[10px]">close</span></span>
+<span class="px-2 py-1 bg-primary text-white text-[10px] font-bold rounded-full flex items-center gap-1">APAC <span class="material-symbols-outlined text-[10px]">close</span></span>
+<button class="px-2 py-1 border border-dashed border-slate-300 text-slate-400 text-[10px] font-bold rounded-full">+ Add Region</button>
+</div>
+</div>
+<div class="bg-white p-4 rounded-lg shadow-sm">
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter block mb-2">Filter by Risk Tier</label>
+<div class="space-y-2">
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary border-slate-300 h-4 w-4" type="checkbox"/>
+<span class="text-xs font-medium text-slate-700">High Risk (Critical Path)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer">
+<input checked="" class="rounded text-primary focus:ring-primary border-slate-300 h-4 w-4" type="checkbox"/>
+<span class="text-xs font-medium text-slate-700">Medium Risk (Volume)</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer opacity-50">
+<input class="rounded text-primary focus:ring-primary border-slate-300 h-4 w-4" type="checkbox"/>
+<span class="text-xs font-medium text-slate-700">Low Risk (Standard)</span>
+</label>
+</div>
+</div>
+<div class="pt-4 text-center">
+<p class="text-2xl font-black text-primary font-headline">1,428</p>
+<p class="text-[10px] text-slate-500 font-bold uppercase">Total Target Suppliers</p>
+</div>
+</div>
+</section>
+<!-- Launch Controls -->
+<section class="bg-primary p-8 rounded-xl text-white shadow-xl shadow-blue-900/20">
+<h3 class="text-xs font-bold tracking-[0.2em] mb-6 opacity-70">CAMPAIGN SCHEDULING</h3>
+<div class="space-y-6">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="schedule">schedule</span>
+<div>
+<p class="text-sm font-bold">Schedule Launch</p>
+<p class="text-xs opacity-70">September 24, 2024 at 09:00 AM</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="event_repeat">event_repeat</span>
+<div>
+<p class="text-sm font-bold">Follow-up Interval</p>
+<p class="text-xs opacity-70">Automatic reminder every 7 days</p>
+</div>
+</div>
+</div>
+<div class="mt-8 space-y-3">
+<button class="w-full bg-white text-primary py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined" data-icon="rocket_launch" style="font-variation-settings: 'FILL' 1;">rocket_launch</span>
+                                ACTIVATE CAMPAIGN
+                            </button>
+<button class="w-full bg-primary-container/40 text-white/80 py-3 rounded-lg text-sm font-bold hover:bg-primary-container transition-colors">
+                                Save as Draft
+                            </button>
+</div>
+</section>
+<!-- Risk Preview Insight -->
+<div class="p-6 bg-surface-container-highest/30 rounded-xl border-t border-white/50">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-lg">info</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary">Compliance Insight</span>
+</div>
+<p class="text-xs leading-relaxed text-slate-600">Based on historical data, this cohort has a <span class="font-bold text-primary">64% expected response rate</span> within the first 14 days. We recommend increasing the follow-up frequency for the APAC region.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

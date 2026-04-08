@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Environmental Compliance Manager</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed-dim": "#9ccaff",
+              "surface-container-high": "#dce9ff",
+              "surface-dim": "#cbdbf5",
+              "on-secondary-fixed-variant": "#3a485b",
+              "surface-variant": "#d3e4fe",
+              "on-primary-container": "#87baf3",
+              "surface-container-highest": "#d3e4fe",
+              "inverse-on-surface": "#eaf1ff",
+              "surface": "#f8f9ff",
+              "on-tertiary-container": "#55ca99",
+              "on-primary-fixed": "#001d35",
+              "primary-container": "#004a7c",
+              "surface-container-low": "#eff4ff",
+              "on-secondary-fixed": "#0d1c2e",
+              "on-secondary": "#ffffff",
+              "secondary-fixed-dim": "#b9c7df",
+              "on-tertiary": "#ffffff",
+              "on-primary": "#ffffff",
+              "secondary-fixed": "#d5e3fc",
+              "on-error": "#ffffff",
+              "outline-variant": "#c1c7d0",
+              "error": "#ba1a1a",
+              "on-surface-variant": "#42474f",
+              "surface-bright": "#f8f9ff",
+              "primary": "#003358",
+              "on-tertiary-fixed": "#002114",
+              "on-tertiary-fixed-variant": "#005137",
+              "surface-container": "#e5eeff",
+              "background": "#f8f9ff",
+              "tertiary-fixed": "#85f8c4",
+              "outline": "#727780",
+              "primary-fixed": "#d0e4ff",
+              "inverse-primary": "#9ccaff",
+              "tertiary-container": "#005238",
+              "secondary": "#515f74",
+              "error-container": "#ffdad6",
+              "tertiary": "#003925",
+              "surface-tint": "#296195",
+              "on-secondary-container": "#57657a",
+              "secondary-container": "#d5e3fc",
+              "on-error-container": "#93000a",
+              "on-surface": "#0b1c30",
+              "on-background": "#0b1c30",
+              "inverse-surface": "#213145",
+              "tertiary-fixed-dim": "#68dba9",
+              "surface-container-lowest": "#ffffff",
+              "on-primary-fixed-variant": "#00497b"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-fixed-dim">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r-0 bg-[#eff4ff] dark:bg-slate-900 font-['Manrope'] antialiased flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tight text-[#003358] dark:text-blue-100">EcoLedger</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-semibold">Compliance Portal</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<!-- Active Navigation -->
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800 text-[#004A7C] font-semibold rounded-l-lg ml-4 shadow-sm translate-x-1 duration-150 group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-[#004A7C] dark:hover:text-blue-200 hover:bg-[#d3e4fe] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="text-sm">BOM Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-[#004A7C] dark:hover:text-blue-200 hover:bg-[#d3e4fe] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="text-sm">Supplier Portal</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-[#004A7C] dark:hover:text-blue-200 hover:bg-[#d3e4fe] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="memory">memory</span>
+<span class="text-sm">Components</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-[#004A7C] dark:hover:text-blue-200 hover:bg-[#d3e4fe] dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-sm">Reports</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-6 space-y-4">
+<button class="w-full bg-gradient-to-br from-[#003358] to-[#004a7c] text-white py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity font-semibold text-sm">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+                New Analysis
+            </button>
+<div class="pt-4 border-t border-primary/5">
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-sm hover:text-[#004A7C] transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-2 text-slate-500 text-sm hover:text-[#004A7C] transition-colors" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="help_outline">help_outline</span>
+                    Support
+                </a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Shell -->
+<header class="sticky top-0 z-40 bg-white/60 dark:bg-slate-950/60 backdrop-blur-md flex justify-between items-center px-8 h-16 w-[calc(100%-16rem)] ml-64 border-b border-[#004A7C]/10">
+<div class="flex items-center gap-8">
+<span class="text-[#004A7C] font-['Inter'] text-sm font-bold tracking-tight">Environmental Compliance Manager</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-[#004A7C] border-b-2 border-[#004A7C] text-sm font-medium py-5" href="#">Global View</a>
+<a class="text-slate-600 hover:text-[#004A7C] transition-opacity text-sm font-medium py-5" href="#">EMEA</a>
+<a class="text-slate-600 hover:text-[#004A7C] transition-opacity text-sm font-medium py-5" href="#">APAC</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-low border-none rounded-full px-10 py-2 text-sm w-64 focus:ring-2 focus:ring-primary-fixed transition-all outline-none" placeholder="Search compliance data..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl" data-icon="search">search</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border-2 border-primary-fixed/30 cursor-pointer">
+<img alt="User" class="w-full h-full object-cover" data-alt="Professional user profile headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEA57VWZ5kZlhlV3Y_6YTOlM4I5By6f5V8lLRRLVhdTDmN4ky27Wm7-u4rRU29dQO4iLiUun9DTUFjn8bqgjhkRJnDLZZXjbZLWanOZMgjGv7lhsVZAB8ktndKJLn0jvsG4w1QgL6i2PJBeEgUbfrR5YGXY2pUR1YNJEqk-3YONXiDgVZn_d__PtsF8U8_7kdjVr8sJx__WxHO5m2aanFS-k1hJQdVtDNzMwz-86tkcrJsyDoPeuL7fXdP75hFa5RbddipaTmeArNQ"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 p-8 min-h-screen bg-surface">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<p class="text-on-surface-variant font-medium text-sm mb-1">Corporate Environmental Ledger</p>
+<h2 class="text-4xl font-extrabold tracking-tight text-primary">Compliance Summary</h2>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-lowest text-primary px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="file_download">file_download</span>
+                    Export PDF
+                </button>
+<button class="bg-primary text-on-primary px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-primary/20 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="upload_file">upload_file</span>
+                    Upload New BOM
+                </button>
+</div>
+</div>
+<!-- KPI Grid (Bento Style) -->
+<div class="grid grid-cols-12 gap-6 mb-10">
+<!-- Main KPI Card -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest p-8 rounded-xl shadow-[0_20px_40px_rgba(11,28,48,0.03)] flex flex-col justify-between">
+<div>
+<h3 class="text-on-surface-variant font-semibold text-xs uppercase tracking-widest mb-4">Total Compliance</h3>
+<div class="flex items-baseline gap-2">
+<span class="text-6xl font-extrabold text-primary tracking-tighter">94.2</span>
+<span class="text-2xl font-bold text-primary-container">%</span>
+</div>
+</div>
+<div class="mt-6">
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-tertiary-fixed-dim to-on-tertiary-container w-[94.2%]"></div>
+</div>
+<p class="mt-3 text-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="trending_up">trending_up</span>
+<span class="font-semibold text-on-surface">+1.4%</span> from previous month
+                    </p>
+</div>
+</div>
+<!-- Visual Charts Container -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-2 gap-6">
+<!-- Regulation Chart Mockup -->
+<div class="bg-surface-container-low p-6 rounded-xl flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-bold text-primary">Status by Regulation</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_horiz">more_horiz</span>
+</div>
+<div class="flex-1 flex items-end justify-between gap-4 px-2">
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-primary/20 rounded-t-md h-32 relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md h-24 group-hover:opacity-80 transition-opacity"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">RoHS</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-primary/20 rounded-t-md h-32 relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md h-28 group-hover:opacity-80 transition-opacity"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">REACh</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-primary/20 rounded-t-md h-32 relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md h-16 group-hover:opacity-80 transition-opacity"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">Prop 65</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full bg-primary/20 rounded-t-md h-32 relative group">
+<div class="absolute bottom-0 w-full bg-primary rounded-t-md h-20 group-hover:opacity-80 transition-opacity"></div>
+</div>
+<span class="text-[10px] font-bold text-on-surface-variant">TSCA</span>
+</div>
+</div>
+</div>
+<!-- Secondary KPI Card -->
+<div class="grid grid-rows-2 gap-4">
+<div class="bg-surface-container-highest/40 backdrop-blur-sm p-5 rounded-xl flex items-center justify-between">
+<div>
+<p class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">Pending Actions</p>
+<p class="text-3xl font-extrabold text-primary">12</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined" data-icon="pending_actions">pending_actions</span>
+</div>
+</div>
+<div class="bg-error-container/30 p-5 rounded-xl flex items-center justify-between border-l-4 border-error">
+<div>
+<p class="text-[10px] uppercase font-bold text-error tracking-wider">Non-Compliant</p>
+<p class="text-3xl font-extrabold text-error">04</p>
+</div>
+<div class="w-12 h-12 rounded-full bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Asymmetric Table Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Detailed Table Section -->
+<div class="col-span-12 xl:col-span-9">
+<div class="bg-surface-container-lowest rounded-2xl p-1 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+<div class="p-6 flex justify-between items-center">
+<h3 class="text-xl font-bold text-primary flex items-center gap-3">
+                            Urgent Compliance Risks
+                            <span class="bg-error-container text-error text-[10px] px-2 py-0.5 rounded-full font-bold">4 HIGH RISK</span>
+</h3>
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-separate border-spacing-y-2 px-6 pb-6">
+<thead>
+<tr class="text-on-surface-variant font-bold text-[11px] uppercase tracking-wider">
+<th class="pb-4 pl-4">Product / Component</th>
+<th class="pb-4">Regulation</th>
+<th class="pb-4">Status</th>
+<th class="pb-4">Risk Level</th>
+<th class="pb-4">Expiry</th>
+<th class="pb-4"></th>
+</tr>
+</thead>
+<tbody>
+<!-- Table Row 1 -->
+<tr class="group hover:bg-surface-container-low transition-colors rounded-xl overflow-hidden">
+<td class="py-4 pl-4 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Micro-Controller X-90</p>
+<p class="text-[10px] text-on-surface-variant">SKU: MC-90231-L</p>
+</div>
+</div>
+</td>
+<td class="py-4">
+<div class="flex gap-1">
+<span class="bg-surface-container-high text-primary text-[10px] px-2 py-0.5 rounded-md font-bold">RoHS 3</span>
+</div>
+</td>
+<td class="py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-xs font-semibold text-error">Non-Compliant</span>
+</div>
+</td>
+<td class="py-4">
+<span class="text-[10px] px-2 py-1 bg-error-container text-error rounded-full font-bold">CRITICAL</span>
+</td>
+<td class="py-4">
+<p class="text-xs text-on-surface-variant">Expired 12 Oct 2023</p>
+</td>
+<td class="py-4 pr-4 rounded-r-xl text-right">
+<button class="text-primary font-bold text-xs hover:underline">Remediate</button>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="group hover:bg-surface-container-low transition-colors rounded-xl overflow-hidden">
+<td class="py-4 pl-4 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined" data-icon="conveyor_belt">conveyor_belt</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Steel Chasis - Batch 04</p>
+<p class="text-[10px] text-on-surface-variant">SKU: ST-CH-442</p>
+</div>
+</div>
+</td>
+<td class="py-4">
+<div class="flex gap-1">
+<span class="bg-surface-container-high text-primary text-[10px] px-2 py-0.5 rounded-md font-bold">REACh</span>
+</div>
+</td>
+<td class="py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
+<span class="text-xs font-semibold text-on-secondary-container">Pending SVHC</span>
+</div>
+</td>
+<td class="py-4">
+<span class="text-[10px] px-2 py-1 bg-secondary-container text-on-secondary-container rounded-full font-bold">MEDIUM</span>
+</td>
+<td class="py-4">
+<p class="text-xs text-on-surface-variant">In 45 Days</p>
+</td>
+<td class="py-4 pr-4 rounded-r-xl text-right">
+<button class="text-primary font-bold text-xs hover:underline">View Log</button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="group hover:bg-surface-container-low transition-colors rounded-xl overflow-hidden">
+<td class="py-4 pl-4 rounded-l-xl">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined" data-icon="cable">cable</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Power Connector L-Type</p>
+<p class="text-[10px] text-on-surface-variant">SKU: PW-L90</p>
+</div>
+</div>
+</td>
+<td class="py-4">
+<div class="flex gap-1">
+<span class="bg-surface-container-high text-primary text-[10px] px-2 py-0.5 rounded-md font-bold">Prop 65</span>
+</div>
+</td>
+<td class="py-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="text-xs font-semibold text-outline">Unknown</span>
+</div>
+</td>
+<td class="py-4">
+<span class="text-[10px] px-2 py-1 bg-surface-container text-on-surface-variant rounded-full font-bold">LOW</span>
+</td>
+<td class="py-4">
+<p class="text-xs text-on-surface-variant">No Data</p>
+</td>
+<td class="py-4 pr-4 rounded-r-xl text-right">
+<button class="text-primary font-bold text-xs hover:underline">Request Data</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Insights / Actions Sidebar -->
+<div class="col-span-12 xl:col-span-3 space-y-6">
+<!-- Supplier outreach card -->
+<div class="bg-primary p-6 rounded-2xl relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-6xl text-white" data-icon="mail">mail</span>
+</div>
+<div class="relative z-10">
+<h4 class="text-white font-bold mb-2">Supplier Outreach</h4>
+<p class="text-primary-fixed-dim text-xs mb-6">4 Suppliers have outstanding environmental declarations for over 30 days.</p>
+<button class="w-full bg-white text-primary py-3 rounded-xl text-xs font-bold hover:bg-surface-container-low transition-colors">
+                            Initiate Outreach
+                        </button>
+</div>
+</div>
+<!-- Environmental Insights -->
+<div class="bg-surface-container-low p-6 rounded-2xl">
+<h4 class="text-primary font-bold text-sm mb-4">Latest Regulations</h4>
+<div class="space-y-4">
+<div class="bg-white p-3 rounded-lg shadow-sm border-l-2 border-tertiary-fixed-dim">
+<p class="text-[10px] font-bold text-on-tertiary-fixed-variant uppercase mb-1">Update: REACh SVHC</p>
+<p class="text-xs text-on-surface font-medium">New substance added to the Candidate List: Bis(2-ethylhexyl).</p>
+</div>
+<div class="bg-white p-3 rounded-lg shadow-sm border-l-2 border-primary-fixed-dim">
+<p class="text-[10px] font-bold text-on-primary-fixed-variant uppercase mb-1">RoHS Directive</p>
+<p class="text-xs text-on-surface font-medium">Draft report on Annex III exemptions published by EU Commission.</p>
+</div>
+</div>
+<button class="mt-4 text-primary text-xs font-bold flex items-center gap-1 group">
+                        Compliance Library
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Quick Stats Pie Chart Graphic Mockup -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-[#004A7C]/5">
+<h4 class="text-primary font-bold text-sm mb-6 text-center">Product Portfolio</h4>
+<div class="relative w-32 h-32 mx-auto mb-6">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-tertiary-fixed-dim" cx="18" cy="18" fill="none" r="16" stroke-dasharray="85 100" stroke-width="4"></circle>
+<circle class="stroke-error" cx="18" cy="18" fill="none" r="16" stroke-dasharray="10 100" stroke-dashoffset="-85" stroke-width="4"></circle>
+<circle class="stroke-secondary-fixed-dim" cx="18" cy="18" fill="none" r="16" stroke-dasharray="5 100" stroke-dashoffset="-95" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-lg font-extrabold text-primary leading-none">85%</span>
+<span class="text-[8px] font-bold text-on-surface-variant uppercase">Full</span>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center text-[10px]">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span> Compliant</span>
+<span class="font-bold">242</span>
+</div>
+<div class="flex justify-between items-center text-[10px]">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-error"></span> Non-Compliant</span>
+<span class="font-bold">18</span>
+</div>
+<div class="flex justify-between items-center text-[10px]">
+<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span> Pending</span>
+<span class="font-bold">12</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Global Actions (Mobile/Focused Only) - Suppressed on Main Dashboard based on rules but included for context if needed -->
+<button class="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-on-primary shadow-2xl flex items-center justify-center hover:scale-105 transition-transform md:hidden z-50">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</body></html>

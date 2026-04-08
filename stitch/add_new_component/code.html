@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Component | EcoStratum</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#d5e3fc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "inverse-primary": "#9ccaff",
+                        "primary-fixed": "#d0e4ff",
+                        "on-tertiary-container": "#55ca99",
+                        "on-surface-variant": "#42474f",
+                        "primary-container": "#004a7c",
+                        "surface-container-low": "#eff4ff",
+                        "surface-tint": "#296195",
+                        "on-primary-fixed-variant": "#00497b",
+                        "tertiary-fixed": "#85f8c4",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#57657a",
+                        "outline-variant": "#c1c7d0",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "primary": "#003358",
+                        "on-tertiary-fixed": "#002114",
+                        "surface-container": "#e5eeff",
+                        "outline": "#727780",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed-dim": "#9ccaff",
+                        "tertiary": "#003925",
+                        "on-primary-container": "#87baf3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed": "#001d35",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#005238",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-surface": "#0b1c30",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 bg-slate-50/80 backdrop-blur-xl shadow-sm flex items-center justify-between px-8 h-16">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-900">EcoStratum</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-slate-500 font-manrope text-sm tracking-tight hover:text-blue-900 transition-colors" href="#">Dashboard</a>
+<a class="text-slate-500 font-manrope text-sm tracking-tight hover:text-blue-900 transition-colors" href="#">Suppliers</a>
+<a class="text-blue-700 font-manrope text-sm tracking-tight font-semibold border-b-2 border-blue-700 pb-1" href="#">Products</a>
+<a class="text-slate-500 font-manrope text-sm tracking-tight hover:text-blue-900 transition-colors" href="#">Regulations</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary hover:opacity-90 text-on-primary px-4 py-2 rounded-xl text-sm font-medium transition-all active:scale-95">Add Entry</button>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-slate-200/50 rounded-lg transition-colors text-slate-500"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 hover:bg-slate-200/50 rounded-lg transition-colors text-slate-500"><span class="material-symbols-outlined">settings</span></button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full ml-2 border border-outline-variant/20" data-alt="Corporate professional user avatar portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqndzB41etGwockGZ5hYRsTlY6CpLovGP9tXeGaov1BRdSj3St6tFwxuMUqnV5nF2bDaFQpfhVSIysAgBiSEDcqwyANFtzmq42NAcphXWJ9RVZ1LR2CkKeSm_G22gFPdhHNSwPLmQvD4K6WaN3ETH9q53xshBZMrl2ukV1O87V_8SaxwaYJFu2HfL3PGnOwX6FS4Hvkk-ey-QHZc2u9yuSqbqL2vyNYep400wbK6zalUx3ZpejyIUMfuEeAz-qPCY6HfpVoEeuiYzO"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Shared Component) -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-slate-50 flex flex-col p-4 gap-y-2 pt-20 hidden lg:flex">
+<div class="px-4 py-6 mb-4">
+<h2 class="font-manrope font-bold text-lg text-blue-900">EcoStratum HQ</h2>
+<p class="text-xs text-slate-500 uppercase tracking-widest font-semibold mt-1">Enterprise Tier</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-transform duration-200 hover:translate-x-1 group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-inter text-sm font-medium">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-blue-100 text-blue-900 rounded-lg transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-inter text-sm font-medium">Inventory</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-inter text-sm font-medium">Compliance Logs</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-inter text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-transform duration-200 hover:translate-x-1" href="#">
+<span class="material-symbols-outlined">archive</span>
+<span class="font-inter text-sm font-medium">Archive</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-slate-200/50 pt-4 space-y-1">
+<button class="w-full flex items-center gap-3 px-4 py-2.5 text-slate-600 hover:bg-slate-200 rounded-lg transition-transform duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined">help</span>
+<span class="font-inter text-sm font-medium">Help Center</span>
+</button>
+<button class="w-full flex items-center gap-3 px-4 py-2.5 text-error hover:bg-error-container/20 rounded-lg transition-transform duration-200 hover:translate-x-1">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-inter text-sm font-medium">Sign Out</span>
+</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:pl-64 pt-16 min-h-screen">
+<div class="p-8 max-w-7xl mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<div class="flex items-center gap-2 text-slate-500 mb-2">
+<span class="text-xs font-semibold uppercase tracking-widest">Inventory Management</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-xs font-semibold uppercase tracking-widest text-primary">Add New Component</span>
+</div>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Initialize Component Entry</h1>
+<p class="text-on-secondary-container mt-2 max-w-2xl">Establish a new digital twin for hardware components with full material traceability and global regulatory alignment.</p>
+</div>
+<!-- Bento Form Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column: Core Identity (8-Span Asymmetric) -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Basic Information Card -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                            Core Specification
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-2">
+<label class="block text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Part Number</label>
+<input class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-3 px-4 text-on-surface placeholder-slate-400" placeholder="e.g. ESP-WROOM-32D" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="block text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Manufacturer</label>
+<select class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-3 px-4 text-on-surface">
+<option>Select Manufacturer</option>
+<option>Espressif Systems</option>
+<option>Texas Instruments</option>
+<option>STMicroelectronics</option>
+</select>
+</div>
+<div class="col-span-full space-y-2">
+<label class="block text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Component Description</label>
+<textarea class="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-3 px-4 text-on-surface placeholder-slate-400" placeholder="Enter high-level technical description..." rows="3"></textarea>
+</div>
+</div>
+</section>
+<!-- Material Composition (Table Ledger style) -->
+<section class="bg-surface-container-low rounded-xl p-8">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">texture</span>
+                                    Material Composition
+                                </h3>
+<p class="text-sm text-on-secondary-container">Detailed breakdown of constituent substances by mass.</p>
+</div>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-sm">add</span> Add Substance
+                            </button>
+</div>
+<div class="overflow-hidden bg-surface-container-lowest rounded-lg">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-high/50">
+<tr>
+<th class="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant">Substance Name</th>
+<th class="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant">CAS Number</th>
+<th class="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant">Mass %</th>
+<th class="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-sm font-medium">Silicon</td>
+<td class="p-4 text-sm font-body text-slate-500">7440-21-3</td>
+<td class="p-4 text-sm font-bold text-primary">82.4%</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-sm font-medium">Gold (Bonding Wire)</td>
+<td class="p-4 text-sm font-body text-slate-500">7440-57-5</td>
+<td class="p-4 text-sm font-bold text-primary">1.2%</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="p-4 text-sm font-medium">Epoxy Resin</td>
+<td class="p-4 text-sm font-body text-slate-500">25068-38-6</td>
+<td class="p-4 text-sm font-bold text-primary">16.4%</td>
+<td class="p-4 text-right">
+<button class="text-slate-400 hover:text-error transition-colors"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: Compliance & Docs (4-Span) -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Regulation Mapping -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">gavel</span>
+                            Compliance Matrix
+                        </h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+<div>
+<p class="font-bold text-sm">RoHS Compliant</p>
+<p class="text-xs text-slate-500">2011/65/EU, 2015/863</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary-fixed-dim"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+<div>
+<p class="font-bold text-sm">REACH Compliance</p>
+<p class="text-xs text-slate-500">SVHC Content &lt; 0.1%</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary-fixed-dim"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl">
+<div>
+<p class="font-bold text-sm">Conflict Minerals</p>
+<p class="text-xs text-slate-500">3TG Traceability</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-tertiary-fixed-dim"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- Documentation Upload -->
+<section class="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+                            Documentation
+                        </h3>
+<div class="border-2 border-dashed border-outline-variant/30 rounded-xl p-8 text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors group cursor-pointer">
+<span class="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors">cloud_upload</span>
+<p class="mt-4 text-sm font-bold text-on-surface">Drop technical datasheets here</p>
+<p class="text-xs text-slate-500 mt-1">PDF, STEP, or JSON (Max 25MB)</p>
+<button class="mt-4 px-4 py-2 bg-primary-fixed text-on-primary-fixed-variant rounded-lg text-xs font-bold uppercase tracking-wider">Browse Files</button>
+</div>
+<div class="mt-6 space-y-3">
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+<span class="material-symbols-outlined text-red-600">picture_as_pdf</span>
+<div class="flex-1">
+<p class="text-xs font-bold truncate">ESP-WROOM-32D_Datasheet.pdf</p>
+<p class="text-[10px] text-slate-500">1.4 MB • Uploaded</p>
+</div>
+<button class="text-slate-400 hover:text-error"><span class="material-symbols-outlined text-sm">close</span></button>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Actions -->
+<div class="col-span-12 flex justify-end gap-4 mt-8 pb-12">
+<button class="px-8 py-3 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-all">Cancel Draft</button>
+<button class="px-10 py-3 bg-gradient-to-br from-primary to-primary-container text-white text-sm font-bold rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                        Commit to Ledger
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB (Suppressed based on context: Details/Transactional Screen) -->
+</body></html>

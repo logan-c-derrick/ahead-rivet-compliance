@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#d5e3fc",
+              "on-secondary-fixed-variant": "#3a485b",
+              "error": "#ba1a1a",
+              "surface-bright": "#f8f9ff",
+              "surface-variant": "#d3e4fe",
+              "inverse-primary": "#9ccaff",
+              "primary-fixed": "#d0e4ff",
+              "on-tertiary-container": "#55ca99",
+              "on-surface-variant": "#42474f",
+              "primary-container": "#004a7c",
+              "surface-container-low": "#eff4ff",
+              "surface-tint": "#296195",
+              "on-primary-fixed-variant": "#00497b",
+              "tertiary-fixed": "#85f8c4",
+              "background": "#f8f9ff",
+              "on-tertiary-fixed-variant": "#005137",
+              "surface-dim": "#cbdbf5",
+              "on-secondary-container": "#57657a",
+              "outline-variant": "#c1c7d0",
+              "on-secondary": "#ffffff",
+              "on-primary": "#ffffff",
+              "secondary": "#515f74",
+              "primary": "#003358",
+              "on-tertiary-fixed": "#002114",
+              "surface-container": "#e5eeff",
+              "outline": "#727780",
+              "on-secondary-fixed": "#0d1c2e",
+              "on-error-container": "#93000a",
+              "on-background": "#0b1c30",
+              "surface-container-high": "#dce9ff",
+              "primary-fixed-dim": "#9ccaff",
+              "tertiary": "#003925",
+              "on-primary-container": "#87baf3",
+              "on-tertiary": "#ffffff",
+              "inverse-surface": "#213145",
+              "surface-container-highest": "#d3e4fe",
+              "surface": "#f8f9ff",
+              "on-primary-fixed": "#001d35",
+              "error-container": "#ffdad6",
+              "tertiary-container": "#005238",
+              "on-error": "#ffffff",
+              "secondary-container": "#d5e3fc",
+              "inverse-on-surface": "#eaf1ff",
+              "on-surface": "#0b1c30",
+              "secondary-fixed-dim": "#b9c7df",
+              "tertiary-fixed-dim": "#68dba9",
+              "surface-container-lowest": "#ffffff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-primary-gradient {
+            background: linear-gradient(135deg, #003358 0%, #004a7c 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<!-- Top Navigation (JSON Shared Component Mapping) -->
+<nav class="fixed top-0 w-full z-50 bg-slate-50/80 backdrop-blur-xl shadow-sm flex items-center justify-between px-8 h-16 w-full">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-900 font-headline">EcoStratum</span>
+<div class="hidden md:flex gap-6 font-manrope text-sm tracking-tight">
+<a class="text-slate-500 hover:text-blue-900 transition-colors" href="#">Dashboard</a>
+<a class="text-slate-500 hover:text-blue-900 transition-colors" href="#">Suppliers</a>
+<a class="text-blue-700 font-semibold border-b-2 border-blue-700 pb-1" href="#">Products</a>
+<a class="text-slate-500 hover:text-blue-900 transition-colors" href="#">Regulations</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-lg transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar professionally dressed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGUxQEBWUt5ukrwfCnJOlAAZEDz3YVGQ92y7gmixfDHHq_q2uloU4KhR1gLLoYY7yNKWYkNbYUN_Vc9yY_pdyqr9z7lFoYQF3v4gU3EMm75Zz2BDukHEovHRMn1IaJTGL_faHjxFX4_oRL9Km2jKMYHxaYJVGF00DpBw3Eg49z3YzBKdbdr9z0t-gS5EYHy9YV0OfgDwxSOYctbNK6MXKeN8N9Ygx9cDI_s1pSaRQ8IAc1vnbqE0ggVPyjzEyBj2HTJNb2iNDSF-6t"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-16 px-8 max-w-7xl mx-auto">
+<!-- Header Section -->
+<header class="mb-12">
+<div class="flex items-center gap-2 text-on-secondary-container mb-2">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span class="text-xs font-medium uppercase tracking-widest font-label">Inventory Management</span>
+</div>
+<h1 class="text-4xl font-extrabold tracking-tighter font-headline text-on-surface mb-2">Register New Product</h1>
+<p class="text-on-surface-variant max-w-2xl font-body">Define a new SKU within the compliance ledger. Link your Bill of Materials and assign regulatory targets for regional integrity.</p>
+</header>
+<!-- Form Layout: Asymmetrical Bento Grid -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Left Column: Primary Definition -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+<!-- Section: Product Definition -->
+<section class="bg-surface-container-lowest p-8 rounded-xl">
+<h2 class="text-xl font-bold font-headline mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">inventory</span>
+                        Product Definition
+                    </h2>
+<div class="grid grid-cols-2 gap-6">
+<div class="col-span-2 md:col-span-1">
+<label class="block text-xs font-semibold text-on-surface-variant mb-2 font-label">Product Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" placeholder="e.g. Stratum-X Series Solar Core" type="text"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-xs font-semibold text-on-surface-variant mb-2 font-label">SKU Number</label>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline" placeholder="STR-772-LITH" type="text"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-xs font-semibold text-on-surface-variant mb-2 font-label">Category</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+<option>Energy Storage Systems</option>
+<option>Photovoltaic Modules</option>
+<option>Raw Material Feedstock</option>
+</select>
+</div>
+<div class="col-span-2 md:col-span-1">
+<label class="block text-xs font-semibold text-on-surface-variant mb-2 font-label">Manufacturing Region</label>
+<select class="w-full bg-surface-container-low border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+<option>European Union (EEA)</option>
+<option>North America (USMCA)</option>
+<option>Asia Pacific</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Section: BOM Linkage -->
+<section class="bg-surface-container-low p-8 rounded-xl">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-bold font-headline flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+                            BOM Linkage
+                        </h2>
+<button class="text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-1 hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-sm">cloud_upload</span>
+                            Bulk Upload CSV
+                        </button>
+</div>
+<div class="relative mb-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-lg pl-10 pr-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search materials or component IDs..." type="text"/>
+</div>
+<div class="space-y-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-center justify-between group hover:bg-surface-bright transition-colors cursor-pointer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">settings_input_component</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Lithium-Ion Cell (Grade A)</p>
+<p class="text-xs text-on-surface-variant">ID: MAT-0492 • Supplier: VoltSource</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">add_circle</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-center justify-between group hover:bg-surface-bright transition-colors cursor-pointer opacity-70">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container">layers</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-on-surface">Recycled Copper Foil</p>
+<p class="text-xs text-on-surface-variant">ID: MAT-1102 • Supplier: EcoRefine</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">add_circle</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Contextual Side Panel -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+<!-- Target Compliance Standards -->
+<section class="bg-surface-container-highest/30 p-8 rounded-xl backdrop-blur-sm">
+<h2 class="text-lg font-bold font-headline mb-6 text-on-surface">Compliance Standards</h2>
+<div class="space-y-4">
+<label class="flex items-start gap-4 p-4 rounded-lg bg-surface-container-lowest cursor-pointer hover:bg-white transition-colors">
+<input checked="" class="mt-1 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<p class="text-sm font-bold text-primary">EU Battery Regulation 2023</p>
+<p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Mandatory lifecycle reporting and recycled content quotas for EEA distribution.</p>
+</div>
+</label>
+<label class="flex items-start gap-4 p-4 rounded-lg bg-surface-container-lowest cursor-pointer hover:bg-white transition-colors">
+<input class="mt-1 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<p class="text-sm font-bold text-on-surface">ISO 14044 (LCA)</p>
+<p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Standard framework for Life Cycle Assessment and environmental impact reporting.</p>
+</div>
+</label>
+<label class="flex items-start gap-4 p-4 rounded-lg bg-surface-container-lowest cursor-pointer hover:bg-white transition-colors">
+<input class="mt-1 rounded border-outline text-primary focus:ring-primary" type="checkbox"/>
+<div>
+<p class="text-sm font-bold text-on-surface">Conflict Minerals Traceability</p>
+<p class="text-xs text-on-surface-variant mt-1 leading-relaxed">Required for Tier 1 component sourcing validation and humanitarian audit.</p>
+</div>
+</label>
+</div>
+</section>
+<!-- Product Owner Assignment -->
+<section class="bg-surface-container-lowest p-8 rounded-xl">
+<h2 class="text-lg font-bold font-headline mb-6">Product Owner</h2>
+<div class="flex items-center gap-4 mb-6 p-4 rounded-lg bg-surface-container-low">
+<img class="h-12 w-12 rounded-full object-cover" data-alt="Portrait of a female engineering manager" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBep87WvH8K46FdK2FTy5elb3eW7yQUj-wl9xvsStcVzSHHcqARYQDzOI126BDI7b59pJxjVGZJ1umt99v_HT_hUZ7ESEQiGltwoybl2Lq6ZmE4tKqDtp8F-AfkH2XlsuOisJTcoXZKPb5B_HnPuFZJFWgW2lXq9ofX8kJnrapt3aNHgfa--c2TF7TfAR0S_Z03nygAW9oi4xgeJalKvjRXwOM6hf7TG8XSjJKGSPP-QxIH6f05-nMzjAEVdD9wKOZF3wJPVniqlavF"/>
+<div class="flex-grow">
+<p class="text-sm font-bold text-on-surface">Sarah J. Miller</p>
+<p class="text-xs text-on-surface-variant">Senior Compliance Lead</p>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-sm">swap_horiz</span>
+</button>
+</div>
+<button class="w-full py-2 px-4 bg-surface-container-low text-on-secondary-container text-xs font-bold rounded-md hover:bg-surface-container-high transition-colors">
+                        Add Stakeholders
+                    </button>
+</section>
+<!-- Footer Actions -->
+<div class="flex flex-col gap-3 mt-4">
+<button class="bg-primary-gradient text-on-primary py-4 rounded-lg font-headline font-bold shadow-lg active:scale-95 transition-all">
+                        Finalize Product Entry
+                    </button>
+<button class="text-on-surface-variant text-sm font-semibold py-2 hover:text-on-surface transition-colors">
+                        Save as Draft
+                    </button>
+</div>
+</div>
+</div>
+<!-- Progress Indicator (Editorial Component) -->
+<div class="mt-16 flex items-center justify-between border-t border-outline-variant/20 pt-8">
+<div class="flex gap-12">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-tighter font-bold text-tertiary-fixed-dim mb-1">Status</span>
+<span class="text-sm font-semibold text-on-surface">Drafting Metadata</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-tighter font-bold text-on-surface-variant mb-1">Integrity Score</span>
+<span class="text-sm font-semibold text-on-surface">64% Validated</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-tighter font-bold text-on-surface-variant mb-1">Security</span>
+<div class="flex items-center gap-1 text-sm font-semibold text-on-surface">
+<span class="material-symbols-outlined text-sm text-tertiary-fixed-dim">verified_user</span>
+                        Encrypted
+                    </div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<div class="h-1 w-32 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full w-2/3 bg-tertiary-fixed-dim"></div>
+</div>
+<span class="text-xs font-bold text-on-surface-variant">Step 2 of 3</span>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Suppressed on Details/Forms as per mandate - but rendered here for "Quick Help" as it's a creation workflow) -->
+<!-- Suppressing FAB per mandate for transactional screens -->
+</body></html>

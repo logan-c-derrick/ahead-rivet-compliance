@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Custom Regulation | EcoStratum</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#d5e3fc",
+                        "on-secondary-fixed-variant": "#3a485b",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f8f9ff",
+                        "surface-variant": "#d3e4fe",
+                        "inverse-primary": "#9ccaff",
+                        "primary-fixed": "#d0e4ff",
+                        "on-tertiary-container": "#55ca99",
+                        "on-surface-variant": "#42474f",
+                        "primary-container": "#004a7c",
+                        "surface-container-low": "#eff4ff",
+                        "surface-tint": "#296195",
+                        "on-primary-fixed-variant": "#00497b",
+                        "tertiary-fixed": "#85f8c4",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-container": "#57657a",
+                        "outline-variant": "#c1c7d0",
+                        "on-secondary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "secondary": "#515f74",
+                        "primary": "#003358",
+                        "on-tertiary-fixed": "#002114",
+                        "surface-container": "#e5eeff",
+                        "outline": "#727780",
+                        "on-secondary-fixed": "#0d1c2e",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed-dim": "#9ccaff",
+                        "tertiary": "#003925",
+                        "on-primary-container": "#87baf3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed": "#001d35",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#005238",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#d5e3fc",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-surface": "#0b1c30",
+                        "secondary-fixed-dim": "#b9c7df",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(229, 238, 255, 0.6);
+            backdrop-filter: blur(12px);
+        }
+        body {
+            background-color: #f8f9ff;
+            color: #0b1c30;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex items-center justify-between px-8 h-16 w-full bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-sm dark:shadow-none font-manrope text-sm tracking-tight border-none">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tighter text-blue-900 dark:text-blue-100">EcoStratum</span>
+<div class="hidden md:flex gap-6">
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-100 transition-colors" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-100 transition-colors" href="#">Suppliers</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-blue-900 dark:hover:text-blue-100 transition-colors" href="#">Products</a>
+<a class="text-blue-700 dark:text-blue-300 font-semibold border-b-2 border-blue-700 dark:border-blue-300 pb-1" href="#">Regulations</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-200/50 rounded-full transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="Professional compliance officer portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5s8vUW_35uFNNkJ84k_ZleTliLDAUsWvtFWAukBLzss8G2LpmKNZXY53TgG42BPmioUH2oXFLS0h1_HNN3_gt2ZvONIr5DhP96eygU9jwt_lGrO_zn8hHazHTKK2ofUTQQktJlUgUQa16xlCj1_5mvrGpIuRr1XbJOyFfxzwFLw5Pr38bURpx19MbSk73tl2Q16Dkog2GGKJFw-BHJVn4kUzo7_eD6_wE6eYZ0ex7SXaUF8G8MfrnZ4VAOChn4_XepgKJSJU_ojcw"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 z-40 bg-slate-50 dark:bg-slate-950 flex flex-col p-4 gap-y-2 font-inter text-sm font-medium border-none hidden md:flex pt-20">
+<div class="mb-6 px-2">
+<h2 class="font-manrope font-bold text-lg text-blue-900 dark:text-blue-50">EcoStratum HQ</h2>
+<p class="text-xs text-slate-500">Enterprise Tier</p>
+</div>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+            Overview
+        </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+            Inventory
+        </a>
+<a class="flex items-center gap-3 p-3 bg-blue-100 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+            Compliance Logs
+        </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+            Analytics
+        </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg hover:translate-x-1 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="archive">archive</span>
+            Archive
+        </a>
+<div class="mt-auto space-y-1">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary py-3 rounded-xl font-semibold shadow-lg hover:opacity-90 transition-opacity mb-4 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                New Report
+            </button>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Help Center
+            </a>
+<a class="flex items-center gap-3 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="md:ml-64 pt-24 px-8 pb-12 min-h-screen">
+<div class="max-w-6xl mx-auto">
+<!-- Header Section: Intentional Asymmetry -->
+<header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+<div class="space-y-2">
+<nav class="flex items-center gap-2 text-label-md text-on-secondary-container mb-4">
+<span class="hover:text-primary cursor-pointer">Regulations</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-on-surface">New Requirement</span>
+</nav>
+<h1 class="text-4xl md:text-5xl font-headline font-extrabold tracking-tight text-on-surface">
+                        Create Custom <span class="text-primary-container">Regulation</span>
+</h1>
+<p class="text-on-surface-variant max-w-xl text-lg leading-relaxed">
+                        Define architectural compliance parameters and environmental thresholds for regional site operations.
+                    </p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-3 rounded-xl bg-surface-container-high text-on-secondary-container font-semibold hover:bg-surface-container-highest transition-colors active:scale-95 duration-200">
+                        Discard Draft
+                    </button>
+<button class="px-8 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold shadow-xl hover:shadow-2xl hover:translate-y-[-2px] transition-all active:scale-95 duration-200">
+                        Publish Requirement
+                    </button>
+</div>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Left Column: Core Definition -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Section: Identification -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border-none">
+<div class="flex items-center gap-3 mb-8">
+<div class="p-2 bg-primary-fixed rounded-lg text-on-primary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface">Regulation Identification</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-sm font-label font-semibold text-on-surface-variant ml-1">Regulation Name</label>
+<input class="w-full bg-surface-container-low border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface placeholder:text-outline" placeholder="e.g. Carbon-Zero Framework 2024" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-label font-semibold text-on-surface-variant ml-1">Authority / Region</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface placeholder:text-outline" placeholder="European Environment Agency" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-4 text-outline" data-icon="public">public</span>
+</div>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="text-sm font-label font-semibold text-on-surface-variant ml-1">Effective Date</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-xl p-4 focus:ring-2 focus:ring-primary/20 transition-all text-on-surface" type="date"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Threshold Matrix -->
+<div class="bg-surface-container-low p-8 rounded-2xl border-none">
+<div class="flex justify-between items-center mb-8">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface">Threshold Matrix</h3>
+</div>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:underline">
+<span class="material-symbols-outlined text-base" data-icon="add_circle">add_circle</span>
+                                Add Metric
+                            </button>
+</div>
+<div class="space-y-4">
+<!-- Metric Row 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
+<div class="flex-1 min-w-[200px]">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Metric Description</p>
+<p class="font-bold text-on-surface">Carbon Emission Cap (tCO2e)</p>
+</div>
+<div class="w-32">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Warning</p>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-secondary" type="number" value="1200"/>
+</div>
+<div class="w-32">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Critical</p>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-error" type="number" value="1500"/>
+</div>
+<button class="p-2 text-outline hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+<!-- Metric Row 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
+<div class="flex-1 min-w-[200px]">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Metric Description</p>
+<p class="font-bold text-on-surface">Water Discharge Quality (pH)</p>
+</div>
+<div class="w-32">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Warning</p>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-secondary" step="0.1" type="number" value="6.5"/>
+</div>
+<div class="w-32">
+<p class="text-xs font-bold text-outline uppercase tracking-widest mb-1">Critical</p>
+<input class="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-error" step="0.1" type="number" value="8.5"/>
+</div>
+<button class="p-2 text-outline hover:text-error transition-colors">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section: Guidelines -->
+<div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm border-none">
+<div class="flex items-center gap-3 mb-6">
+<div class="p-2 bg-secondary-fixed rounded-lg text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+</div>
+<h3 class="text-xl font-headline font-bold text-on-surface">Internal Guidelines</h3>
+</div>
+<div class="border-none rounded-xl bg-surface-container-low overflow-hidden">
+<div class="flex gap-4 p-3 bg-surface-container-high border-b border-outline-variant/20">
+<button class="p-1 hover:bg-surface-container-highest rounded transition-colors"><span class="material-symbols-outlined text-sm" data-icon="format_bold">format_bold</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded transition-colors"><span class="material-symbols-outlined text-sm" data-icon="format_italic">format_italic</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded transition-colors"><span class="material-symbols-outlined text-sm" data-icon="format_list_bulleted">format_list_bulleted</span></button>
+<button class="p-1 hover:bg-surface-container-highest rounded transition-colors"><span class="material-symbols-outlined text-sm" data-icon="link">link</span></button>
+<div class="w-[1px] h-4 bg-outline-variant/30 self-center"></div>
+<button class="p-1 hover:bg-surface-container-highest rounded transition-colors"><span class="material-symbols-outlined text-sm" data-icon="info">info</span></button>
+</div>
+<textarea class="w-full bg-transparent border-none p-6 focus:ring-0 text-on-surface leading-relaxed" placeholder="Outline specific auditing steps and mitigation protocols for internal compliance teams..." rows="8"></textarea>
+</div>
+</div>
+</div>
+<!-- Right Column: Contextual Insights & Help -->
+<div class="lg:col-span-4 space-y-8">
+<!-- Regulatory AI Assistant Card -->
+<div class="bg-primary p-8 rounded-2xl text-on-primary relative overflow-hidden group">
+<div class="relative z-10">
+<h4 class="font-headline font-bold text-xl mb-4">Compliance Check</h4>
+<p class="text-primary-fixed/80 text-sm leading-relaxed mb-6">
+                                Based on European directives, custom thresholds for carbon should typically align with the 2030 Climate Target Plan.
+                            </p>
+<div class="flex items-center gap-3 p-4 bg-primary-container rounded-xl">
+<span class="material-symbols-outlined text-tertiary-fixed-dim" data-icon="auto_awesome">auto_awesome</span>
+<span class="text-xs font-semibold">AI Assistant: Thresholds look within valid safety ranges for region EEA-4.</span>
+</div>
+</div>
+<!-- Abstract Texture -->
+<div class="absolute -right-12 -bottom-12 w-48 h-48 bg-primary-fixed/10 rounded-full blur-3xl group-hover:bg-primary-fixed/20 transition-all duration-500"></div>
+</div>
+<!-- Documentation Card -->
+<div class="bg-surface-container-highest p-8 rounded-2xl border-none">
+<h4 class="font-headline font-bold text-lg mb-6 text-on-surface">Requirement Tips</h4>
+<ul class="space-y-6">
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-primary shrink-0" data-icon="verified">verified</span>
+<div class="space-y-1">
+<p class="text-sm font-bold text-on-surface">Data Sovereignty</p>
+<p class="text-xs text-on-surface-variant">Ensure threshold metrics match the unit of measure used in site sensors.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-primary shrink-0" data-icon="history">history</span>
+<div class="space-y-1">
+<p class="text-sm font-bold text-on-surface">Version Control</p>
+<p class="text-xs text-on-surface-variant">Changes will be logged in the Compliance Audit Trail once published.</p>
+</div>
+</li>
+<li class="flex gap-4">
+<span class="material-symbols-outlined text-primary shrink-0" data-icon="group">group</span>
+<div class="space-y-1">
+<p class="text-sm font-bold text-on-surface">Stakeholder Alert</p>
+<p class="text-xs text-on-surface-variant">Site Managers in 'European Region' will receive instant notifications.</p>
+</div>
+</li>
+</ul>
+</div>
+<!-- Quick Reference Glass Card -->
+<div class="glass-panel p-8 rounded-2xl border border-white/20 shadow-xl">
+<h4 class="font-headline font-bold text-lg mb-4 text-primary">Need help?</h4>
+<p class="text-sm text-on-secondary-container mb-6">Refer to our architectural ledger standards or contact the lead legal officer.</p>
+<button class="w-full py-3 rounded-lg border-2 border-primary text-primary font-bold hover:bg-primary hover:text-on-primary transition-all active:scale-95 duration-200">
+                            View Standards Manual
+                        </button>
+</div>
+</div>
+</div>
+<!-- Footer Floating Action (Mobile only indicator) -->
+<div class="md:hidden fixed bottom-6 right-6 z-50">
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform">
+<span class="material-symbols-outlined" data-icon="publish">publish</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>

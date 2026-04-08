@@ -1,0 +1,2 @@
+﻿item_number,part_number,name,manufacturer_sku,component_id,plm_manufacturer,plm_manufacturer_mbx_id,plm_vendors_pipe,plm_vendor_mbx_ids_pipe,plm_vendors_json,plm_vendor,plm_url,error
+283264,283264,,,,,,,,"{""manufacturer"": {""name"": """", ""mbx_supplier_id"": """"}, ""vendors"": []}",,https://signal.mbx.com/Macola/common/item_details/index.cfm?item_no=283264#/,"no manufacturer/vendor supplier links found (check login, or use --save-html and tune extractors)"
