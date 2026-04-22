@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-semibold">Component Not Found</h1>
       <p className="text-slate-600">
-        The component you're looking for doesn't exist or you don't have access to it.
+        The component you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
       </p>
       <Link
         href="/components"

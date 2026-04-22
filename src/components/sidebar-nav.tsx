@@ -12,7 +12,6 @@ const navItems = [
   { href: "/regulations", label: "Regulations", icon: "gavel" },
   { href: "/certificates", label: "Certificates", icon: "description" },
   { href: "/outreach", label: "Outreach", icon: "campaign" },
-  { href: "/audit", label: "Audit Logs", icon: "history_edu" },
 ];
 
 export default function SidebarNav() {

@@ -1,4 +1,4 @@
-# ComplianceHub roadmap
+# Rivet roadmap
 
 ## Near term (in progress / shipped)
 

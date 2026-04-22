@@ -3,8 +3,15 @@ import { requireProfile } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 
-export default async function RegulationsPage() {
+type Props = {
+  searchParams: Promise<{ q?: string; jurisdiction?: string }>;
+};
+
+export default async function RegulationsPage({ searchParams }: Props) {
   await requireProfile();
+  const { q, jurisdiction } = await searchParams;
+  const query = (q ?? "").trim().toLowerCase();
+  const jurisdictionFilter = (jurisdiction ?? "").trim().toLowerCase();
   const supabase = await createClient();
 
   const { data: regulations, error } = await supabase
@@ -13,6 +20,20 @@ export default async function RegulationsPage() {
       "id, code, name, jurisdiction, effective_date, created_at, updated_at, source_first_published_at, source_last_updated_at"
     )
     .order("code");
+
+  const filteredRegulations = (regulations ?? []).filter((reg: any) => {
+    if (jurisdictionFilter && String(reg.jurisdiction ?? "").toLowerCase() !== jurisdictionFilter) return false;
+    if (!query) return true;
+    return (
+      String(reg.code ?? "").toLowerCase().includes(query) ||
+      String(reg.name ?? "").toLowerCase().includes(query) ||
+      String(reg.jurisdiction ?? "").toLowerCase().includes(query)
+    );
+  });
+
+  const jurisdictions = Array.from(
+    new Set((regulations ?? []).map((reg: any) => String(reg.jurisdiction ?? "").trim()).filter(Boolean))
+  );
 
   return (
     <div className="p-8 space-y-8">
@@ -36,7 +57,7 @@ export default async function RegulationsPage() {
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <Link
               href="/regulations/import"
               className="px-4 py-2 border border-outline-variant/30 text-primary rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center gap-2"
@@ -55,10 +76,40 @@ export default async function RegulationsPage() {
               <MaterialIcon name="filter_list" className="text-sm" />
               Filter
             </button>
-            <button className="px-4 py-2 bg-surface-container-lowest text-primary rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center gap-2">
+            <form className="flex gap-2 items-center" method="GET" action="/regulations">
+              <input
+                type="search"
+                name="q"
+                defaultValue={q ?? ""}
+                placeholder="Search code, name, jurisdiction..."
+                className="px-3 py-2 rounded-xl text-sm bg-surface-container-low border border-outline-variant/30 min-w-64"
+              />
+              <select
+                name="jurisdiction"
+                defaultValue={jurisdictionFilter}
+                className="px-3 py-2 rounded-xl text-sm bg-surface-container-low border border-outline-variant/30"
+              >
+                <option value="">All jurisdictions</option>
+                {jurisdictions.map((value) => (
+                  <option key={value} value={value.toLowerCase()}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+              <button className="px-4 py-2 bg-surface-container-lowest text-primary rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center gap-2">
+                <MaterialIcon name="filter_list" className="text-sm" />
+                Filter
+              </button>
+            </form>
+            <Link
+              href={`/regulations/export${query ? `?q=${encodeURIComponent(query)}` : ""}${
+                jurisdictionFilter ? `${query ? "&" : "?"}jurisdiction=${encodeURIComponent(jurisdictionFilter)}` : ""
+              }`}
+              className="px-4 py-2 bg-surface-container-lowest text-primary rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center gap-2"
+            >
               <MaterialIcon name="download" className="text-sm" />
               Export
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -73,7 +124,7 @@ export default async function RegulationsPage() {
           <div className="px-6 py-4 flex items-center justify-between bg-surface-container-low">
             <h2 className="font-headline font-bold text-primary">Regulation Library</h2>
             <span className="text-xs text-on-surface-variant">
-              {(regulations ?? []).length} record(s)
+              {filteredRegulations.length} record(s)
             </span>
           </div>
 
@@ -90,7 +141,7 @@ export default async function RegulationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {(regulations ?? []).map((reg: any) => (
+                {filteredRegulations.map((reg: any) => (
                   <tr
                     key={reg.id}
                     className="group hover:bg-surface-container-low transition-colors"
@@ -125,10 +176,10 @@ export default async function RegulationsPage() {
                     </td>
                   </tr>
                 ))}
-                {(regulations ?? []).length === 0 && (
+                {filteredRegulations.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-on-surface-variant">
-                      No regulations found.
+                      No regulations found for the current filters.
                     </td>
                   </tr>
                 )}

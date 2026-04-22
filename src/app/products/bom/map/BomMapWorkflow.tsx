@@ -257,7 +257,7 @@ export default function BomMapWorkflow({
               BOM Mapping Workflow
             </h2>
             <p className="text-on-surface-variant max-w-xl font-body">
-              Upload a CSV file to map columns to the EcoStratum schema. We&apos;ll auto-suggest mappings based on your headers.
+              Upload a CSV file to map columns to the Rivet schema. We&apos;ll auto-suggest mappings based on your headers.
             </p>
           </div>
         </div>
@@ -315,7 +315,7 @@ export default function BomMapWorkflow({
             BOM Mapping Workflow
           </h2>
           <p className="text-on-surface-variant max-w-xl font-body">
-            Map your imported CSV columns to the EcoStratum data schema. Resolve conflicting identifiers to ensure regulatory integrity.
+            Map your imported CSV columns to the Rivet data schema. Resolve conflicting identifiers to ensure regulatory integrity.
           </p>
           <p className="text-sm text-on-surface-variant mt-2 font-body">
             File: <strong>{filename}</strong> ({rowCount} rows)
@@ -386,7 +386,7 @@ export default function BomMapWorkflow({
                   <tr className="text-on-surface-variant text-xs font-bold uppercase tracking-widest font-body">
                     <th className="py-4 px-4">Source Field (CSV)</th>
                     <th className="py-4 px-4 w-12" />
-                    <th className="py-4 px-4">EcoStratum Field</th>
+                    <th className="py-4 px-4">Rivet Field</th>
                     <th className="py-4 px-4">Status</th>
                     <th className="py-4 px-4 text-right">Actions</th>
                   </tr>

@@ -1,4 +1,4 @@
--- ComplianceHub Database Schema
+-- Rivet Database Schema
 -- Multi-tenant with RLS based on profiles.organization_id
 
 -- Enable UUID extension

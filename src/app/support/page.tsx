@@ -1,8 +1,97 @@
+import Link from "next/link";
 import { requireProfile } from "@/lib/profile";
 import MaterialIcon from "@/components/ui/MaterialIcon";
+import { SupportTicketForm } from "./support-ticket-form";
+import { createClient } from "@/lib/supabase/server";
 
 export default async function SupportPage() {
-  await requireProfile();
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: ticketRows } = await supabase
+    .from("support_tickets")
+    .select("id, inquiry_type, subject, status, created_at")
+    .eq("organization_id", profile.organization_id)
+    .eq("requester_id", profile.id)
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  const knowledgeBaseArticles = [
+    {
+      icon: "eco",
+      title: "RoHS Compliance Basics",
+      summary:
+        "Understand scope, restricted substance thresholds, and what evidence to collect from suppliers for RoHS declarations.",
+      href: "/support/articles/rohs-compliance-basics",
+      points: [
+        "Restricted substances include lead, mercury, cadmium, hexavalent chromium, PBB, and PBDE (plus phthalates in RoHS 3).",
+        "Material concentration limits are typically 0.1% by weight in homogeneous material (0.01% for cadmium).",
+        "Capture supplier declarations, test reports where needed, and maintain traceability by part number and BOM revision.",
+      ],
+    },
+    {
+      icon: "science",
+      title: "REACH and SVHC Workflow",
+      summary:
+        "Track SVHC list updates, identify affected parts, and manage supplier outreach for Article 33 and SCIP-related obligations.",
+      href: "/support/articles/reach-svhc-workflow",
+      points: [
+        "Review ECHA SVHC candidate list updates and compare against current component declarations.",
+        "If SVHC exceeds 0.1% w/w at article level, ensure downstream communication obligations are met.",
+        "Create supplier requests quickly for missing declarations and retain document history for audit evidence.",
+      ],
+    },
+    {
+      icon: "fact_check",
+      title: "Supplier Documentation Checklist",
+      summary:
+        "A practical checklist for requesting and validating supplier compliance data before approvals or shipments.",
+      points: [
+        "Request latest declaration with legal entity name, part number, revision/date, and regulation version.",
+        "Verify declaration currency and whether test data is required for high-risk categories.",
+        "Record exceptions, approved alternatives, and expiration/revalidation cadence.",
+      ],
+    },
+    {
+      icon: "history_edu",
+      title: "Audit Readiness and Evidence Retention",
+      summary:
+        "Prepare for customer and regulatory audits with a clean evidence trail and consistent data retention practices.",
+      points: [
+        "Store declarations and supporting artifacts per part, supplier, and effective date.",
+        "Keep change logs for status updates, approvals, and risk decisions.",
+        "Use periodic internal checks to identify missing docs before external audits.",
+      ],
+    },
+  ];
+
+  const faqs = [
+    {
+      question: "What is the difference between RoHS and REACH?",
+      answer:
+        "RoHS restricts specific hazardous substances in electrical and electronic equipment. REACH is broader and governs chemical substance registration, evaluation, authorization, and restriction across the EU supply chain.",
+    },
+    {
+      question: "How often should we refresh supplier declarations?",
+      answer:
+        "At minimum, refresh annually and whenever a regulation changes, a BOM revision is released, or a supplier notifies material/process changes. High-risk parts often need a tighter cadence.",
+    },
+    {
+      question: "When should we request lab testing instead of relying only on declarations?",
+      answer:
+        "Use testing for high-risk suppliers, incomplete declarations, inconsistent historical data, or when customer/regulatory requirements explicitly call for analytical verification.",
+    },
+    {
+      question: "What is the fastest way to handle a new SVHC update?",
+      answer:
+        "Identify affected components, prioritize high-volume and customer-critical products, send targeted supplier requests immediately, and track remediation actions with clear due dates.",
+    },
+    {
+      question: "What evidence is typically needed for an environmental compliance audit?",
+      answer:
+        "Auditors usually expect current declarations, test evidence where applicable, supplier communications, risk decisions, and change history linking each product and BOM revision to supporting records.",
+    },
+  ];
 
   return (
     <div className="min-h-screen px-6 pb-12">
@@ -14,20 +103,28 @@ export default async function SupportPage() {
               How can we assist your compliance journey?
             </h1>
             <p className="text-primary-fixed-dim text-lg mb-8 max-w-2xl mx-auto">
-              Access the EcoStratum knowledge base, regulatory updates, and
+              Access the Rivet knowledge base, regulatory updates, and
               expert support channels.
             </p>
-            <div className="max-w-xl mx-auto relative">
+            <form action="/search" method="GET" className="max-w-xl mx-auto relative">
+              <input type="hidden" name="section" value="regulations" />
               <input
-                className="w-full py-4 pl-14 pr-6 rounded-xl border-none shadow-2xl focus:ring-2 focus:ring-tertiary-fixed-dim text-on-surface font-body"
+                className="w-full py-4 pl-14 pr-28 rounded-xl border-none shadow-2xl focus:ring-2 focus:ring-tertiary-fixed-dim text-on-surface font-body"
                 placeholder="Search for REACH updates, SVHC logs, or ticket status..."
-                type="text"
+                type="search"
+                name="q"
               />
               <MaterialIcon
                 name="search"
                 className="absolute left-5 top-1/2 -translate-y-1/2 text-primary text-2xl"
               />
-            </div>
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-semibold hover:opacity-90 transition-opacity"
+              >
+                Search
+              </button>
+            </form>
           </div>
         </section>
 
@@ -39,49 +136,36 @@ export default async function SupportPage() {
                 Compliance Knowledge Base
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  {
-                    icon: "science",
-                    title: "REACH & SVHC Compliance",
-                    desc: "Latest guidelines on handling Annex XIV updates and reporting protocols for high-risk substances.",
-                    border: "hover:border-tertiary-fixed-dim",
-                  },
-                  {
-                    icon: "eco",
-                    title: "Environmental ESG Reporting",
-                    desc: "A step-by-step guide to generating investor-ready sustainability reports using integrated audit logs.",
-                    border: "hover:border-primary-fixed",
-                  },
-                  {
-                    icon: "history_edu",
-                    title: "Audit Trail Management",
-                    desc: "Understanding the immutable ledger system and how to export logs for regulatory inspections.",
-                    border: "hover:border-secondary-fixed-dim",
-                  },
-                  {
-                    icon: "shield",
-                    title: "Security & Data Privacy",
-                    desc: "How EcoStratum protects your intellectual property and maintains encryption at rest and in transit.",
-                    border: "hover:border-surface-dim",
-                  },
-                ].map((item) => (
+                {knowledgeBaseArticles.map((item) => (
                   <div
                     key={item.title}
-                    className={`bg-surface-container-lowest p-6 rounded-xl hover:shadow-md transition-all group cursor-pointer border-b-4 border-transparent ${item.border}`}
+                    className="bg-surface-container-lowest p-6 rounded-xl hover:shadow-md transition-all border-b-4 border-transparent hover:border-primary-fixed"
                   >
-                    <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mb-4 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center text-primary mb-4">
                       <MaterialIcon name={item.icon} className="text-3xl" />
                     </div>
                     <h3 className="text-lg font-bold text-on-surface mb-2 font-headline">
                       {item.title}
                     </h3>
                     <p className="text-on-secondary-container text-sm leading-relaxed mb-4 font-body">
-                      {item.desc}
+                      {item.summary}
                     </p>
-                    <span className="text-primary text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all font-body">
-                      Read Documentation{" "}
-                      <MaterialIcon name="arrow_forward" className="text-xs" />
-                    </span>
+                    <ul className="space-y-2 text-xs text-on-surface-variant font-body list-disc pl-4">
+                      {item.points.map((point) => (
+                        <li key={point}>{point}</li>
+                      ))}
+                    </ul>
+                    <div className="mt-4">
+                      {item.href ? (
+                        <Link
+                          href={item.href}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                        >
+                          Read full article
+                          <MaterialIcon name="arrow_forward" className="text-sm" />
+                        </Link>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -92,39 +176,62 @@ export default async function SupportPage() {
                 Common Compliance FAQs
               </h2>
               <div className="space-y-4">
-                <div className="bg-surface-container-lowest rounded-lg p-5 cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-on-background text-base font-headline">
-                      How to handle REACH SVHC updates effectively?
-                    </h4>
-                    <MaterialIcon name="expand_more" className="text-primary" />
+                {faqs.map((item) => (
+                  <div key={item.question} className="bg-surface-container-lowest rounded-lg p-5">
+                    <div className="flex justify-between items-start gap-3">
+                      <h4 className="font-semibold text-on-background text-base font-headline">
+                        {item.question}
+                      </h4>
+                      <MaterialIcon name="help" className="text-primary" />
+                    </div>
+                    <div className="mt-3 text-sm text-on-surface-variant leading-relaxed font-body">
+                      {item.answer}
+                    </div>
                   </div>
-                  <div className="mt-4 text-sm text-on-surface-variant leading-relaxed font-body">
-                    When a new substance is added to the SVHC list, EcoStratum
-                    automatically flags matching components in your BOM. You
-                    should proceed to the &apos;Compliance Center&apos; and
-                    initiate a &apos;Supplier Data Request&apos; for the flagged
-                    items immediately.
-                  </div>
-                </div>
-                <div className="bg-surface-container-lowest rounded-lg p-5 cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-on-background text-base font-headline">
-                      What is the turnaround time for expert regulatory
-                      reviews?
-                    </h4>
-                    <MaterialIcon name="expand_more" className="text-outline" />
-                  </div>
-                </div>
-                <div className="bg-surface-container-lowest rounded-lg p-5 cursor-pointer">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-on-background text-base font-headline">
-                      Can I integrate EcoStratum logs with my existing ERP?
-                    </h4>
-                    <MaterialIcon name="expand_more" className="text-outline" />
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
+
+            <div className="bg-surface-container-low rounded-2xl p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold font-headline text-primary">
+                  My Recent Tickets
+                </h2>
+                <span className="text-xs text-on-surface-variant font-body">
+                  {(ticketRows ?? []).length} shown
+                </span>
+              </div>
+              {(ticketRows ?? []).length === 0 ? (
+                <div className="rounded-xl bg-surface-container-lowest p-5 text-sm text-on-surface-variant font-body">
+                  No tickets yet. Submit one from the support panel to start tracking requests.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {(ticketRows ?? []).map((ticket: any) => (
+                    <div
+                      key={ticket.id}
+                      className="rounded-xl bg-surface-container-lowest p-4 border border-outline-variant/10"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-bold text-on-surface font-headline">
+                            {ticket.subject}
+                          </p>
+                          <p className="text-xs text-on-surface-variant font-body mt-1">
+                            {ticket.inquiry_type} •{" "}
+                            {ticket.created_at
+                              ? new Date(ticket.created_at).toLocaleString()
+                              : "Unknown date"}
+                          </p>
+                        </div>
+                        <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-secondary-fixed-dim/20 text-on-secondary-container">
+                          {ticket.status ?? "open"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -147,81 +254,7 @@ export default async function SupportPage() {
                   </p>
                 </div>
               </div>
-              <form className="space-y-5">
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 font-body">
-                    Inquiry Type
-                  </label>
-                  <select className="w-full bg-surface-container-lowest border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary font-body">
-                    <option>Technical Issue</option>
-                    <option>Regulatory Consultation</option>
-                    <option>Audit Preparation</option>
-                    <option>Account & Billing</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 font-body">
-                    Subject
-                  </label>
-                  <input
-                    className="w-full bg-surface-container-lowest border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary font-body"
-                    placeholder="Brief summary of your request"
-                    type="text"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2 font-body">
-                    Description
-                  </label>
-                  <textarea
-                    className="w-full bg-surface-container-lowest border-none rounded-lg text-sm p-3 focus:ring-2 focus:ring-primary font-body"
-                    placeholder="How can we help you today?"
-                    rows={4}
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-bold shadow-lg active:scale-[0.98] transition-all"
-                >
-                  Open Support Ticket
-                </button>
-              </form>
-              <div className="mt-8 pt-8 border-t border-outline-variant/20 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse" />
-                  <span className="text-sm font-medium text-on-surface font-body">
-                    Average Response:{" "}
-                    <span className="text-primary">14 Minutes</span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MaterialIcon name="chat" className="text-outline text-xl" />
-                  <span className="text-sm font-medium text-on-surface font-body">
-                    Live Chat:{" "}
-                    <span className="text-primary underline cursor-pointer">
-                      Start Now
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 bg-tertiary-container rounded-2xl p-6 text-on-tertiary relative overflow-hidden">
-              <div className="absolute -right-4 -bottom-4 opacity-10">
-                <MaterialIcon
-                  name="verified_user"
-                  className="text-9xl"
-                />
-              </div>
-              <h4 className="font-bold font-headline mb-2">
-                Priority Helpline
-              </h4>
-              <p className="text-xs text-on-tertiary-container mb-4 leading-relaxed font-body">
-                Exclusive for Enterprise users. Connect directly with our Senior
-                Compliance Officers.
-              </p>
-              <p className="text-lg font-bold font-mono tracking-tighter text-tertiary-fixed">
-                +1 (800) ECO-STRAT
-              </p>
+              <SupportTicketForm />
             </div>
           </div>
         </div>

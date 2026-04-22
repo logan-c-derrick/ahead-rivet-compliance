@@ -28,7 +28,7 @@ export async function buildDeclarationPdf(input: {
   const body =
     input.templateBody?.trim() ||
     [
-      "This document certifies that the product identified below is tracked in ComplianceHub for the selected regulations.",
+      "This document certifies that the product identified below is tracked in Rivet for the selected regulations.",
       "",
       `Product: ${input.productName}`,
       `Batch / serial: ${input.batchSerial}`,

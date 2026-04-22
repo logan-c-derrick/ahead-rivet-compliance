@@ -1,4 +1,4 @@
-# ComplianceHub Setup Guide
+# Rivet Setup Guide
 
 ## Database Setup
 

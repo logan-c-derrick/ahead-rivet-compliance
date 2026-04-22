@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 
 function parseThresholdsFromForm(
   formData: FormData
@@ -49,7 +49,11 @@ function slugToCode(name: string): string {
 async function createCustomRegulationImpl(
   formData: FormData
 ): Promise<{ error?: string }> {
-  await requireProfile();
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to create regulation." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("name") as string)?.trim();
@@ -102,7 +106,11 @@ export type RegulationsCsvImportResult =
 export async function importRegulationsFromCsv(
   formData: FormData
 ): Promise<RegulationsCsvImportResult> {
-  await requireProfile();
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Unable to import regulations." };
+  }
   const supabase = await createClient();
   const file = formData.get("file") as File | null;
   if (!file?.name) return { success: false, error: "Please select a CSV file." };

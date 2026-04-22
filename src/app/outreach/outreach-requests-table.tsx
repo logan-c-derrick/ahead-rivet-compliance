@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import { deleteOutreachRequestsBulk } from "./actions";
 import { OutreachRequestDeleteButton } from "./outreach-request-delete-button";
+import { PERMISSION_DENIED_MESSAGE } from "@/lib/permissions";
 
 export type OutreachRequestRow = {
   id: string;
@@ -39,15 +40,16 @@ function statusPillClass(status: string) {
   }
 }
 
-export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) {
+export function OutreachRequestsTable({
+  rows,
+  canManage,
+}: {
+  rows: OutreachRequestRow[];
+  canManage: boolean;
+}) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [bulkPending, setBulkPending] = useState(false);
-
-  const rowsIdKey = rows
-    .map((r) => r.id)
-    .sort()
-    .join(",");
 
   useEffect(() => {
     const ids = new Set(rows.map((r) => r.id));
@@ -58,7 +60,7 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
       }
       return next;
     });
-  }, [rowsIdKey]);
+  }, [rows]);
 
   const allSelected =
     rows.length > 0 && rows.every((r) => selected.has(r.id));
@@ -84,6 +86,10 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
   }, []);
 
   const handleBulkDelete = useCallback(async () => {
+    if (!canManage) {
+      alert(PERMISSION_DENIED_MESSAGE);
+      return;
+    }
     if (selectedCount === 0) return;
     if (
       !confirm(
@@ -109,7 +115,7 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
     } finally {
       setBulkPending(false);
     }
-  }, [selected, selectedCount, router]);
+  }, [canManage, selected, selectedCount, router]);
 
   return (
     <>
@@ -121,7 +127,8 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
           <button
             type="button"
             onClick={handleBulkDelete}
-            disabled={bulkPending}
+            disabled={bulkPending || !canManage}
+            title={!canManage ? PERMISSION_DENIED_MESSAGE : undefined}
             className="inline-flex items-center gap-2 rounded-lg bg-error px-4 py-2 text-xs font-bold text-white hover:bg-error/90 transition-colors font-body disabled:opacity-50"
           >
             <MaterialIcon name="delete_sweep" className="text-base" />
@@ -139,7 +146,8 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
                   type="checkbox"
                   checked={allSelected}
                   onChange={toggleAll}
-                  disabled={rows.length === 0}
+                  disabled={rows.length === 0 || !canManage}
+                  title={!canManage ? PERMISSION_DENIED_MESSAGE : undefined}
                   className="rounded text-primary focus:ring-primary border-slate-300"
                   aria-label="Select all requests on this page"
                 />
@@ -185,6 +193,8 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
                       type="checkbox"
                       checked={selected.has(r.id)}
                       onChange={() => toggleOne(r.id)}
+                      disabled={!canManage}
+                      title={!canManage ? PERMISSION_DENIED_MESSAGE : undefined}
                       className="rounded text-primary focus:ring-primary border-slate-300"
                       aria-label={`Select request ${r.supplierName}`}
                     />
@@ -229,7 +239,7 @@ export function OutreachRequestsTable({ rows }: { rows: OutreachRequestRow[] }) 
                         View
                         <MaterialIcon name="chevron_right" className="text-sm" />
                       </Link>
-                      <OutreachRequestDeleteButton requestId={r.id} />
+                      <OutreachRequestDeleteButton requestId={r.id} canManage={canManage} />
                     </div>
                   </td>
                 </tr>

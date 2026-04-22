@@ -1,9 +1,10 @@
 import "./globals.css";
+import "@fontsource/material-symbols-outlined";
 import type { Metadata } from "next";
 import { Inter, Manrope } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "ComplianceHub",
+  title: "Rivet",
   description: "Regulatory compliance management"
 };
 
@@ -23,10 +24,19 @@ const manrope = Manrope({
 
 const materialSymbolsStyles = `
   .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     display: inline-block;
     vertical-align: middle;
     line-height: 1;
+    white-space: nowrap;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
   }
 `;
 
@@ -34,12 +44,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
-        />
         <style dangerouslySetInnerHTML={{ __html: materialSymbolsStyles }} />
       </head>
       <body className="min-h-screen">{children}</body>

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile, type Profile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole, type Profile } from "@/lib/profile";
 import Papa from "papaparse";
 import type { SupplierListFilter } from "./supplier-filters";
 
@@ -343,7 +343,12 @@ export type CreateSupplierState = { error?: string };
 async function createSupplierImpl(
   formData: FormData
 ): Promise<CreateSupplierState> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to create supplier." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("name") as string)?.trim();
@@ -412,7 +417,12 @@ export async function updateSupplier(
   _prevState: UpdateSupplierState | null,
   formData: FormData
 ): Promise<UpdateSupplierState> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to update supplier." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;
@@ -484,7 +494,12 @@ export async function deleteSupplier(
   _prevState: DeleteSupplierState | null,
   formData: FormData
 ): Promise<DeleteSupplierState> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to delete supplier." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;
@@ -993,7 +1008,12 @@ export async function previewSupplierCsv(
 export async function bulkUpsertSuppliersFromCsv(
   formData: FormData
 ): Promise<BulkSupplierImportResult | BulkSupplierImportError> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Unable to import suppliers." };
+  }
   const supabase = await createClient();
 
   const file = formData.get("file") as File | null;

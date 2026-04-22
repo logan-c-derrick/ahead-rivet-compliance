@@ -17,8 +17,15 @@ function statusPillClass(status: string) {
   }
 }
 
-export default async function DashboardPage() {
+type Props = {
+  searchParams: Promise<{ q?: string; status?: string }>;
+};
+
+export default async function DashboardPage({ searchParams }: Props) {
   await requireProfile();
+  const { q, status } = await searchParams;
+  const query = (q ?? "").trim().toLowerCase();
+  const statusFilter = (status ?? "").trim().toLowerCase();
   const supabase = await createClient();
 
   const { data: regStatuses, error: statusError } = await supabase
@@ -44,6 +51,20 @@ export default async function DashboardPage() {
 
   const urgentRows = statuses
     .filter((r) => r.status === "non_compliant" || r.status === "at_risk" || r.status === "pending")
+    .filter((r) => (statusFilter ? r.status === statusFilter : true))
+    .filter((r) => {
+      if (!query) return true;
+      const productName = String(r.products?.name ?? "").toLowerCase();
+      const sku = String(r.products?.sku ?? "").toLowerCase();
+      const regCode = String(r.regulations?.code ?? "").toLowerCase();
+      const regName = String(r.regulations?.name ?? "").toLowerCase();
+      return (
+        productName.includes(query) ||
+        sku.includes(query) ||
+        regCode.includes(query) ||
+        regName.includes(query)
+      );
+    })
     .slice(0, 6);
 
   const { data: outreachRows } = await supabase
@@ -72,13 +93,15 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex gap-3">
-          <button
-            type="button"
+          <Link
+            href={`/dashboard/export${query ? `?q=${encodeURIComponent(query)}` : ""}${
+              statusFilter ? `${query ? "&" : "?"}status=${encodeURIComponent(statusFilter)}` : ""
+            }`}
             className="bg-surface-container-lowest text-primary px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-surface-container-low transition-colors flex items-center gap-2 font-body"
           >
             <MaterialIcon name="file_download" className="text-lg" />
-            Export PDF
-          </button>
+            Export CSV
+          </Link>
           <Link
             href="/products"
             className="bg-primary text-on-primary px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-primary/20 flex items-center gap-2 hover:opacity-90 transition-opacity font-body"
@@ -165,22 +188,39 @@ export default async function DashboardPage() {
                   {nonCompliantCount} HIGH RISK
                 </span>
               </h3>
-              <div className="flex gap-2">
+              <form className="flex gap-2" method="GET" action="/dashboard">
+                <input
+                  type="search"
+                  name="q"
+                  defaultValue={q ?? ""}
+                  placeholder="Search product, SKU, regulation..."
+                  className="px-3 py-2 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 text-on-surface-variant min-w-60"
+                />
+                <select
+                  name="status"
+                  defaultValue={statusFilter}
+                  className="px-2 py-2 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 text-on-surface-variant"
+                >
+                  <option value="">All statuses</option>
+                  <option value="non_compliant">Non-compliant</option>
+                  <option value="at_risk">At risk</option>
+                  <option value="pending">Pending</option>
+                </select>
                 <button
-                  type="button"
+                  type="submit"
                   className="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant"
                   aria-label="Filter"
                 >
                   <MaterialIcon name="filter_list" />
                 </button>
-                <button
-                  type="button"
-                  className="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant"
+                <Link
+                  href={query ? `/search?q=${encodeURIComponent(query)}` : "/search"}
+                  className="p-2 hover:bg-surface-container rounded-lg transition-colors text-on-surface-variant inline-flex"
                   aria-label="Search"
                 >
                   <MaterialIcon name="search" />
-                </button>
-              </div>
+                </Link>
+              </form>
             </div>
 
             <div className="px-6 pb-6 overflow-x-auto">

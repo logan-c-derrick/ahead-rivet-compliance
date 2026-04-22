@@ -97,13 +97,13 @@ export default function CreateCustomRegulationPage() {
                     </div>
                     <h3 className="text-xl font-headline font-bold text-on-surface">Threshold Matrix</h3>
                   </div>
-                  <button type="button" className="text-primary font-bold text-sm flex items-center gap-1 hover:underline font-body">
-                    <MaterialIcon name="add_circle" className="text-base" />
-                    Add Metric
-                  </button>
                 </div>
                 <input type="hidden" name="threshold_key_1" value="carbon_emission" />
                 <input type="hidden" name="threshold_key_2" value="ph" />
+                <p className="text-sm text-on-surface-variant mb-4 font-body">
+                  Define initial warning and critical bounds for the default metrics below. Additional
+                  metric management is handled from the regulation detail workflow after creation.
+                </p>
                 <div className="space-y-4">
                   <div className="bg-surface-container-lowest p-6 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
                     <div className="flex-1 min-w-[200px]">
@@ -118,9 +118,6 @@ export default function CreateCustomRegulationPage() {
                       <p className="text-xs font-bold text-outline uppercase tracking-widest mb-1 font-body">Critical</p>
                       <input name="threshold_crit_1" className="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-error font-body" type="number" defaultValue={1500} />
                     </div>
-                    <button type="button" className="p-2 text-outline hover:text-error transition-colors">
-                      <MaterialIcon name="delete" />
-                    </button>
                   </div>
                   <div className="bg-surface-container-lowest p-6 rounded-xl flex flex-wrap md:flex-nowrap items-center gap-6 group hover:shadow-md transition-shadow">
                     <div className="flex-1 min-w-[200px]">
@@ -135,9 +132,6 @@ export default function CreateCustomRegulationPage() {
                       <p className="text-xs font-bold text-outline uppercase tracking-widest mb-1 font-body">Critical</p>
                       <input name="threshold_crit_2" className="w-full bg-surface-container-low border-none rounded-lg p-2 text-center font-bold text-error font-body" step={0.1} type="number" defaultValue={8.5} />
                     </div>
-                    <button type="button" className="p-2 text-outline hover:text-error transition-colors">
-                      <MaterialIcon name="delete" />
-                    </button>
                   </div>
                 </div>
               </div>
@@ -150,24 +144,6 @@ export default function CreateCustomRegulationPage() {
                   <h3 className="text-xl font-headline font-bold text-on-surface">Internal Guidelines</h3>
                 </div>
                 <div className="border-none rounded-xl bg-surface-container-low overflow-hidden">
-                  <div className="flex gap-4 p-3 bg-surface-container-high border-b border-outline-variant/20">
-                    <button type="button" className="p-1 hover:bg-surface-container-highest rounded transition-colors">
-                      <MaterialIcon name="format_bold" className="text-sm" />
-                    </button>
-                    <button type="button" className="p-1 hover:bg-surface-container-highest rounded transition-colors">
-                      <MaterialIcon name="format_italic" className="text-sm" />
-                    </button>
-                    <button type="button" className="p-1 hover:bg-surface-container-highest rounded transition-colors">
-                      <MaterialIcon name="format_list_bulleted" className="text-sm" />
-                    </button>
-                    <button type="button" className="p-1 hover:bg-surface-container-highest rounded transition-colors">
-                      <MaterialIcon name="link" className="text-sm" />
-                    </button>
-                    <div className="w-px h-4 bg-outline-variant/30 self-center" />
-                    <button type="button" className="p-1 hover:bg-surface-container-highest rounded transition-colors">
-                      <MaterialIcon name="info" className="text-sm" />
-                    </button>
-                  </div>
                   <textarea
                     name="description"
                     className="w-full bg-transparent border-none p-6 focus:ring-0 text-on-surface leading-relaxed font-body resize-none"

@@ -7,7 +7,7 @@ import {
   notifySupplierFollowUpLink,
   notifySupplierReviewDecisions,
 } from "@/lib/outreach-notifications";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireRole } from "@/lib/profile";
 import {
   fetchUploadCoverageComponentIds,
   getFollowUpEligibleComponentIds,
@@ -32,7 +32,12 @@ export type FollowUpSendResult =
 export async function sendFollowUpUploadLink(
   requestId: string
 ): Promise<FollowUpSendResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
   const rid = requestId?.trim();
   if (!rid) return { ok: false, error: "Invalid request." };
@@ -159,7 +164,12 @@ export async function submitOutreachRegulationReview(
   requestId: string,
   formData: FormData
 ): Promise<ReviewSubmitResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
   const rid = requestId?.trim();
   if (!rid) return { ok: false, error: "Invalid request." };
@@ -396,7 +406,12 @@ export async function submitCampaignOutreachReview(
   anchorRequestId: string,
   formData: FormData
 ): Promise<ReviewSubmitResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
   const anchor = anchorRequestId?.trim();
   if (!anchor) return { ok: false, error: "Invalid request." };

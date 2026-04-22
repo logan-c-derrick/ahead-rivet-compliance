@@ -8,7 +8,7 @@ import {
   htmlMergeFieldList,
   messageTemplatedToEmailHtml,
 } from "@/lib/outreach-email-html";
-import { requireProfile, type Profile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireRole, type Profile } from "@/lib/profile";
 
 function addDays(d: Date, days: number): Date {
   const x = new Date(d);
@@ -363,7 +363,12 @@ export async function saveOutreachCampaignDraft(
   _prev: OutreachActionState,
   formData: FormData
 ): Promise<OutreachActionState> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to save campaign draft." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("campaign_name") as string)?.trim();
@@ -407,7 +412,12 @@ export async function launchOutreachCampaign(
   _prev: OutreachActionState,
   formData: FormData
 ): Promise<OutreachActionState> {
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to launch campaign." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("campaign_name") as string)?.trim();
@@ -704,7 +714,12 @@ export async function deleteOutreachCampaign(campaignId: string): Promise<
     return { ok: false, error: "Missing campaign id" };
   }
 
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Unable to delete campaign." };
+  }
   const supabase = await createClient();
 
   const { data: row, error: fetchErr } = await supabase
@@ -741,7 +756,12 @@ export async function deleteOutreachRequest(requestId: string): Promise<
     return { ok: false, error: "Missing request id" };
   }
 
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Unable to delete request." };
+  }
   const supabase = await createClient();
 
   const { data: row, error: fetchErr } = await supabase
@@ -788,7 +808,12 @@ export async function deleteOutreachRequestsBulk(
     };
   }
 
-  const profile = await requireProfile();
+  let profile: Profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Unable to delete selected requests." };
+  }
   const supabase = await createClient();
 
   const { data, error } = await supabase

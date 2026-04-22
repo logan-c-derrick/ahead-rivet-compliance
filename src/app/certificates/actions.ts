@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 import { buildDeclarationPdf } from "@/lib/certificate-pdf";
 
 const BUCKET = "outreach-uploads";
@@ -40,7 +40,12 @@ export async function updateCertificateTemplate(
   _prev: UpdateTemplateState | null,
   formData: FormData
 ): Promise<UpdateTemplateState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
 
   const body = (formData.get("certificate_template_body") as string) ?? "";
@@ -70,7 +75,12 @@ export async function submitCertificateSignatureForm(formData: FormData): Promis
 export async function uploadCertificateSignature(
   formData: FormData
 ): Promise<UploadSignatureResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
   const file = formData.get("signature") as File | null;
   if (!file?.size) return { success: false, error: "Choose a PNG image." };
@@ -116,7 +126,12 @@ export type GeneratePdfResult =
   | { success: false; error: string };
 
 export async function generateCertificatePdfAction(formData: FormData): Promise<GeneratePdfResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
 
   const productId = (formData.get("product_id") as string)?.trim();

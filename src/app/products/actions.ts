@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 
 export interface Product {
   id: string;
@@ -122,7 +122,12 @@ export type CreateProductState = { error?: string };
 async function createProductImpl(
   formData: FormData
 ): Promise<CreateProductState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to create product." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("name") as string)?.trim();
@@ -178,7 +183,12 @@ export async function createProductInline(
   name: string,
   sku?: string | null
 ): Promise<{ success: true; product: Product } | { success: false; error: string }> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Unable to create product." };
+  }
   const supabase = await createClient();
 
   const trimmed = name?.trim();
@@ -214,7 +224,12 @@ export async function updateProduct(
   _prevState: UpdateProductState | null,
   formData: FormData
 ): Promise<UpdateProductState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to update product." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;
@@ -257,7 +272,12 @@ export async function deleteProduct(
   _prevState: DeleteProductState | null,
   formData: FormData
 ): Promise<DeleteProductState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to delete product." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;

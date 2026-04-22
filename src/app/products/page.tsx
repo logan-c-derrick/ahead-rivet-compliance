@@ -1,3 +1,4 @@
+import { canManageSensitiveActions } from "@/lib/permissions";
 import { requireProfile } from "@/lib/profile";
 import { getProducts } from "./actions";
 import BomManagement from "./bom-management";
@@ -7,7 +8,7 @@ type Props = {
 };
 
 export default async function ProductsPage({ searchParams }: Props) {
-  await requireProfile();
+  const profile = await requireProfile();
   const products = await getProducts();
   const { edit: editId } = await searchParams;
 
@@ -15,6 +16,7 @@ export default async function ProductsPage({ searchParams }: Props) {
     <BomManagement
       products={products}
       editId={editId ?? null}
+      canManage={canManageSensitiveActions(profile.role)}
     />
   );
 }

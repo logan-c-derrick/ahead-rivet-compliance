@@ -1,6 +1,6 @@
-# ComplianceHub
+# Rivet
 
-ComplianceHub is an internal compliance operations platform for managing products, components, suppliers, regulations, and supplier outreach in one workflow.
+Rivet is an internal compliance operations platform for managing products, components, suppliers, regulations, and supplier outreach in one workflow.
 
 It is built with Next.js + Supabase and supports multi-tenant organization scoping with RLS.
 

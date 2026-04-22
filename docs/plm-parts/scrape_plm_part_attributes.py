@@ -1,6 +1,6 @@
 """
 Open MBX Signal (or compatible Angular hash-route PLM) part pages and extract
-manufacturer + vendor text for each item number, then optionally update ComplianceHub (Supabase).
+manufacturer + vendor text for each item number, then optionally update Rivet (Supabase).
 
 Designed to mirror docs/get-suppliers (Playwright + auth.json + CSV).
 

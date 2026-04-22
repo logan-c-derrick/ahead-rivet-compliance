@@ -1,4 +1,4 @@
--- Seed Data for ComplianceHub
+-- Seed Data for Rivet
 -- Creates 1 organization and 8 regulations
 
 -- Insert a default organization

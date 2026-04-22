@@ -278,7 +278,7 @@ export default function SuppliersBulkUpload() {
             </div>
             <p className="text-sm text-on-surface-variant font-body mb-2">
               <span className="font-bold">With contacts:</span> include{" "}
-              <span className="font-bold">supplier_id</span> (your EcoStratum UUID when known),{" "}
+              <span className="font-bold">supplier_id</span> (your Rivet UUID when known),{" "}
               <span className="font-bold">supplier_name</span>, and at least one of{" "}
               <span className="font-bold">contact_name</span>, <span className="font-bold">email</span>,{" "}
               <span className="font-bold">phone</span>. Optional: <span className="font-bold">list_page</span>,{" "}

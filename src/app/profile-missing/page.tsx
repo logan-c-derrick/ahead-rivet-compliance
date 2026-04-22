@@ -19,7 +19,7 @@ export default async function ProfileMissingPage() {
               Your account exists in the system, but your profile has not been set up yet.
             </p>
             <p>
-              To use ComplianceHub, you need to be associated with an organization.
+              To use Rivet, you need to be associated with an organization.
             </p>
           </div>
 

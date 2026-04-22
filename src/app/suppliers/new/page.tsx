@@ -121,54 +121,11 @@ export default function AddNewSupplierPage() {
                     Compliance Certifications
                   </h2>
                 </div>
-                <span className="bg-surface-container-low text-on-surface-variant px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase font-body">
-                  Required: 2/4
-                </span>
               </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-surface-container-lowest rounded-lg flex items-center justify-center shadow-sm">
-                      <MaterialIcon name="description" className="text-outline" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-on-surface font-body">ISO 14001 Certificate</p>
-                      <p className="text-xs text-on-surface-variant font-medium font-body">PDF, JPG up to 10MB</p>
-                    </div>
-                  </div>
-                  <button type="button" className="px-4 py-2 bg-surface-container-highest text-primary font-bold rounded-lg text-xs tracking-widest uppercase hover:bg-primary-fixed transition-colors font-body">
-                    Upload
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-surface-container-lowest rounded-lg flex items-center justify-center shadow-sm">
-                      <MaterialIcon name="forest" className="text-outline" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-on-surface font-body">FSC Chain of Custody</p>
-                      <p className="text-xs text-on-surface-variant font-medium font-body">Upload documentation</p>
-                    </div>
-                  </div>
-                  <button type="button" className="px-4 py-2 bg-surface-container-highest text-primary font-bold rounded-lg text-xs tracking-widest uppercase hover:bg-primary-fixed transition-colors font-body">
-                    Upload
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-tertiary-container/5 rounded-xl border border-tertiary-fixed-dim/20">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-tertiary-fixed-dim/20 rounded-lg flex items-center justify-center">
-                      <MaterialIcon name="check_circle" className="text-tertiary-fixed-dim" filled />
-                    </div>
-                    <div>
-                      <p className="font-bold text-on-surface font-body">Carbon Footprint Report 2023</p>
-                      <p className="text-xs text-tertiary-fixed-dim font-bold font-body">VERIFIED</p>
-                    </div>
-                  </div>
-                  <button type="button" className="p-2 text-outline hover:text-error transition-colors">
-                    <MaterialIcon name="delete" />
-                  </button>
-                </div>
-              </div>
+              <p className="text-sm text-on-surface-variant leading-relaxed font-body">
+                Certification file uploads are managed after supplier creation. Save this supplier first,
+                then attach ISO/FSC and related artifacts from the supplier detail workflows.
+              </p>
             </section>
           </div>
 
@@ -215,23 +172,20 @@ export default function AddNewSupplierPage() {
                     <div className="h-full w-1/3 bg-surface-variant/20" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <button type="button" className="flex flex-col items-center justify-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent hover:border-tertiary-fixed-dim transition-all">
-                    <MaterialIcon name="shield_moon" className="text-tertiary-fixed-dim mb-2" />
-                    <span className="text-xs font-bold uppercase tracking-tight font-body">Low Risk</span>
-                  </button>
-                  <button type="button" className="flex flex-col items-center justify-center p-4 rounded-xl bg-secondary-container border-2 border-secondary-fixed text-on-secondary-fixed transition-all">
-                    <MaterialIcon name="warning" className="mb-2" filled />
-                    <span className="text-xs font-bold uppercase tracking-tight font-body">Medium</span>
-                  </button>
-                  <button type="button" className="flex flex-col items-center justify-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent hover:border-error transition-all">
-                    <MaterialIcon name="gpp_maybe" className="text-error mb-2" />
-                    <span className="text-xs font-bold uppercase tracking-tight font-body">High Risk</span>
-                  </button>
-                  <button type="button" className="flex flex-col items-center justify-center p-4 rounded-xl bg-surface-container-lowest border-2 border-transparent hover:border-primary transition-all">
-                    <MaterialIcon name="help_center" className="text-primary mb-2" />
-                    <span className="text-xs font-bold uppercase tracking-tight font-body">Unknown</span>
-                  </button>
+                <div>
+                  <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest px-1 font-body">
+                    Initial Risk Level
+                  </label>
+                  <select
+                    name="risk_level"
+                    defaultValue="medium"
+                    className="mt-2 w-full bg-surface-container-lowest border-none rounded-lg p-3 text-sm focus:ring-2 focus:ring-primary/20 transition-all font-body"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="unknown">Unknown</option>
+                  </select>
                 </div>
                 <div className="p-4 bg-surface-container-highest/30 rounded-lg">
                   <p className="text-xs text-on-secondary-container leading-relaxed font-body">

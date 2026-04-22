@@ -21,7 +21,7 @@ export async function sendEmail(opts: {
   }
 
   const from =
-    process.env.RESEND_FROM ?? "ComplianceHub <onboarding@resend.dev>";
+    process.env.RESEND_FROM ?? "Rivet <onboarding@resend.dev>";
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",

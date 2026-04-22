@@ -103,76 +103,20 @@ export default function AddNewComponentPage() {
             </section>
 
             <section className="bg-surface-container-low rounded-xl p-8">
-              <div className="flex justify-between items-end mb-6">
-                <div>
-                  <h3 className="text-lg font-bold flex items-center gap-2 font-headline text-on-surface">
-                    <MaterialIcon name="texture" className="text-primary" />
-                    Material Composition
-                  </h3>
-                  <p className="text-sm text-on-secondary-container font-body mt-1">
-                    Detailed breakdown of constituent substances by mass.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="text-primary font-bold text-sm flex items-center gap-1 hover:underline font-body"
-                >
-                  <MaterialIcon name="add" className="text-sm" />
-                  Add Substance
-                </button>
-              </div>
-              <div className="overflow-hidden bg-surface-container-lowest rounded-lg">
-                <table className="w-full text-left border-collapse">
-                  <thead className="bg-surface-container-high/50">
-                    <tr>
-                      <th className="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant font-body">
-                        Substance Name
-                      </th>
-                      <th className="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant font-body">
-                        CAS Number
-                      </th>
-                      <th className="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant font-body">
-                        Mass %
-                      </th>
-                      <th className="p-4 text-xs font-bold uppercase tracking-widest text-on-secondary-fixed-variant text-right font-body">
-                        Action
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-container-low">
-                    <tr className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 text-sm font-medium font-body">Silicon</td>
-                      <td className="p-4 text-sm font-body text-slate-500">7440-21-3</td>
-                      <td className="p-4 text-sm font-bold text-primary">82.4%</td>
-                      <td className="p-4 text-right">
-                        <button type="button" className="text-slate-400 hover:text-error transition-colors">
-                          <MaterialIcon name="delete" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 text-sm font-medium font-body">Gold (Bonding Wire)</td>
-                      <td className="p-4 text-sm font-body text-slate-500">7440-57-5</td>
-                      <td className="p-4 text-sm font-bold text-primary">1.2%</td>
-                      <td className="p-4 text-right">
-                        <button type="button" className="text-slate-400 hover:text-error transition-colors">
-                          <MaterialIcon name="delete" />
-                        </button>
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 text-sm font-medium font-body">Epoxy Resin</td>
-                      <td className="p-4 text-sm font-body text-slate-500">25068-38-6</td>
-                      <td className="p-4 text-sm font-bold text-primary">16.4%</td>
-                      <td className="p-4 text-right">
-                        <button type="button" className="text-slate-400 hover:text-error transition-colors">
-                          <MaterialIcon name="delete" />
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <h3 className="text-lg font-bold flex items-center gap-2 font-headline text-on-surface mb-2">
+                <MaterialIcon name="texture" className="text-primary" />
+                Material Composition
+              </h3>
+              <p className="text-sm text-on-secondary-container font-body mt-1 mb-4">
+                Enter any known composition notes now. Detailed per-substance capture can be added from
+                the component detail workflow after creation.
+              </p>
+              <textarea
+                name="composition_notes"
+                rows={4}
+                className="w-full bg-surface-container-lowest border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-3 px-4 text-on-surface placeholder-slate-400 font-body"
+                placeholder="Optional: key substances, concentration notes, or source documentation references."
+              />
             </section>
           </div>
 
@@ -217,35 +161,14 @@ export default function AddNewComponentPage() {
             </section>
 
             <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
-              <h3 className="text-lg font-bold mb-6 flex items-center gap-2 font-headline text-on-surface">
+              <h3 className="text-lg font-bold mb-3 flex items-center gap-2 font-headline text-on-surface">
                 <MaterialIcon name="upload_file" className="text-primary" />
                 Documentation
               </h3>
-              <div className="border-2 border-dashed border-outline-variant/30 rounded-xl p-8 text-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors group cursor-pointer">
-                <MaterialIcon name="cloud_upload" className="text-4xl text-slate-400 group-hover:text-primary transition-colors" />
-                <p className="mt-4 text-sm font-bold text-on-surface font-body">
-                  Drop technical datasheets here
-                </p>
-                <p className="text-xs text-slate-500 mt-1 font-body">PDF, STEP, or JSON (Max 25MB)</p>
-                <button
-                  type="button"
-                  className="mt-4 px-4 py-2 bg-primary-fixed text-on-primary-fixed-variant rounded-lg text-xs font-bold uppercase tracking-wider font-body"
-                >
-                  Browse Files
-                </button>
-              </div>
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
-                  <MaterialIcon name="picture_as_pdf" className="text-red-600" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold truncate font-body">ESP-WROOM-32D_Datasheet.pdf</p>
-                    <p className="text-[10px] text-slate-500 font-body">1.4 MB • Uploaded</p>
-                  </div>
-                  <button type="button" className="text-slate-400 hover:text-error">
-                    <MaterialIcon name="close" className="text-sm" />
-                  </button>
-                </div>
-              </div>
+              <p className="text-sm text-on-surface-variant font-body leading-relaxed">
+                File upload is handled on the component detail page after creation. Save the component
+                first, then attach technical documents from the detail view.
+              </p>
             </section>
           </div>
 

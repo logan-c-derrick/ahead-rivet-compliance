@@ -1,4 +1,4 @@
-# ComplianceHub Functionality Implementation Plan
+# Rivet Functionality Implementation Plan
 
 This plan outlines how to implement the app's functionality, building on the existing Supabase schema and stitch-based UI screens.
 

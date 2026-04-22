@@ -1,4 +1,4 @@
-# MBX Signal → manufacturer / vendor → ComplianceHub
+# MBX Signal → manufacturer / vendor → Rivet
 
 This folder adds a Python script in the same style as `docs/get-suppliers.zip` (`scrape_supplier_contacts.py`): **Playwright**, **saved session** (`auth.json`), and **CSV** in/out.
 
@@ -57,7 +57,7 @@ Minimum column: **`item_number`** (or **`part_number`**) — substituted into `{
 Optional:
 
 - **`name`**, **`manufacturer_sku`** — copied through to the output and used for safer Supabase matching.
-- **`component_id`** — if you exported UUIDs from ComplianceHub, sync can target this row exactly.
+- **`component_id`** — if you exported UUIDs from Rivet, sync can target this row exactly.
 
 ## Runs
 
@@ -84,7 +84,7 @@ python scrape_plm_part_attributes.py ... --out parts_enriched.csv --sync-supabas
 
 This updates `components.manufacturer` and, when a matching `suppliers` row exists (case-insensitive name match), sets `components.supplier_id` from the **vendor** string.
 
-## ComplianceHub import (no Supabase script)
+## Rivet import (no Supabase script)
 
 If you prefer not to use the API, use the app’s **Components → Bulk CSV** flow:
 

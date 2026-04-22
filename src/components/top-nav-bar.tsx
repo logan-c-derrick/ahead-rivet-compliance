@@ -27,7 +27,7 @@ function getPageTitle(pathname: string): string {
   for (const [path, title] of Object.entries(PATH_TITLES)) {
     if (pathname === path || pathname.startsWith(path + "/")) return title;
   }
-  return "ComplianceHub";
+  return "Rivet";
 }
 
 export default function TopNavBar() {

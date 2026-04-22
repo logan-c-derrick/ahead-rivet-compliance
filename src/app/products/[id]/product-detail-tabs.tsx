@@ -125,9 +125,9 @@ export default async function ProductDetailTabs({
                     <h3 className="text-lg font-bold text-primary font-headline">
                       Regulation Thresholds
                     </h3>
-                    <button className="text-sm font-medium text-primary-container flex items-center gap-1">
-                      <span className="inline-block">Filter</span>
-                    </button>
+                    <span className="text-xs font-medium text-on-surface-variant">
+                      Showing latest tracked statuses
+                    </span>
                   </div>
 
                   <div className="space-y-2">
@@ -165,10 +165,27 @@ export default async function ProductDetailTabs({
                   <h3 className="text-lg font-bold text-primary font-headline mb-4">
                     Audit Trail & Compliance History
                   </h3>
-                  <div className="text-sm text-on-surface-variant">
-                    Compliance history is coming soon. Use <span className="font-bold">Recalculate Compliance</span>{" "}
-                    on the Compliance tab to refresh product regulation statuses.
-                  </div>
+                  {complianceRows.length === 0 ? (
+                    <p className="text-sm text-on-surface-variant">
+                      No compliance updates logged for this product yet. Use{" "}
+                      <span className="font-bold">Recalculate Compliance</span> on the Compliance tab after
+                      BOM updates to generate the latest status records.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2 text-sm text-on-surface-variant">
+                      {complianceRows.slice(0, 4).map((row) => (
+                        <li key={`history-${row.regulation_code}`} className="flex items-center justify-between gap-4">
+                          <span className="truncate">
+                            <span className="font-semibold text-primary">{row.regulation_code}</span>{" "}
+                            {row.regulation_name}
+                          </span>
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${statusPillClass(row.status)}`}>
+                            {row.status}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
 
@@ -207,28 +224,16 @@ export default async function ProductDetailTabs({
 
                 <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
                   <h3 className="text-lg font-bold text-primary font-headline mb-3">Documentation</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-                      <div>
-                        <div className="text-sm font-bold text-primary truncate">RoHS_Declaration.pdf</div>
-                        <div className="text-[10px] text-on-surface-variant">—</div>
-                      </div>
-                      <span className="text-primary">Download</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors">
-                      <div>
-                        <div className="text-sm font-bold text-primary truncate">REACH_SVHC_Summary.pdf</div>
-                        <div className="text-[10px] text-on-surface-variant">—</div>
-                      </div>
-                      <span className="text-primary">Download</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-on-surface-variant leading-relaxed">
+                    Product-level document downloads are not exposed in this view. Use the Certificates or
+                    Outreach workflows to request and manage supplier-backed compliance evidence.
+                  </p>
                 </div>
 
                 <div className="bg-[#eff4ff] rounded-2xl p-6 shadow-sm border border-primary/5">
                   <h3 className="text-lg font-bold text-primary font-headline mb-2">Application Impact</h3>
                   <p className="text-xs text-on-surface-variant mb-4">
-                    This product is utilized in <span className="font-bold">— active BOMs</span> across your organizations.
+                    This product currently has <span className="font-bold">{bomRows.length} linked BOM component{bomRows.length === 1 ? "" : "s"}</span>.
                   </p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary-container">
@@ -236,7 +241,7 @@ export default async function ProductDetailTabs({
                     </div>
                     <div>
                       <div className="text-sm font-bold text-primary">{product.name}</div>
-                      <div className="text-[10px] text-on-surface-variant">Qty: —</div>
+                      <div className="text-[10px] text-on-surface-variant">Regulations tracked: {complianceRows.length}</div>
                     </div>
                   </div>
                 </div>

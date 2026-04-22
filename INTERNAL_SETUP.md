@@ -1,6 +1,6 @@
-# ComplianceHub Internal Setup Guide
+# Rivet Internal Setup Guide
 
-Use this guide to run ComplianceHub locally for internal testing.
+Use this guide to run Rivet locally for internal testing.
 
 ## Prerequisites
 

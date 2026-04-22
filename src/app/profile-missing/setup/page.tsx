@@ -37,7 +37,7 @@ export default async function ProfileSetupPage() {
 
           <div className="space-y-3 text-sm text-on-surface font-body">
             <p>
-              To use ComplianceHub, you need to be associated with an organization.
+              To use Rivet, you need to be associated with an organization.
             </p>
             <p>
               Select an existing organization or create a new one.

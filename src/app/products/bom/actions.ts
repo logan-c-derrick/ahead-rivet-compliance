@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 import { parseBomCsv } from "@/lib/bom/parser";
 import { suggestMappings, type MappingSuggestion } from "@/lib/bom/mapper";
 import {
@@ -38,7 +38,12 @@ export async function createBomImport(formData: FormData): Promise<
     }
   | { success: false; error: string }
 > {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const file = formData.get("file") as File | null;
   const productId = (formData.get("productId") as string)?.trim() || null;
 
@@ -137,7 +142,12 @@ export async function finalizeBomMapping(
   conflictResolutions: Record<string, string>,
   productId?: string | null
 ): Promise<{ success: true } | { success: false; error: string }> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
   const supabase = await createClient();
 
   const { data: imp, error: fetchError } = await supabase

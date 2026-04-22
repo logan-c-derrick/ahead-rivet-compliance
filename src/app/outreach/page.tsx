@@ -1,12 +1,33 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import {
+  requireProfile,
+} from "@/lib/profile";
+import {
+  canManageSensitiveActions,
+  PERMISSION_DENIED_MESSAGE,
+} from "@/lib/permissions";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import { CampaignDeleteButton } from "./campaign-delete-button";
 import { OutreachRequestsTable } from "./outreach-requests-table";
 
-export default async function OutreachPage() {
-  await requireProfile();
+type Props = {
+  searchParams: Promise<{
+    tab?: string;
+    status?: string;
+    component?: string;
+    page?: string;
+  }>;
+};
+
+export default async function OutreachPage({ searchParams }: Props) {
+  const profile = await requireProfile();
+  const canManage = canManageSensitiveActions(profile.role);
+  const params = await searchParams;
+  const tab = (params.tab ?? "all").toLowerCase();
+  const statusFilter = (params.status ?? "all").toLowerCase();
+  const componentFilter = (params.component ?? "all").toLowerCase();
+  const page = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
   const supabase = await createClient();
 
   const { data: campaigns } = await supabase
@@ -95,6 +116,40 @@ export default async function OutreachPage() {
     };
   });
 
+  const filteredRequestRows = requestTableRows.filter((r) => {
+    const rowStatus = (r.status ?? "").toLowerCase();
+    const tabMatch =
+      tab === "all" ||
+      (tab === "sent" && rowStatus === "sent") ||
+      (tab === "in_review" && (rowStatus === "in_review" || rowStatus === "in review"));
+    if (!tabMatch) return false;
+
+    if (statusFilter !== "all" && rowStatus !== statusFilter) return false;
+
+    const componentValue = (r.componentPartDisplay ?? "").toLowerCase();
+    if (componentFilter !== "all") {
+      if (componentFilter === "multiple" && componentValue !== "multiple") return false;
+      if (componentFilter === "single" && componentValue === "multiple") return false;
+    }
+    return true;
+  });
+
+  const pageSize = 20;
+  const totalPages = Math.max(1, Math.ceil(filteredRequestRows.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const pagedRequestRows = filteredRequestRows.slice(pageStart, pageStart + pageSize);
+
+  const queryForPage = (nextPage: number) => {
+    const qp = new URLSearchParams();
+    if (tab !== "all") qp.set("tab", tab);
+    if (statusFilter !== "all") qp.set("status", statusFilter);
+    if (componentFilter !== "all") qp.set("component", componentFilter);
+    qp.set("page", String(nextPage));
+    const value = qp.toString();
+    return value ? `?${value}` : "";
+  };
+
   const totalPending = rows.filter((r) => r.status === "pending").length;
   const totalSent = rows.filter((r) => r.status === "sent").length;
 
@@ -110,13 +165,23 @@ export default async function OutreachPage() {
           </p>
         </div>
 
-        <Link
-          href="/outreach/new"
-          className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 hover:scale-[1.02] transition-transform font-body"
-        >
-          <MaterialIcon name="campaign" className="text-lg" />
-          Create New Outreach Campaign
-        </Link>
+        {canManage ? (
+          <Link
+            href="/outreach/new"
+            className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 hover:scale-[1.02] transition-transform font-body"
+          >
+            <MaterialIcon name="campaign" className="text-lg" />
+            Create New Outreach Campaign
+          </Link>
+        ) : (
+          <span
+            className="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-3 rounded-lg font-bold shadow-lg flex items-center gap-2 font-body opacity-60 cursor-not-allowed"
+            title={PERMISSION_DENIED_MESSAGE}
+          >
+            <MaterialIcon name="campaign" className="text-lg" />
+            Create New Outreach Campaign
+          </span>
+        )}
       </div>
 
       {/* Active campaign bento */}
@@ -202,12 +267,21 @@ export default async function OutreachPage() {
           <h4 className="text-sm font-bold text-primary uppercase tracking-widest">
             Campaigns
           </h4>
-          <Link
-            href="/outreach/new"
-            className="text-xs font-semibold text-primary hover:underline font-body"
-          >
-            New campaign
-          </Link>
+          {canManage ? (
+            <Link
+              href="/outreach/new"
+              className="text-xs font-semibold text-primary hover:underline font-body"
+            >
+              New campaign
+            </Link>
+          ) : (
+            <span
+              className="text-xs font-semibold text-primary opacity-60 cursor-not-allowed font-body"
+              title={PERMISSION_DENIED_MESSAGE}
+            >
+              New campaign
+            </span>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -252,7 +326,7 @@ export default async function OutreachPage() {
                         : "—"}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <CampaignDeleteButton campaignId={c.id} />
+                      <CampaignDeleteButton campaignId={c.id} canManage={canManage} />
                     </td>
                   </tr>
                 ))
@@ -270,59 +344,106 @@ export default async function OutreachPage() {
               Supplier Requests
             </h4>
             <div className="flex bg-surface-container-lowest p-1 rounded-lg">
-              <button className="px-4 py-1.5 text-xs font-bold rounded-md bg-primary text-white">
+              <Link
+                href={`/outreach${statusFilter !== "all" || componentFilter !== "all" ? queryForPage(1) : ""}`}
+                className={`px-4 py-1.5 text-xs rounded-md ${
+                  tab === "all"
+                    ? "font-bold bg-primary text-white"
+                    : "font-medium text-slate-500 hover:text-primary"
+                }`}
+              >
                 All
-              </button>
-              <button className="px-4 py-1.5 text-xs font-medium text-slate-500 hover:text-primary">
+              </Link>
+              <Link
+                href={`/outreach?${new URLSearchParams({
+                  ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+                  ...(componentFilter !== "all" ? { component: componentFilter } : {}),
+                  tab: "sent",
+                  page: "1",
+                }).toString()}`}
+                className={`px-4 py-1.5 text-xs rounded-md ${
+                  tab === "sent"
+                    ? "font-bold bg-primary text-white"
+                    : "font-medium text-slate-500 hover:text-primary"
+                }`}
+              >
                 Sent
-              </button>
-              <button className="px-4 py-1.5 text-xs font-medium text-slate-500 hover:text-primary">
+              </Link>
+              <Link
+                href={`/outreach?${new URLSearchParams({
+                  ...(statusFilter !== "all" ? { status: statusFilter } : {}),
+                  ...(componentFilter !== "all" ? { component: componentFilter } : {}),
+                  tab: "in_review",
+                  page: "1",
+                }).toString()}`}
+                className={`px-4 py-1.5 text-xs rounded-md ${
+                  tab === "in_review"
+                    ? "font-bold bg-primary text-white"
+                    : "font-medium text-slate-500 hover:text-primary"
+                }`}
+              >
                 In Review
-              </button>
+              </Link>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <select className="bg-surface-container-lowest border-none text-xs font-medium rounded-lg px-4 py-2 text-on-surface ring-0 focus:ring-1 focus:ring-primary/20">
-              <option>Status: All</option>
-              <option>Status: Received</option>
-              <option>Status: Rejected</option>
+          <form method="GET" action="/outreach" className="flex gap-3">
+            <input type="hidden" name="tab" value={tab} />
+            <select
+              name="status"
+              defaultValue={statusFilter}
+              className="bg-surface-container-lowest border-none text-xs font-medium rounded-lg px-4 py-2 text-on-surface ring-0 focus:ring-1 focus:ring-primary/20"
+            >
+              <option value="all">Status: All</option>
+              <option value="pending">Status: Pending</option>
+              <option value="sent">Status: Sent</option>
+              <option value="received">Status: Received</option>
+              <option value="in_review">Status: In Review</option>
+              <option value="approved">Status: Approved</option>
+              <option value="rejected">Status: Rejected</option>
             </select>
-            <select className="bg-surface-container-lowest border-none text-xs font-medium rounded-lg px-4 py-2 text-on-surface ring-0 focus:ring-1 focus:ring-primary/20">
-              <option>Component: All Types</option>
-              <option>Active Components</option>
-              <option>Passives</option>
+            <select
+              name="component"
+              defaultValue={componentFilter}
+              className="bg-surface-container-lowest border-none text-xs font-medium rounded-lg px-4 py-2 text-on-surface ring-0 focus:ring-1 focus:ring-primary/20"
+            >
+              <option value="all">Component: All Types</option>
+              <option value="single">Single Component</option>
+              <option value="multiple">Multiple Components</option>
             </select>
-          </div>
+            <button
+              type="submit"
+              className="px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:opacity-90"
+            >
+              Apply
+            </button>
+          </form>
         </div>
 
-        <OutreachRequestsTable rows={requestTableRows} />
+        <OutreachRequestsTable rows={pagedRequestRows} canManage={canManage} />
 
         <div className="p-6 bg-surface-container-high/30 flex justify-between items-center">
           <p className="text-xs text-on-surface-variant">
-            Showing {rows.length} request(s)
+            Showing {pagedRequestRows.length} of {filteredRequestRows.length} request(s)
           </p>
           <div className="flex gap-2">
-            <button
-              type="button"
+            <Link
+              href={`/outreach${queryForPage(Math.max(1, safePage - 1))}`}
               className="w-8 h-8 rounded flex items-center justify-center text-slate-400 hover:bg-white"
               aria-label="Previous page"
             >
               <MaterialIcon name="chevron_left" />
-            </button>
-            <button className="w-8 h-8 rounded flex items-center justify-center bg-primary text-white text-xs font-bold">
-              1
-            </button>
-            <button className="w-8 h-8 rounded flex items-center justify-center text-slate-600 hover:bg-white text-xs">
-              2
-            </button>
-            <button
-              type="button"
+            </Link>
+            <span className="px-3 h-8 rounded flex items-center justify-center bg-primary text-white text-xs font-bold">
+              {safePage}
+            </span>
+            <Link
+              href={`/outreach${queryForPage(Math.min(totalPages, safePage + 1))}`}
               className="w-8 h-8 rounded flex items-center justify-center text-slate-400 hover:bg-white"
               aria-label="Next page"
             >
               <MaterialIcon name="chevron_right" />
-            </button>
+            </Link>
           </div>
         </div>
       </section>

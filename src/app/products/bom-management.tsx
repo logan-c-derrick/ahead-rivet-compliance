@@ -10,6 +10,7 @@ import {
   deleteProduct,
   type Product,
 } from "./actions";
+import { PERMISSION_DENIED_MESSAGE } from "@/lib/permissions";
 
 const LIFECYCLE_OPTIONS = ["active", "inactive", "discontinued", "development"];
 const PRODUCT_CATEGORY_OPTIONS = ["Server", "Network Equipment", "PC"];
@@ -148,7 +149,15 @@ function ProductFormFields({
   );
 }
 
-export default function BomManagement({ products, editId }: { products: Product[]; editId: string | null }) {
+export default function BomManagement({
+  products,
+  editId,
+  canManage,
+}: {
+  products: Product[];
+  editId: string | null;
+  canManage: boolean;
+}) {
   const [createState, createAction] = useFormState(createProductFormState, null);
   const [updateState, updateAction] = useFormState(updateProduct, null);
   const [deleteState, deleteAction] = useFormState(deleteProduct, null);
@@ -156,6 +165,8 @@ export default function BomManagement({ products, editId }: { products: Product[
   const [showCreate, setShowCreate] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [deleteProductState, setDeleteProductState] = useState<{ id: string; name: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [lifecycleFilter, setLifecycleFilter] = useState("");
 
   useEffect(() => {
     if (editId && products.length > 0) {
@@ -170,6 +181,35 @@ export default function BomManagement({ products, editId }: { products: Product[
     ready: products.filter((p) => p.lifecycle_status === "active").length,
     processing: products.filter((p) => p.lifecycle_status === "development").length,
     errors: products.filter((p) => p.lifecycle_status === "inactive" || p.lifecycle_status === "discontinued").length,
+  };
+
+  const filteredProducts = products.filter((p) => {
+    if (lifecycleFilter && p.lifecycle_status !== lifecycleFilter) return false;
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.trim().toLowerCase();
+    return (
+      p.name.toLowerCase().includes(q) ||
+      String(p.sku ?? "").toLowerCase().includes(q) ||
+      String(p.category ?? "").toLowerCase().includes(q)
+    );
+  });
+
+  const exportProducts = () => {
+    const csvRows = [
+      ["name", "sku", "category", "lifecycle_status", "created_at"].join(","),
+      ...filteredProducts.map((p) =>
+        [p.name, p.sku ?? "", p.category ?? "", p.lifecycle_status, p.created_at ?? ""]
+          .map((value) => `"${String(value).replaceAll('"', '""')}"`)
+          .join(",")
+      ),
+    ];
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "products-export.csv");
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -222,26 +262,49 @@ export default function BomManagement({ products, editId }: { products: Product[
               <h3 className="font-headline font-bold text-primary">Uploaded BOM Records</h3>
 
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors flex items-center gap-1 font-body"
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search name, SKU, category..."
+                  className="px-3 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 min-w-56"
+                />
+                <select
+                  value={lifecycleFilter}
+                  onChange={(e) => setLifecycleFilter(e.target.value)}
+                  className="px-2 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30"
+                  aria-label="Filter by lifecycle status"
                 >
-                  <MaterialIcon name="filter_list" className="text-sm" />
-                  Filter
-                </button>
+                  <option value="">All statuses</option>
+                  {LIFECYCLE_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
                 <button
                   type="button"
+                  onClick={exportProducts}
                   className="px-3 py-1.5 text-xs font-semibold text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors flex items-center gap-1 font-body"
                 >
                   <MaterialIcon name="download" className="text-sm" />
                   Export
                 </button>
-                <Link
-                  href="/products/register"
-                  className="bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity inline-block"
-                >
-                  Add Product
-                </Link>
+                {canManage ? (
+                  <Link
+                    href="/products/register"
+                    className="bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-bold hover:opacity-90 transition-opacity inline-block"
+                  >
+                    Add Product
+                  </Link>
+                ) : (
+                  <span
+                    className="bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-bold opacity-60 cursor-not-allowed inline-block"
+                    title={PERMISSION_DENIED_MESSAGE}
+                  >
+                    Add Product
+                  </span>
+                )}
               </div>
             </div>
 
@@ -265,17 +328,24 @@ export default function BomManagement({ products, editId }: { products: Product[
                   </tr>
                 </thead>
                 <tbody>
-                  {products.length === 0 ? (
+                  {filteredProducts.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-6 py-10 text-center text-sm text-on-surface-variant">
-                        No products yet.{" "}
-                        <Link href="/products/register" className="text-primary font-bold hover:underline">
-                          Create your first product
-                        </Link> to start managing compliance.
+                        No products match the current filters.{" "}
+                        {canManage ? (
+                          <Link href="/products/register" className="text-primary font-bold hover:underline">
+                            Create a product
+                          </Link>
+                        ) : (
+                          <span className="text-primary font-bold opacity-60" title={PERMISSION_DENIED_MESSAGE}>
+                            Create a product
+                          </span>
+                        )}{" "}
+                        or adjust filters.
                       </td>
                     </tr>
                   ) : (
-                    products.map((p) => (
+                    filteredProducts.map((p) => (
                       <tr
                         key={p.id}
                         className="hover:bg-surface-container-low transition-colors duration-150"
@@ -313,14 +383,18 @@ export default function BomManagement({ products, editId }: { products: Product[
                             <button
                               type="button"
                               onClick={() => setEditProduct(p)}
-                              className="text-on-surface-variant hover:text-primary text-xs font-bold"
+                              disabled={!canManage}
+                              title={!canManage ? PERMISSION_DENIED_MESSAGE : undefined}
+                              className="text-on-surface-variant hover:text-primary text-xs font-bold disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Edit
                             </button>
                             <button
                               type="button"
                               onClick={() => setDeleteProductState({ id: p.id, name: p.name })}
-                              className="text-error hover:text-error/90 text-xs font-bold"
+                              disabled={!canManage}
+                              title={!canManage ? PERMISSION_DENIED_MESSAGE : undefined}
+                              className="text-error hover:text-error/90 text-xs font-bold disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Delete
                             </button>
@@ -335,7 +409,7 @@ export default function BomManagement({ products, editId }: { products: Product[
           </div>
         </div>
 
-        {/* Right: Upload / mapping assistant (placeholder) */}
+        {/* Right: Upload / mapping assistant */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           <Link
             href="/products/bom/map"
@@ -350,7 +424,7 @@ export default function BomManagement({ products, editId }: { products: Product[
               Drag and drop your engineering file or browse your local directory.
             </p>
             <span className="w-full bg-primary text-white py-4 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all relative z-10 inline-block text-center">
-              Browse Files
+              Open Mapping Workflow
             </span>
             <p className="text-xs text-on-surface-variant mt-3 relative z-10">BOM CSV import will open mapping workflow.</p>
           </Link>
@@ -373,36 +447,23 @@ export default function BomManagement({ products, editId }: { products: Product[
                   </p>
                 </div>
               </div>
-              <span className="block w-full border-2 border-primary/10 text-primary py-3 rounded-lg font-bold text-sm hover:bg-surface-container-low transition-colors text-center">
-                Save Mapping Schema
-              </span>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Mapping templates are saved from the BOM mapping page after reviewing detected columns.
+              </p>
             </div>
           </Link>
 
           <div className="bg-surface-container-lowest rounded-xl shadow-sm p-6">
-            <h4 className="font-headline font-bold text-primary mb-4">Ingestion Logs</h4>
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="w-1 h-8 bg-tertiary-fixed-dim rounded-full" />
-                <div>
-                  <p className="text-xs font-bold text-primary">Latest Mapping Complete</p>
-                  <p className="text-[10px] text-on-surface-variant">Success: — rows mapped.</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-1 h-8 bg-error rounded-full" />
-                <div>
-                  <p className="text-xs font-bold text-primary">No Recent Errors</p>
-                  <p className="text-[10px] text-on-surface-variant">—</p>
-                </div>
-              </div>
-            </div>
+            <h4 className="font-headline font-bold text-primary mb-2">Ingestion Logs</h4>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Detailed ingestion history is available in the BOM mapping workflow after each upload.
+            </p>
           </div>
         </div>
       </div>
 
       {/* Create modal */}
-      {showCreate && (
+      {showCreate && canManage && (
         <Modal title="Create Product" onClose={() => setShowCreate(false)}>
           {createState?.error && (
             <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
@@ -431,7 +492,7 @@ export default function BomManagement({ products, editId }: { products: Product[
       )}
 
       {/* Edit modal */}
-      {editProduct && (
+      {editProduct && canManage && (
         <Modal title="Edit Product" onClose={() => setEditProduct(null)}>
           {updateState?.error && (
             <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
@@ -467,7 +528,7 @@ export default function BomManagement({ products, editId }: { products: Product[
       )}
 
       {/* Delete confirmation modal */}
-      {deleteProductState && (
+      {deleteProductState && canManage && (
         <Modal title="Delete Product" onClose={() => setDeleteProductState(null)}>
           {deleteState?.error && (
             <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">

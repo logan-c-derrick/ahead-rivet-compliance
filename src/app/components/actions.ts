@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 import {
   buildComponentCsvColMap,
   isLikelyUuid,
@@ -140,7 +140,12 @@ export async function createComponent(
   _prevState: CreateComponentState | null,
   formData: FormData
 ): Promise<CreateComponentState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to create component." };
+  }
   const supabase = await createClient();
 
   const name = (formData.get("name") as string)?.trim();
@@ -181,7 +186,12 @@ export async function updateComponent(
   _prevState: UpdateComponentState | null,
   formData: FormData
 ): Promise<UpdateComponentState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to update component." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;
@@ -229,7 +239,12 @@ export async function deleteComponent(
   _prevState: DeleteComponentState | null,
   formData: FormData
 ): Promise<DeleteComponentState> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to delete component." };
+  }
   const supabase = await createClient();
 
   const id = formData.get("id") as string;
@@ -384,7 +399,12 @@ export type ComponentCsvImportResult =
 export async function importComponentsFromCsv(
   formData: FormData
 ): Promise<ComponentCsvImportResult> {
-  const profile = await requireProfile();
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { success: false, error: getPermissionErrorMessage(error) ?? "Unable to import components." };
+  }
   const supabase = await createClient();
 
   const file = formData.get("file") as File | null;
