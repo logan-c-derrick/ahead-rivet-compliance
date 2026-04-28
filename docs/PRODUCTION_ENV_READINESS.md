@@ -37,6 +37,30 @@ Reference template:
 
 - RLS policy validation: `PASS`
 - Build + lint preflight: `PASS`
-- Remaining blockers before public launch:
-  - `NEXT_PUBLIC_APP_URL` must be set to production domain
-  - `RESEND_FROM` should use final Rivet sender identity/domain
+- Monitoring + alerting baseline: `PASS` (Teams/Workflow integration optional for launch)
+- Production env + secrets configured: `IN PROGRESS`
+
+## Vercel production checklist
+
+Set these in Vercel project Environment Variables (Production):
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM`
+- `NEXT_PUBLIC_APP_URL`
+
+Monitoring env vars (recommended, can be completed in a follow-up):
+
+- `CRON_SECRET`
+- `MONITOR_ALERT_EMAIL_TO`
+- `MONITOR_TEAMS_WEBHOOK_URL` (or Teams Workflow URL when available)
+
+## Exit criteria for this gate
+
+Mark `Production env + secrets configured` as `PASS` once:
+
+1. Vercel Production has all required vars set.
+2. `GET /api/ready` returns `200` on the production domain.
+3. Outbound links in support/outreach emails use `NEXT_PUBLIC_APP_URL` (not localhost).
