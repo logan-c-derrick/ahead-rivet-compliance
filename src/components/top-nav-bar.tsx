@@ -70,14 +70,15 @@ export default function TopNavBar() {
         >
           <MaterialIcon name="help_outline" />
         </Link>
-        <button
-          type="button"
+        <Link
+          href="/support"
           className="p-2 text-slate-500 hover:bg-surface-container-low hover:text-primary rounded-full transition-colors relative"
-          aria-label="Notifications"
+          aria-label="Notifications and alerts"
+          title="Open support and alerts"
         >
           <MaterialIcon name="notifications" />
           <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full" />
-        </button>
+        </Link>
         <Link
           href="/profile"
           className="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden flex items-center justify-center border-2 border-white shadow-sm hover:ring-2 hover:ring-primary/20 transition-all"

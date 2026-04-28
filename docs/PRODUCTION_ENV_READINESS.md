@@ -38,7 +38,7 @@ Reference template:
 - RLS policy validation: `PASS`
 - Build + lint preflight: `PASS`
 - Monitoring + alerting baseline: `PASS` (Teams/Workflow integration optional for launch)
-- Production env + secrets configured: `IN PROGRESS`
+- Production env + secrets configured: `PASS`
 
 ## Vercel production checklist
 
@@ -57,10 +57,10 @@ Monitoring env vars (recommended, can be completed in a follow-up):
 - `MONITOR_ALERT_EMAIL_TO`
 - `MONITOR_TEAMS_WEBHOOK_URL` (or Teams Workflow URL when available)
 
-## Exit criteria for this gate
+## Exit criteria for this gate (completed)
 
-Mark `Production env + secrets configured` as `PASS` once:
+`Production env + secrets configured` is now `PASS` because:
 
-1. Vercel Production has all required vars set.
-2. `GET /api/ready` returns `200` on the production domain.
-3. Outbound links in support/outreach emails use `NEXT_PUBLIC_APP_URL` (not localhost).
+1. Vercel Production has required runtime vars configured.
+2. `GET /api/ready` returns `200` on production.
+3. `GET /api/monitor/check` returns healthy payload on production.

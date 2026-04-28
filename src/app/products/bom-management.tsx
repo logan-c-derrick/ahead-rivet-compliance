@@ -213,7 +213,7 @@ export default function BomManagement({
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
       {/* Header / Breadcrumb */}
       <div className="mb-2">
         <div className="flex items-center gap-2 text-xs text-on-surface-variant mb-2 font-body">
@@ -229,26 +229,26 @@ export default function BomManagement({
         </p>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-12 gap-6 lg:gap-8">
         {/* Left: Metrics + table */}
         <div className="col-span-12 lg:col-span-8 space-y-6">
           {/* Metrics Bar */}
-          <div className="flex gap-4">
-            <div className="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-tertiary-fixed-dim">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-tertiary-fixed-dim">
               <div>
                 <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Ready for Review</p>
                 <p className="text-2xl font-headline font-extrabold text-primary">{metrics.ready}</p>
               </div>
               <MaterialIcon name="check_circle" className="text-tertiary-fixed-dim text-2xl" />
             </div>
-            <div className="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-secondary-fixed-dim">
+            <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-secondary-fixed-dim">
               <div>
                 <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Processing</p>
                 <p className="text-2xl font-headline font-extrabold text-primary">{metrics.processing}</p>
               </div>
               <MaterialIcon name="sync" className="text-secondary-fixed-dim text-2xl" />
             </div>
-            <div className="flex-1 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-error">
+            <div className="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-error sm:col-span-2 xl:col-span-1">
               <div>
                 <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">With Errors</p>
                 <p className="text-2xl font-headline font-extrabold text-primary">{metrics.errors}</p>
@@ -258,21 +258,21 @@ export default function BomManagement({
           </div>
 
           <div className="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 flex items-center justify-between border-b border-surface-container/50">
+            <div className="px-4 sm:px-6 py-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between border-b border-surface-container/50">
               <h3 className="font-headline font-bold text-primary">Uploaded BOM Records</h3>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <input
                   type="search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search name, SKU, category..."
-                  className="px-3 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 min-w-56"
+                  className="px-3 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 min-w-0 w-full sm:w-64"
                 />
                 <select
                   value={lifecycleFilter}
                   onChange={(e) => setLifecycleFilter(e.target.value)}
-                  className="px-2 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30"
+                  className="px-2 py-1.5 text-xs rounded-lg bg-surface-container-low border border-outline-variant/30 w-full sm:w-auto"
                   aria-label="Filter by lifecycle status"
                 >
                   <option value="">All statuses</option>

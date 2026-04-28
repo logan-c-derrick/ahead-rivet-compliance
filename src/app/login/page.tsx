@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import LoginForm from "./login-form";
 
 export default function LoginPage() {
@@ -12,6 +13,23 @@ export default function LoginPage() {
         <Suspense fallback={<p className="text-sm text-on-surface-variant">Loading…</p>}>
           <LoginForm />
         </Suspense>
+        <p className="text-xs text-on-surface-variant pt-2 border-t border-outline-variant/20">
+          <Link href="/legal/privacy" className="hover:text-primary">
+            Privacy
+          </Link>{" "}
+          ·{" "}
+          <Link href="/legal/terms" className="hover:text-primary">
+            Terms
+          </Link>{" "}
+          ·{" "}
+          <Link href="/legal/trust" className="hover:text-primary">
+            Trust
+          </Link>{" "}
+          ·{" "}
+          <Link href="/legal/code-of-conduct" className="hover:text-primary">
+            Code of Conduct
+          </Link>
+        </p>
       </div>
     </div>
   );

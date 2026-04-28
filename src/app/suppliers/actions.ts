@@ -134,7 +134,8 @@ async function fetchSupplierIdsWithLinkedComponents(
 export async function getSuppliersPage(
   page: number = 1,
   pageSize: number = DEFAULT_PAGE_SIZE,
-  filter: SupplierListFilter = "all"
+  filter: SupplierListFilter = "all",
+  query: string = ""
 ): Promise<SuppliersPageResult> {
   const profile = await requireProfile();
   const supabase = await createClient();
@@ -158,6 +159,15 @@ export async function getSuppliersPage(
     .select("*")
     .eq("organization_id", profile.organization_id)
     .order("name");
+
+  const trimmedQuery = query.trim();
+  if (trimmedQuery) {
+    const sanitized = trimmedQuery.replaceAll(",", " ").trim();
+    const pattern = `%${sanitized}%`;
+    const orFilter = `name.ilike.${pattern},contact_email.ilike.${pattern},contact_phone.ilike.${pattern},country.ilike.${pattern},address.ilike.${pattern}`;
+    countQuery = countQuery.or(orFilter);
+    listQuery = listQuery.or(orFilter);
+  }
 
   if (filter === "with_components") {
     if (linkedSupplierIds.length === 0) {

@@ -4,20 +4,22 @@ import { parseSupplierListFilter } from "./supplier-filters";
 import SuppliersListWithModals from "./suppliers-list-with-modals";
 
 type Props = {
-  searchParams: Promise<{ edit?: string; page?: string; match?: string }>;
+  searchParams: Promise<{ edit?: string; page?: string; match?: string; q?: string }>;
 };
 
 const PAGE_SIZE = 50;
 
 export default async function SuppliersPage({ searchParams }: Props) {
   await requireProfile();
-  const { edit: editId, page: pageParam, match: matchParam } = await searchParams;
+  const { edit: editId, page: pageParam, match: matchParam, q } = await searchParams;
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
   const match = parseSupplierListFilter(matchParam);
+  const query = q?.trim() ?? "";
   const { suppliers, total, page: resolvedPage, pageSize } = await getSuppliersPage(
     page,
     PAGE_SIZE,
-    match
+    match,
+    query
   );
 
   let editPrefetch: SupplierWithCount | null = null;
@@ -34,6 +36,7 @@ export default async function SuppliersPage({ searchParams }: Props) {
       page={resolvedPage}
       pageSize={pageSize}
       match={match}
+      query={query}
     />
   );
 }

@@ -6,7 +6,7 @@ import { getSupplierOptions } from "../suppliers/actions";
 import ComponentsListWithModals from "./components-list-with-modals";
 
 type Props = {
-  searchParams: Promise<{ edit?: string; supplier?: string; match?: string }>;
+  searchParams: Promise<{ edit?: string; supplier?: string; match?: string; cpage?: string }>;
 };
 
 export default async function ComponentsPage({ searchParams }: Props) {
@@ -19,6 +19,7 @@ export default async function ComponentsPage({ searchParams }: Props) {
   const editId = sp.edit ?? null;
   const supplierFilter = typeof sp.supplier === "string" ? sp.supplier : "";
   const linkMatch = parseComponentMatch(sp.match);
+  const initialPage = Math.max(1, parseInt(sp.cpage ?? "1", 10) || 1);
 
   return (
     <Suspense
@@ -32,6 +33,7 @@ export default async function ComponentsPage({ searchParams }: Props) {
         editId={editId}
         supplierFilter={supplierFilter}
         linkMatch={linkMatch}
+        initialPage={initialPage}
       />
     </Suspense>
   );

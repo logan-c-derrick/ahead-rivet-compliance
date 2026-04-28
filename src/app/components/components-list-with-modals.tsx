@@ -167,12 +167,14 @@ export default function ComponentsListWithModals({
   editId,
   supplierFilter,
   linkMatch,
+  initialPage,
 }: {
   components: ComponentWithSupplier[];
   supplierOptions: { id: string; name: string }[];
   editId: string | null;
   supplierFilter: string;
   linkMatch: ComponentLinkMatchFilter;
+  initialPage: number;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -190,6 +192,7 @@ export default function ComponentsListWithModals({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const PAGE_SIZE = 50;
 
   function pushQuery(updates: Record<string, string | null | undefined>) {
     const p = new URLSearchParams(searchParams.toString());
@@ -233,6 +236,13 @@ export default function ComponentsListWithModals({
       return hay.includes(q);
     });
   }, [components, searchQuery, supplierFilter, linkMatch, categoryFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredComponents.length / PAGE_SIZE));
+  const safePage = Math.min(totalPages, Math.max(1, initialPage));
+  const pagedComponents = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredComponents.slice(start, start + PAGE_SIZE);
+  }, [filteredComponents, safePage]);
 
   useEffect(() => {
     if (editId && components.length > 0) {
@@ -375,7 +385,7 @@ export default function ComponentsListWithModals({
               </div>
             </div>
             <p className="text-xs text-on-surface-variant shrink-0 xl:pb-2.5">
-              Showing <span className="font-bold text-primary">{filteredComponents.length}</span> of{" "}
+              Showing <span className="font-bold text-primary">{pagedComponents.length}</span> of{" "}
               {components.length}
             </p>
           </div>
@@ -420,7 +430,7 @@ export default function ComponentsListWithModals({
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredComponents.map((c) => (
+                    {pagedComponents.map((c) => (
                 <tr key={c.id} className="group hover:bg-surface-container-low transition-colors align-top">
                   <td className="px-3 sm:px-6 py-4 sm:py-5 min-w-0 max-w-0">
                     <div className="flex items-start gap-2 sm:gap-3 min-w-0">
@@ -464,6 +474,79 @@ export default function ComponentsListWithModals({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+          {filteredComponents.length > PAGE_SIZE && (
+            <div className="flex flex-wrap items-center justify-between gap-4 px-4 sm:px-6 py-4 border border-outline-variant/10 rounded-xl bg-surface-container-high/20">
+              <p className="text-xs text-on-surface-variant">
+                Showing {(safePage - 1) * PAGE_SIZE + 1}-
+                {Math.min(safePage * PAGE_SIZE, filteredComponents.length)} of {filteredComponents.length}
+              </p>
+              <div className="flex items-center gap-2">
+                {safePage > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => pushQuery({ cpage: "1" })}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    <MaterialIcon name="first_page" className="text-base" />
+                    First
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    <MaterialIcon name="first_page" className="text-base" />
+                    First
+                  </span>
+                )}
+                {safePage > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => pushQuery({ cpage: String(safePage - 1) })}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    <MaterialIcon name="chevron_left" className="text-base" />
+                    Previous
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    <MaterialIcon name="chevron_left" className="text-base" />
+                    Previous
+                  </span>
+                )}
+                <span className="text-xs text-on-surface-variant tabular-nums px-2">
+                  Page {safePage} of {totalPages}
+                </span>
+                {safePage < totalPages ? (
+                  <button
+                    type="button"
+                    onClick={() => pushQuery({ cpage: String(safePage + 1) })}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    Next
+                    <MaterialIcon name="chevron_right" className="text-base" />
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    Next
+                    <MaterialIcon name="chevron_right" className="text-base" />
+                  </span>
+                )}
+                {safePage < totalPages ? (
+                  <button
+                    type="button"
+                    onClick={() => pushQuery({ cpage: String(totalPages) })}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    Last
+                    <MaterialIcon name="last_page" className="text-base" />
+                  </button>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    Last
+                    <MaterialIcon name="last_page" className="text-base" />
+                  </span>
+                )}
               </div>
             </div>
           )}

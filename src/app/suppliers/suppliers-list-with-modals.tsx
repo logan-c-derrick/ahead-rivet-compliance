@@ -227,11 +227,12 @@ function SupplierFormFields({
   );
 }
 
-function suppliersPageHref(page: number, editId: string | null, match: SupplierListFilter) {
+function suppliersPageHref(page: number, editId: string | null, match: SupplierListFilter, query: string) {
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (editId) params.set("edit", editId);
   if (match !== "all") params.set("match", match);
+  if (query.trim()) params.set("q", query.trim());
   const q = params.toString();
   return q ? `/suppliers?${q}` : "/suppliers";
 }
@@ -244,6 +245,7 @@ export default function SuppliersListWithModals({
   page,
   pageSize,
   match,
+  query,
 }: {
   suppliers: SupplierWithCount[];
   editId: string | null;
@@ -252,6 +254,7 @@ export default function SuppliersListWithModals({
   page: number;
   pageSize: number;
   match: SupplierListFilter;
+  query: string;
 }) {
   const router = useRouter();
   const [createState, createAction] = useFormState(createSupplierFormState, null);
@@ -260,6 +263,7 @@ export default function SuppliersListWithModals({
   const [showCreate, setShowCreate] = useState(false);
   const [editSupplier, setEditSupplier] = useState<SupplierWithCount | null>(null);
   const [deleteRow, setDeleteRow] = useState<{ id: string; name: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState(query);
 
   useEffect(() => {
     if (!editId) {
@@ -278,13 +282,20 @@ export default function SuppliersListWithModals({
     setEditSupplier(null);
   }, [editId, suppliers, editPrefetch]);
 
-  function navigateWithMatch(next: SupplierListFilter) {
+  function navigateWith(next: { match?: SupplierListFilter; query?: string; page?: number }) {
     const params = new URLSearchParams();
-    if (next !== "all") params.set("match", next);
+    const resolvedMatch = next.match ?? match;
+    const resolvedQuery = (next.query ?? searchQuery).trim();
+    const resolvedPage = next.page ?? 1;
+    if (resolvedMatch !== "all") params.set("match", resolvedMatch);
+    if (resolvedQuery) params.set("q", resolvedQuery);
+    if (resolvedPage > 1) params.set("page", String(resolvedPage));
     if (editId) params.set("edit", editId);
     const q = params.toString();
     router.push(q ? `/suppliers?${q}` : "/suppliers");
   }
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="p-8 space-y-8">
@@ -324,7 +335,53 @@ export default function SuppliersListWithModals({
         </div>
       </header>
 
-      <div className="flex flex-col sm:flex-row sm:items-end gap-3 max-w-xl">
+      <div className="flex flex-col sm:flex-row sm:items-end gap-3 max-w-4xl">
+        <div className="flex-1 min-w-[16rem]">
+          <label
+            htmlFor="supplier-search"
+            className="block text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant mb-1.5"
+          >
+            Search suppliers
+          </label>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigateWith({ query: searchQuery, page: 1 });
+            }}
+            className="flex gap-2"
+          >
+            <div className="relative w-full">
+              <input
+                id="supplier-search"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Name, email, phone, country..."
+                className="w-full px-3 py-2.5 pr-9 rounded-xl bg-surface-container-lowest border border-outline-variant/20 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              {searchQuery.trim().length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    navigateWith({ query: "", page: 1 });
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-on-surface-variant/70 hover:text-primary hover:bg-surface-container"
+                  aria-label="Clear supplier search"
+                  title="Clear search"
+                >
+                  <MaterialIcon name="close" className="text-base" />
+                </button>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-primary text-white hover:opacity-90"
+            >
+              Search
+            </button>
+          </form>
+        </div>
         <div className="flex-1 min-w-[12rem]">
           <label
             htmlFor="supplier-component-filter"
@@ -335,7 +392,7 @@ export default function SuppliersListWithModals({
           <select
             id="supplier-component-filter"
             value={match}
-            onChange={(e) => navigateWithMatch(e.target.value as SupplierListFilter)}
+            onChange={(e) => navigateWith({ match: e.target.value as SupplierListFilter, page: 1 })}
             className="w-full px-3 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant/20 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All suppliers</option>
@@ -430,7 +487,21 @@ export default function SuppliersListWithModals({
               <div className="flex items-center gap-2">
                 {page > 1 ? (
                   <Link
-                    href={suppliersPageHref(page - 1, editId, match)}
+                    href={suppliersPageHref(1, editId, match, query)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    <MaterialIcon name="first_page" className="text-base" />
+                    First
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    <MaterialIcon name="first_page" className="text-base" />
+                    First
+                  </span>
+                )}
+                {page > 1 ? (
+                  <Link
+                    href={suppliersPageHref(page - 1, editId, match, query)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
                   >
                     <MaterialIcon name="chevron_left" className="text-base" />
@@ -447,7 +518,7 @@ export default function SuppliersListWithModals({
                 </span>
                 {page < Math.ceil(total / pageSize) ? (
                   <Link
-                    href={suppliersPageHref(page + 1, editId, match)}
+                    href={suppliersPageHref(page + 1, editId, match, query)}
                     className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
                   >
                     Next
@@ -457,6 +528,20 @@ export default function SuppliersListWithModals({
                   <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
                     Next
                     <MaterialIcon name="chevron_right" className="text-base" />
+                  </span>
+                )}
+                {page < totalPages ? (
+                  <Link
+                    href={suppliersPageHref(totalPages, editId, match, query)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10"
+                  >
+                    Last
+                    <MaterialIcon name="last_page" className="text-base" />
+                  </Link>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-on-surface-variant/40 cursor-not-allowed">
+                    Last
+                    <MaterialIcon name="last_page" className="text-base" />
                   </span>
                 )}
               </div>
