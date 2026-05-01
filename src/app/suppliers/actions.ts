@@ -294,13 +294,24 @@ export async function getSuppliers(): Promise<SupplierWithCount[]> {
 export async function getSupplierOptions(): Promise<{ id: string; name: string }[]> {
   const profile = await requireProfile();
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("suppliers")
-    .select("id, name")
-    .eq("organization_id", profile.organization_id)
-    .order("name");
-  if (error) return [];
-  return (data ?? []) as { id: string; name: string }[];
+  const chunk = 1000;
+  const all: { id: string; name: string }[] = [];
+
+  for (let offset = 0; ; offset += chunk) {
+    const { data, error } = await supabase
+      .from("suppliers")
+      .select("id, name")
+      .eq("organization_id", profile.organization_id)
+      .order("name")
+      .range(offset, offset + chunk - 1);
+
+    if (error) return [];
+    const batch = (data ?? []) as { id: string; name: string }[];
+    all.push(...batch);
+    if (batch.length < chunk) break;
+  }
+
+  return all;
 }
 
 export async function getSupplier(id: string): Promise<Supplier | null> {

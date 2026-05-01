@@ -325,8 +325,44 @@ export default async function OutreachPage({ searchParams }: Props) {
                         ? new Date(c.created_at).toLocaleString()
                         : "—"}
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <CampaignDeleteButton campaignId={c.id} canManage={canManage} />
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-3">
+                        {canManage ? (
+                          <Link
+                            href={`/outreach/manual-preview/${c.id}`}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                          >
+                            <MaterialIcon name="preview" className="text-sm" />
+                            Manual Preview
+                          </Link>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-bold text-primary opacity-60 cursor-not-allowed"
+                            title={PERMISSION_DENIED_MESSAGE}
+                          >
+                            <MaterialIcon name="preview" className="text-sm" />
+                            Manual Preview
+                          </span>
+                        )}
+                        {canManage ? (
+                          <Link
+                            href={`/api/outreach/campaigns/${c.id}/manual-export`}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
+                          >
+                            <MaterialIcon name="download" className="text-sm" />
+                            Export Manual Emails
+                          </Link>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1 text-xs font-bold text-primary opacity-60 cursor-not-allowed"
+                            title={PERMISSION_DENIED_MESSAGE}
+                          >
+                            <MaterialIcon name="download" className="text-sm" />
+                            Export Manual Emails
+                          </span>
+                        )}
+                        <CampaignDeleteButton campaignId={c.id} canManage={canManage} />
+                      </div>
                     </td>
                   </tr>
                 ))

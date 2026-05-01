@@ -90,6 +90,17 @@ export interface ComponentRegulationRow {
   notes: string | null;
 }
 
+export interface ComponentReleaseStatusRow {
+  id: string;
+  release_key: string;
+  release_title: string | null;
+  regulation_code: string;
+  regulation_name: string;
+  status: string;
+  evaluated_at: string | null;
+  notes: string | null;
+}
+
 export async function getComponentRegulationStatuses(
   componentId: string
 ): Promise<ComponentRegulationRow[]> {
@@ -127,6 +138,52 @@ export async function getComponentRegulationStatuses(
     status: row.status,
     notes: row.notes,
   })) as ComponentRegulationRow[];
+}
+
+export async function getComponentReleaseStatuses(
+  componentId: string
+): Promise<ComponentReleaseStatusRow[]> {
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: component } = await supabase
+    .from("components")
+    .select("id")
+    .eq("id", componentId)
+    .eq("organization_id", profile.organization_id)
+    .single();
+
+  if (!component) return [];
+
+  const { data, error } = await supabase
+    .from("component_regulation_release_status")
+    .select(`
+      id,
+      status,
+      evaluated_at,
+      notes,
+      regulation_releases(
+        release_key,
+        title,
+        regulations(code, name)
+      )
+    `)
+    .eq("component_id", componentId)
+    .order("evaluated_at", { ascending: false, nullsFirst: false })
+    .limit(20);
+
+  if (error) return [];
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    release_key: row.regulation_releases?.release_key ?? "—",
+    release_title: row.regulation_releases?.title ?? null,
+    regulation_code: row.regulation_releases?.regulations?.code ?? "—",
+    regulation_name: row.regulation_releases?.regulations?.name ?? "—",
+    status: row.status,
+    evaluated_at: row.evaluated_at ?? null,
+    notes: row.notes ?? null,
+  })) as ComponentReleaseStatusRow[];
 }
 
 type CreateComponentState = { error?: string };

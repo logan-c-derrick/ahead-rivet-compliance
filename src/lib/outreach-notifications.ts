@@ -1,4 +1,5 @@
 import { sendEmail } from "@/lib/email";
+import type { SendEmailResult } from "@/lib/email";
 
 function escapeHtml(s: string): string {
   return s
@@ -95,7 +96,7 @@ export async function notifySupplierFollowUpLink(opts: {
   partSummary: string;
   regulationSummary?: string;
   isTestNotification?: boolean;
-}): Promise<void> {
+}): Promise<SendEmailResult> {
   const subject = `${testSubjectPrefix(opts.isTestNotification)}[${
     opts.organizationName
   }] Additional documentation requested`;
@@ -116,4 +117,5 @@ export async function notifySupplierFollowUpLink(opts: {
   if (!result.ok) {
     console.warn("notifySupplierFollowUpLink:", result.error);
   }
+  return result;
 }

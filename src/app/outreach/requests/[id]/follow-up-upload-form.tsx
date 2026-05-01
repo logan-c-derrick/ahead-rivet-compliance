@@ -35,8 +35,8 @@ export function FollowUpUploadForm({ requestId }: { requestId: string }) {
         Supplier follow-up
       </h2>
       <p className="text-sm text-on-surface-variant">
-        Send a new one-time link scoped to parts that still need files or had documentation not
-        verified. The supplier receives an email with the upload URL.
+        Resend the same portal link, refreshed for parts that still need files or had documentation
+        rejected. The supplier receives an email with the upload URL.
       </p>
       <form action={formAction} className="flex flex-wrap items-center gap-3">
         <SubmitFollowUp />

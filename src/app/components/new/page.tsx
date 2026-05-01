@@ -1,8 +1,11 @@
 import Link from "next/link";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import { submitComponentForm } from "../actions";
+import { getSupplierOptions } from "@/app/suppliers/actions";
 
-export default function AddNewComponentPage() {
+export default async function AddNewComponentPage() {
+  const supplierOptions = await getSupplierOptions();
+
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <div className="mb-10">
@@ -87,6 +90,23 @@ export default function AddNewComponentPage() {
                     placeholder="From BOM CSV when applicable"
                     type="text"
                   />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-tighter font-body">
+                    Supplier
+                  </label>
+                  <select
+                    name="supplier_id"
+                    defaultValue=""
+                    className="w-full bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 rounded-lg py-3 px-4 text-on-surface font-body"
+                  >
+                    <option value="">— None —</option>
+                    {supplierOptions.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-span-full space-y-2">
                   <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-tighter font-body">

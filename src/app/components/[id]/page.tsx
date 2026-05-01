@@ -1,5 +1,5 @@
 import { requireProfile } from "@/lib/profile";
-import { getComponent, getComponentRegulationStatuses } from "../actions";
+import { getComponent, getComponentRegulationStatuses, getComponentReleaseStatuses } from "../actions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import MaterialIcon from "@/components/ui/MaterialIcon";
@@ -12,9 +12,10 @@ type Props = {
 export default async function ComponentDetailPage({ params }: Props) {
   await requireProfile();
   const { id } = await params;
-  const [component, regulationStatuses] = await Promise.all([
+  const [component, regulationStatuses, releaseStatuses] = await Promise.all([
     getComponent(id),
     getComponentRegulationStatuses(id),
+    getComponentReleaseStatuses(id),
   ]);
 
   if (!component) {
@@ -158,6 +159,60 @@ export default async function ComponentDetailPage({ params }: Props) {
                       >
                         {row.status}
                       </span>
+                    </td>
+                    <td className="py-4 pr-4 rounded-r-xl text-sm text-on-surface-variant">
+                      {row.notes ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm overflow-hidden">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-bold text-primary font-headline flex items-center gap-2">
+            <MaterialIcon name="history" className="text-sm" />
+            Compliance by Release Version
+          </h2>
+        </div>
+        {releaseStatuses.length === 0 ? (
+          <div className="p-8 text-center text-on-surface-variant text-sm">
+            No release-version statuses yet. New regulation releases will auto-create review entries here.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-separate border-spacing-y-2">
+              <thead>
+                <tr className="text-on-surface-variant font-bold text-[11px] uppercase tracking-widest">
+                  <th className="pb-4 pl-4">Release</th>
+                  <th className="pb-4">Regulation</th>
+                  <th className="pb-4">Status</th>
+                  <th className="pb-4">Evaluated</th>
+                  <th className="pb-4 pr-4">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {releaseStatuses.map((row) => (
+                  <tr key={row.id} className="group hover:bg-surface-container-low transition-colors rounded-xl">
+                    <td className="py-4 pl-4 rounded-l-xl">
+                      <div className="font-mono text-xs text-on-surface-variant">{row.release_key}</div>
+                      {row.release_title ? (
+                        <div className="text-xs text-on-surface-variant">{row.release_title}</div>
+                      ) : null}
+                    </td>
+                    <td className="py-4 text-sm text-on-surface-variant">
+                      {row.regulation_code} - {row.regulation_name}
+                    </td>
+                    <td className="py-4">
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-secondary-fixed/40 text-on-surface-variant">
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="py-4 text-sm text-on-surface-variant">
+                      {row.evaluated_at ? new Date(row.evaluated_at).toLocaleString() : "—"}
                     </td>
                     <td className="py-4 pr-4 rounded-r-xl text-sm text-on-surface-variant">
                       {row.notes ?? "—"}

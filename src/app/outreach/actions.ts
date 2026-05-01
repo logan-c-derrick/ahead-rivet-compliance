@@ -3,7 +3,7 @@
 import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendEmail } from "@/lib/email";
+import { getEmailProvider, getEmailProviderReadiness, sendEmail } from "@/lib/email";
 import {
   htmlMergeFieldList,
   messageTemplatedToEmailHtml,
@@ -232,36 +232,50 @@ async function resolveOutreachTargets(
   return { ok: false, error: "Invalid targeting mode." };
 }
 
-/** One outreach_request per campaign; multi-supplier / all-suppliers is not supported. */
-function validateConsolidatedCampaignTargets(
-  targetingMode: string,
-  targets: OutreachTargetRow[]
-): string | null {
-  if (targets.length === 0) {
-    return "No targets resolved for this campaign.";
+function normalizeEmail(email: string | null | undefined): string | null {
+  const value = (email ?? "").trim();
+  if (!value) return null;
+  return isValidEmail(value) ? value : null;
+}
+
+async function resolveBestSupplierEmails(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  organizationId: string,
+  supplierIds: string[]
+): Promise<Map<string, string | null>> {
+  const out = new Map<string, string | null>();
+  if (supplierIds.length === 0) return out;
+
+  const { data: supplierRows } = await supabase
+    .from("suppliers")
+    .select("id, contact_email")
+    .eq("organization_id", organizationId)
+    .in("id", supplierIds);
+
+  for (const row of supplierRows ?? []) {
+    const s = row as { id: string; contact_email: string | null };
+    out.set(s.id, normalizeEmail(s.contact_email));
   }
-  if (targetingMode === "all") {
-    return (
-      "A single consolidated request cannot target all suppliers at once. " +
-      "Use component, product, or specific supplier targeting."
-    );
+
+  const unresolved = supplierIds.filter((id) => !out.get(id));
+  if (unresolved.length === 0) return out;
+
+  const { data: contactRows } = await supabase
+    .from("supplier_contacts")
+    .select("supplier_id, email, created_at")
+    .eq("organization_id", organizationId)
+    .in("supplier_id", unresolved)
+    .not("email", "is", null)
+    .order("created_at", { ascending: true });
+
+  for (const row of contactRows ?? []) {
+    const c = row as { supplier_id: string; email: string | null };
+    if (out.get(c.supplier_id)) continue;
+    const email = normalizeEmail(c.email);
+    if (email) out.set(c.supplier_id, email);
   }
-  const supplierIds = new Set(
-    targets.map((t) => t.supplier_id).filter(Boolean) as string[]
-  );
-  if (targetingMode === "suppliers" && targets.length > 1) {
-    return "Select only one supplier for a consolidated request, or launch separate campaigns.";
-  }
-  if (
-    (targetingMode === "components" || targetingMode === "product") &&
-    supplierIds.size > 1
-  ) {
-    return (
-      "A consolidated campaign can only include parts from one supplier. " +
-      "Narrow your selection or use separate campaigns."
-    );
-  }
-  return null;
+
+  return out;
 }
 
 function buildCampaignRegulationJunctionRows(
@@ -496,12 +510,8 @@ export async function launchOutreachCampaign(
   }
 
   const targets = resolved.targets;
-  const targetingMode = String(
-    (resolved.cohortFilters as { targeting_mode?: string }).targeting_mode ?? "all"
-  );
-  const consolidatedErr = validateConsolidatedCampaignTargets(targetingMode, targets);
-  if (consolidatedErr) {
-    return { error: consolidatedErr };
+  if (targets.length === 0) {
+    return { error: "No targets resolved for this campaign." };
   }
 
   const componentLinesOrdered: string[] = [];
@@ -523,11 +533,13 @@ export async function launchOutreachCampaign(
 
   const firstRegName = regById.get(regulationIds[0])?.name ?? "—";
 
-  if (testEmailOverride && !process.env.RESEND_API_KEY?.trim()) {
-    return {
-      error:
-        "Test email requires RESEND_API_KEY in your environment (e.g. .env.local). Restart the dev server after adding it. Without Resend configured, no messages are sent.",
-    };
+  if (testEmailOverride) {
+    const readiness = getEmailProviderReadiness();
+    if (!readiness.ok) {
+      return {
+        error: `Test email requires a configured provider (current: ${getEmailProvider()}). ${readiness.error}`,
+      };
+    }
   }
 
   const cohortFilters: Record<string, unknown> = {
@@ -568,137 +580,190 @@ export async function launchOutreachCampaign(
   let emailsFailed = 0;
 
   const regNote = `Regulations: ${regulation_names}`;
-  const scopeParts = targets
-    .filter((t) => t.component_id)
-    .map((t) => t.component_display ?? t.component_id);
-  const scopeNote =
-    scopeParts.length > 0
-      ? `Campaign: ${name} | Components: ${scopeParts.join("; ")}`
-      : `Campaign: ${name}`;
-
-  const sharedSupplierId =
-    targets.length > 0 &&
-    targets.every((t) => t.supplier_id === targets[0].supplier_id)
-      ? targets[0].supplier_id
-      : null;
-
-  const { data: req, error: reqErr } = await supabase
-    .from("outreach_requests")
-    .insert({
-      organization_id: profile.organization_id,
-      supplier_id: sharedSupplierId,
-      component_id: null,
-      regulation_id: regulationIds[0] ?? null,
-      request_type: "campaign_documentation",
-      status: "sent",
-      requested_by: profile.id,
-      due_date: dueDate,
-      campaign_id: campaign.id,
-      notes: `${scopeNote} | ${regNote}`,
-    })
-    .select("id")
-    .single();
-
-  if (reqErr || !req) {
-    console.error("outreach_requests insert:", reqErr);
-    return {
-      error: `Could not create outreach request: ${reqErr?.message ?? "unknown error"}`,
-    };
+  const targetsBySupplier = new Map<string, OutreachTargetRow[]>();
+  for (const target of targets) {
+    if (!target.supplier_id) {
+      return {
+        error:
+          "One or more selected targets are missing a supplier link. Assign a supplier before launching outreach.",
+      };
+    }
+    const list = targetsBySupplier.get(target.supplier_id) ?? [];
+    list.push(target);
+    targetsBySupplier.set(target.supplier_id, list);
   }
 
-  const junctionRows = buildCampaignRegulationJunctionRows(
-    req.id,
-    regulationIds,
-    targets
+  const supplierIds = [...targetsBySupplier.keys()];
+  const bestEmails = await resolveBestSupplierEmails(
+    supabase,
+    profile.organization_id,
+    supplierIds
   );
 
-  const { error: jErr } = await supabase
-    .from("outreach_request_regulations")
-    .insert(junctionRows);
-
-  if (jErr) {
-    console.error("outreach_request_regulations insert:", jErr);
-    await supabase.from("outreach_requests").delete().eq("id", req.id);
+  const missingEmailSuppliers = supplierIds.filter((id) => !bestEmails.get(id));
+  if (!testEmailOverride && missingEmailSuppliers.length > 0) {
+    const names = missingEmailSuppliers
+      .map((id) => targetsBySupplier.get(id)?.[0]?.supplier_name ?? id)
+      .slice(0, 5);
     return {
-      error: `Could not attach regulations to request: ${jErr.message}`,
+      error: `Missing supplier email for ${missingEmailSuppliers.length} supplier(s): ${names.join(", ")}. Add supplier contact emails and retry.`,
     };
   }
 
-  const rawToken = randomBytes(24).toString("hex");
-  const expiresAt = addDays(new Date(), 30).toISOString();
+  let requestsCreated = 0;
+  for (const [supplierId, supplierTargets] of targetsBySupplier) {
+    const scopeParts = supplierTargets
+      .filter((t) => t.component_id)
+      .map((t) => t.component_display ?? t.component_id);
+    const scopeNote =
+      scopeParts.length > 0
+        ? `Campaign: ${name} | Components: ${scopeParts.join("; ")}`
+        : `Campaign: ${name}`;
 
-  const { error: tokErr } = await supabase
-    .from("outreach_response_tokens")
-    .insert({
-      token: rawToken,
-      outreach_request_id: req.id,
-      expires_at: expiresAt,
-    });
+    const { data: req, error: reqErr } = await supabase
+      .from("outreach_requests")
+      .insert({
+        organization_id: profile.organization_id,
+        supplier_id: supplierId,
+        component_id: null,
+        regulation_id: regulationIds[0] ?? null,
+        request_type: "campaign_documentation",
+        status: "sent",
+        requested_by: profile.id,
+        due_date: dueDate,
+        campaign_id: campaign.id,
+        notes: `${scopeNote} | ${regNote}`,
+      })
+      .select("id")
+      .single();
 
-  if (tokErr) {
-    console.error("outreach_response_tokens insert:", tokErr);
-    await supabase.from("outreach_requests").delete().eq("id", req.id);
-    return {
-      error: `Could not create response link: ${tokErr.message}`,
+    if (reqErr || !req) {
+      console.error("outreach_requests insert:", reqErr);
+      return {
+        error: `Could not create outreach request for supplier ${supplierTargets[0]?.supplier_name ?? supplierId}: ${reqErr?.message ?? "unknown error"}`,
+      };
+    }
+    requestsCreated += 1;
+
+    const junctionRows = buildCampaignRegulationJunctionRows(
+      req.id,
+      regulationIds,
+      supplierTargets
+    );
+
+    const { error: jErr } = await supabase
+      .from("outreach_request_regulations")
+      .insert(junctionRows);
+
+    if (jErr) {
+      console.error("outreach_request_regulations insert:", jErr);
+      await supabase.from("outreach_requests").delete().eq("id", req.id);
+      return {
+        error: `Could not attach regulations to request for ${supplierTargets[0]?.supplier_name ?? supplierId}: ${jErr.message}`,
+      };
+    }
+
+    const rawToken = randomBytes(24).toString("hex");
+    const expiresAt = addDays(new Date(), 30).toISOString();
+
+    const { error: tokErr } = await supabase
+      .from("outreach_response_tokens")
+      .insert({
+        token: rawToken,
+        outreach_request_id: req.id,
+        expires_at: expiresAt,
+      });
+
+    if (tokErr) {
+      console.error("outreach_response_tokens insert:", tokErr);
+      await supabase.from("outreach_requests").delete().eq("id", req.id);
+      return {
+        error: `Could not create response link for ${supplierTargets[0]?.supplier_name ?? supplierId}: ${tokErr.message}`,
+      };
+    }
+
+    const portalLink = `${baseUrl}/outreach/respond/${rawToken}`;
+    const deadline = dueDate || "TBD";
+    const supplierComponentLines = supplierTargets
+      .filter((t) => t.component_display)
+      .map((t) => t.component_display as string);
+    const dedupedSupplierLines = [...new Set(supplierComponentLines)];
+    const supplierComponentNames =
+      dedupedSupplierLines.length > 0 ? dedupedSupplierLines.join(", ") : "—";
+    const supplierComponentList =
+      dedupedSupplierLines.length > 0
+        ? htmlMergeFieldList(dedupedSupplierLines)
+        : "<p>—</p>";
+    const componentNameForTemplate =
+      dedupedSupplierLines.length <= 1
+        ? (dedupedSupplierLines[0] ?? "—")
+        : supplierComponentNames;
+
+    const emailVars = {
+      supplier_contact: supplierTargets[0]?.supplier_name ?? "Supplier",
+      component_name: componentNameForTemplate,
+      component_names: supplierComponentNames,
+      component_list: supplierComponentList,
+      regulation_name: firstRegName,
+      regulation_names,
+      regulation_list,
+      deadline_date: deadline,
+      portal_unique_link: portalLink,
     };
-  }
 
-  const portalLink = `${baseUrl}/outreach/respond/${rawToken}`;
-  const primary = targets[0];
-  const deadline = dueDate || "TBD";
-  const consolidatedComponentName =
-    componentLinesOrdered.length <= 1
-      ? (primary.component_display ?? "—")
-      : component_names;
-
-  const emailVars = {
-    supplier_contact: primary.supplier_name,
-    component_name: consolidatedComponentName,
-    component_names,
-    component_list,
-    regulation_name: firstRegName,
-    regulation_names,
-    regulation_list,
-    deadline_date: deadline,
-    portal_unique_link: portalLink,
-  };
-
-  const subjectRendered = applyTemplate(subjectTemplate, emailVars);
-  const textBody = applyTemplate(messageTemplate, emailVars);
-  const htmlBody = messageTemplatedToEmailHtml(textBody);
-
-  if (testEmailOverride) {
-    emailsAttempted = 1;
+    const subjectRendered = applyTemplate(subjectTemplate, emailVars);
+    const textBody = applyTemplate(messageTemplate, emailVars);
+    const htmlBody = messageTemplatedToEmailHtml(textBody);
+    const recipient = testEmailOverride || bestEmails.get(supplierId) || "";
+    emailsAttempted += 1;
     const result = await sendEmail({
-      to: testEmailOverride,
-      subject: `[TEST] ${subjectRendered}`,
+      to: recipient,
+      subject: testEmailOverride ? `[TEST] ${subjectRendered}` : subjectRendered,
       html: htmlBody,
     });
     if (!result.ok) {
-      return {
-        error: `Test email failed: ${result.error}`,
-      };
-    }
-  } else {
-    const to = primary.contact_email?.trim();
-    if (to) {
-      emailsAttempted = 1;
-      const result = await sendEmail({
-        to,
-        subject: subjectRendered,
-        html: htmlBody,
-      });
-      if (!result.ok) {
-        emailsFailed = 1;
-        console.warn("Outreach email failed:", result.error);
-      }
+      emailsFailed += 1;
+      await supabase
+        .from("outreach_requests")
+        .update({
+          status: "failed",
+          notes: `${scopeNote} | ${regNote} | Email failed: ${result.error.slice(0, 500)}`,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", req.id);
     }
   }
 
+  if (emailsFailed > 0) {
+    const recoveryQ = new URLSearchParams({
+      launched: "1",
+      requests: String(requestsCreated),
+      emails: String(emailsAttempted),
+      failed: String(emailsFailed),
+      delivery: "partial",
+    });
+    if (testEmailOverride) recoveryQ.set("test", "1");
+    return {
+      success: true,
+      redirectTo: `/outreach/manual-preview/${campaign.id}?${recoveryQ.toString()}`,
+    };
+  }
+
   revalidatePath("/outreach");
+  const provider = getEmailProvider();
+  if (provider === "manual") {
+    const manualQ = new URLSearchParams({
+      launched: "1",
+      requests: String(requestsCreated),
+    });
+    return {
+      success: true,
+      redirectTo: `/outreach/manual-preview/${campaign.id}?${manualQ.toString()}`,
+    };
+  }
   const q = new URLSearchParams({
     launched: "1",
-    requests: "1",
+    requests: String(requestsCreated),
     emails: String(emailsAttempted),
     failed: String(emailsFailed),
   });

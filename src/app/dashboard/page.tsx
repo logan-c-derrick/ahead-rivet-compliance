@@ -77,10 +77,16 @@ export default async function DashboardPage({ searchParams }: Props) {
     .length;
 
   const { data: latestRegs } = await supabase
-    .from("regulations")
-    .select("code, name")
-    .order("effective_date", { ascending: false })
+    .from("regulation_releases")
+    .select("release_key, title, regulations(code)")
+    .order("published_at", { ascending: false })
     .limit(2);
+
+  const { data: recentUpdateEvents } = await supabase
+    .from("regulation_update_events")
+    .select("id, impacted_components, impacted_products, created_at, regulation_releases(release_key)")
+    .order("created_at", { ascending: false })
+    .limit(3);
 
   return (
     <div className="p-8 space-y-8">
@@ -341,13 +347,13 @@ export default async function DashboardPage({ searchParams }: Props) {
             <div className="space-y-4">
               {(latestRegs ?? []).map((r: any, idx: number) => (
                 <div
-                  key={r.code}
+                  key={r.release_key}
                   className={`bg-white p-3 rounded-lg shadow-sm border-l-2 ${
                     idx % 2 === 0 ? "border-primary-container" : "border-tertiary-fixed-dim"
                   }`}
                 >
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Update: {r.code}</p>
-                  <p className="text-xs text-on-surface font-medium">{r.name ?? "—"}</p>
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Update: {r.release_key ?? "—"}</p>
+                  <p className="text-xs text-on-surface font-medium">{r.title ?? "Release detected"}</p>
                 </div>
               ))}
               {(latestRegs ?? []).length === 0 ? (
@@ -364,6 +370,25 @@ export default async function DashboardPage({ searchParams }: Props) {
                 className="text-sm group-hover:translate-x-1 transition-transform"
               />
             </Link>
+          </div>
+
+          <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant/20">
+            <h4 className="text-primary font-bold text-sm mb-4">New Release Impacts</h4>
+            <div className="space-y-3">
+              {(recentUpdateEvents ?? []).map((event: any) => (
+                <div key={event.id} className="rounded-lg bg-surface-container-low px-3 py-2 text-xs">
+                  <p className="font-mono text-primary">
+                    {event.regulation_releases?.release_key ?? "Release"}
+                  </p>
+                  <p className="text-on-surface-variant">
+                    {event.impacted_components} components, {event.impacted_products} products flagged
+                  </p>
+                </div>
+              ))}
+              {(recentUpdateEvents ?? []).length === 0 ? (
+                <p className="text-xs text-on-surface-variant">No recent automated impact events.</p>
+              ) : null}
+            </div>
           </div>
 
           <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-primary/5">

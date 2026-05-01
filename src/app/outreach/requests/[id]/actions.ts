@@ -29,6 +29,128 @@ export type FollowUpSendResult =
   | { ok: true }
   | { ok: false; error: string };
 
+function appBaseUrl(): string {
+  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+}
+
+async function getOrRefreshRequestResponseToken(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  requestId: string,
+  allowedComponentIds: string[]
+): Promise<{ ok: true; token: string } | { ok: false; error: string }> {
+  const expiresAt = addDays(new Date(), 30).toISOString();
+  const { data: latest } = await supabase
+    .from("outreach_response_tokens")
+    .select("id, token")
+    .eq("outreach_request_id", requestId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (latest?.id && latest?.token) {
+    const { error: updErr } = await supabase
+      .from("outreach_response_tokens")
+      .update({
+        used_at: null,
+        expires_at: expiresAt,
+        allowed_component_ids: allowedComponentIds.length > 0 ? allowedComponentIds : null,
+      })
+      .eq("id", latest.id);
+    if (updErr) return { ok: false, error: updErr.message };
+    return { ok: true, token: latest.token as string };
+  }
+
+  const rawToken = randomBytes(24).toString("hex");
+  const { error: insErr } = await supabase.from("outreach_response_tokens").insert({
+    token: rawToken,
+    outreach_request_id: requestId,
+    expires_at: expiresAt,
+    allowed_component_ids: allowedComponentIds.length > 0 ? allowedComponentIds : null,
+  });
+  if (insErr) return { ok: false, error: insErr.message };
+  return { ok: true, token: rawToken };
+}
+
+async function sendFollowUpForRequest(opts: {
+  supabase: Awaited<ReturnType<typeof createClient>>;
+  requestId: string;
+  supplierContactEmail: string | null;
+  cohortFilters: unknown;
+  organizationName: string;
+}): Promise<FollowUpSendResult> {
+  const { supabase, requestId, supplierContactEmail, cohortFilters, organizationName } = opts;
+  const eligible = await getFollowUpEligibleComponentIds(supabase, requestId);
+  if (eligible.length === 0) {
+    return {
+      ok: false,
+      error: "No parts need a follow-up upload right now.",
+    };
+  }
+  const email = resolveOutreachNotificationEmail(supplierContactEmail, cohortFilters);
+  if (!email) {
+    return {
+      ok: false,
+      error:
+        "No recipient email: add a supplier contact email or launch with a test email override.",
+    };
+  }
+  const isTestNotification =
+    getTestEmailOverrideFromCohortFilters(cohortFilters) !== null;
+
+  const { data: comps } = await supabase
+    .from("components")
+    .select("id, name, part_number")
+    .in("id", eligible);
+  const partSummary =
+    (comps ?? [])
+      .map((c) => {
+        const name = (c.name as string | null)?.trim() || "";
+        const pn = (c.part_number as string | null)?.trim() || "";
+        if (name && pn) return `${name} (${pn})`;
+        return name || pn || (c.id as string);
+      })
+      .join(", ") || eligible.join(", ");
+
+  const { data: regs } = await supabase
+    .from("outreach_request_regulations")
+    .select("regulation_id, regulations(name, code)")
+    .eq("outreach_request_id", requestId);
+  const seenReg = new Set<string>();
+  const regulationSummary =
+    (regs ?? [])
+      .flatMap((row) => {
+        const regId = row.regulation_id as string | null;
+        if (!regId || seenReg.has(regId)) return [];
+        seenReg.add(regId);
+        const raw = row.regulations as
+          | { name: string | null; code: string | null }
+          | { name: string | null; code: string | null }[]
+          | null
+          | undefined;
+        const r = Array.isArray(raw) ? raw[0] : raw;
+        if (!r?.name) return [];
+        return [r.code ? `${r.name} (${r.code})` : r.name];
+      })
+      .join(", ") || undefined;
+
+  const tokenResult = await getOrRefreshRequestResponseToken(supabase, requestId, eligible);
+  if (!tokenResult.ok) return tokenResult;
+  const uploadUrl = `${appBaseUrl()}/outreach/respond/${tokenResult.token}`;
+
+  const sendResult = await notifySupplierFollowUpLink({
+    to: email,
+    organizationName,
+    uploadUrl,
+    partSummary,
+    regulationSummary,
+    isTestNotification,
+  });
+  if (!sendResult.ok) {
+    return { ok: false, error: sendResult.error };
+  }
+  return { ok: true };
+}
+
 export async function sendFollowUpUploadLink(
   requestId: string
 ): Promise<FollowUpSendResult> {
@@ -53,14 +175,6 @@ export async function sendFollowUpUploadLink(
 
   if (re || !row) return { ok: false, error: "Request not found." };
 
-  const eligible = await getFollowUpEligibleComponentIds(supabase, rid);
-  if (eligible.length === 0) {
-    return {
-      ok: false,
-      error: "No parts need a follow-up upload right now.",
-    };
-  }
-
   const rawS = row.suppliers as
     | { contact_email: string | null }
     | { contact_email: string | null }[]
@@ -75,15 +189,6 @@ export async function sendFollowUpUploadLink(
   const campRow = Array.isArray(rawCamp) ? rawCamp[0] : rawCamp;
   const cohortFilters = campRow?.cohort_filters;
 
-  const email = resolveOutreachNotificationEmail(srow?.contact_email, cohortFilters);
-  if (!email) {
-    return {
-      ok: false,
-      error:
-        "No recipient email: add a supplier contact email or launch with a test email override.",
-    };
-  }
-  const isTestNotification = getTestEmailOverrideFromCohortFilters(cohortFilters) !== null;
 
   const { data: org } = await supabase
     .from("organizations")
@@ -92,68 +197,14 @@ export async function sendFollowUpUploadLink(
     .maybeSingle();
   const organizationName = (org as { name: string } | null)?.name ?? "Organization";
 
-  const { data: comps } = await supabase
-    .from("components")
-    .select("id, name, part_number")
-    .in("id", eligible);
-  const partSummary =
-    (comps ?? [])
-      .map((c) => {
-        const name = (c.name as string | null)?.trim() || "";
-        const pn = (c.part_number as string | null)?.trim() || "";
-        if (name && pn) return `${name} (${pn})`;
-        return name || pn || (c.id as string);
-      })
-      .join(", ") || eligible.join(", ");
-
-  const { data: regs } = await supabase
-    .from("outreach_request_regulations")
-    .select("regulation_id, regulations(name, code)")
-    .eq("outreach_request_id", rid);
-  const seenReg = new Set<string>();
-  const regulationSummary =
-    (regs ?? [])
-      .flatMap((row) => {
-        const regId = row.regulation_id as string | null;
-        if (!regId || seenReg.has(regId)) return [];
-        seenReg.add(regId);
-        const raw = row.regulations as
-          | { name: string | null; code: string | null }
-          | { name: string | null; code: string | null }[]
-          | null
-          | undefined;
-        const r = Array.isArray(raw) ? raw[0] : raw;
-        if (!r?.name) return [];
-        return [r.code ? `${r.name} (${r.code})` : r.name];
-      })
-      .join(", ") || undefined;
-
-  const rawToken = randomBytes(24).toString("hex");
-  const expiresAt = addDays(new Date(), 30).toISOString();
-
-  const { error: tokErr } = await supabase.from("outreach_response_tokens").insert({
-    token: rawToken,
-    outreach_request_id: rid,
-    expires_at: expiresAt,
-    allowed_component_ids: eligible,
-  });
-
-  if (tokErr) {
-    console.error("sendFollowUpUploadLink token:", tokErr);
-    return { ok: false, error: tokErr.message };
-  }
-
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const uploadUrl = `${baseUrl}/outreach/respond/${rawToken}`;
-
-  await notifySupplierFollowUpLink({
-    to: email,
+  const sendResult = await sendFollowUpForRequest({
+    supabase,
+    requestId: rid,
+    supplierContactEmail: srow?.contact_email ?? null,
+    cohortFilters,
     organizationName,
-    uploadUrl,
-    partSummary,
-    regulationSummary,
-    isTestNotification,
   });
+  if (!sendResult.ok) return sendResult;
 
   revalidatePath(`/outreach/requests/${rid}`);
   revalidatePath("/outreach");
@@ -290,12 +341,7 @@ export async function submitOutreachRegulationReview(
     }
   }
 
-  if (anyRejected) {
-    await supabase
-      .from("outreach_response_tokens")
-      .update({ used_at: null })
-      .eq("outreach_request_id", rid);
-  }
+  let followUpError: string | null = null;
 
   const { data: finalRows } = await supabase
     .from("outreach_request_regulations")
@@ -390,10 +436,24 @@ export async function submitOutreachRegulationReview(
     });
   }
 
+  if (anyRejected) {
+    const followResult = await sendFollowUpForRequest({
+      supabase,
+      requestId: rid,
+      supplierContactEmail: sEmail ?? null,
+      cohortFilters: campRow?.cohort_filters,
+      organizationName: orgNm,
+    });
+    if (!followResult.ok) {
+      followUpError = `Review saved, but resending upload link failed: ${followResult.error}`;
+    }
+  }
+
   revalidatePath("/outreach");
   revalidatePath(`/outreach/requests/${rid}`);
   revalidatePath(`/components/${componentId}`);
 
+  if (followUpError) return { ok: false, error: followUpError };
   return { ok: true };
 }
 
@@ -522,6 +582,7 @@ export async function submitCampaignOutreachReview(
   const now = new Date().toISOString();
   const revalidatedComponents = new Set<string>();
   const touchedRequestIds = new Set<string>();
+  const rejectedRequestIds = new Set<string>();
 
   for (const [sk, raw] of decisions.entries()) {
     const [reqId, compPart, regId] = sk.split("::");
@@ -596,10 +657,7 @@ export async function submitCampaignOutreachReview(
       const { error: u3 } = await uq;
       if (u3) return { ok: false, error: u3.message };
 
-      await supabase
-        .from("outreach_response_tokens")
-        .update({ used_at: null })
-        .eq("outreach_request_id", reqId);
+      rejectedRequestIds.add(reqId);
     }
   }
 
@@ -732,6 +790,41 @@ export async function submitCampaignOutreachReview(
     }
   }
 
+  let campaignFollowUpError: string | null = null;
+  if (rejectedRequestIds.size > 0) {
+    for (const reqId of rejectedRequestIds) {
+      const { data: followCtx } = await supabase
+        .from("outreach_requests")
+        .select("suppliers(contact_email), outreach_campaigns(cohort_filters)")
+        .eq("id", reqId)
+        .maybeSingle();
+      const rawFollowSup = followCtx?.suppliers as
+        | { contact_email: string | null }
+        | { contact_email: string | null }[]
+        | null
+        | undefined;
+      const followSup = Array.isArray(rawFollowSup) ? rawFollowSup[0] : rawFollowSup;
+      const rawFollowCamp = followCtx?.outreach_campaigns as
+        | { cohort_filters: unknown }
+        | { cohort_filters: unknown }[]
+        | null
+        | undefined;
+      const followCamp = Array.isArray(rawFollowCamp) ? rawFollowCamp[0] : rawFollowCamp;
+
+      const result = await sendFollowUpForRequest({
+        supabase,
+        requestId: reqId,
+        supplierContactEmail: followSup?.contact_email ?? null,
+        cohortFilters: followCamp?.cohort_filters,
+        organizationName: reviewOrgName,
+      });
+      if (!result.ok) {
+        campaignFollowUpError = `Review saved, but resend failed for one or more requests: ${result.error}`;
+        break;
+      }
+    }
+  }
+
   revalidatePath("/outreach");
   for (const rid of requestIds) {
     revalidatePath(`/outreach/requests/${rid}`);
@@ -740,5 +833,6 @@ export async function submitCampaignOutreachReview(
     revalidatePath(`/components/${cid}`);
   }
 
+  if (campaignFollowUpError) return { ok: false, error: campaignFollowUpError };
   return { ok: true };
 }

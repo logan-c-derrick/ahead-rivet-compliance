@@ -3,6 +3,10 @@
     {
       "path": "/api/monitor/check",
       "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/regulations/sync",
+      "schedule": "0 */6 * * *"
     }
   ]
 }
