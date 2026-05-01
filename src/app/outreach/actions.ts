@@ -118,15 +118,62 @@ async function resolveOutreachTargets(
     if (rows.length === 0) {
       return { ok: false, error: "No matching suppliers found for your selection." };
     }
+    const { data: comps, error: compErr } = await supabase
+      .from("components")
+      .select("id, name, part_number, supplier_id")
+      .eq("organization_id", profile.organization_id)
+      .in("supplier_id", ids);
+    if (compErr) return { ok: false, error: compErr.message };
+
+    const compsBySupplier = new Map<
+      string,
+      Array<{ id: string; name: string; part_number: string | null }>
+    >();
+    for (const row of (comps ?? []) as Array<{
+      id: string;
+      name: string;
+      part_number: string | null;
+      supplier_id: string | null;
+    }>) {
+      if (!row.supplier_id) continue;
+      const list = compsBySupplier.get(row.supplier_id) ?? [];
+      list.push({
+        id: row.id,
+        name: row.name,
+        part_number: row.part_number,
+      });
+      compsBySupplier.set(row.supplier_id, list);
+    }
+
+    const targets: OutreachTargetRow[] = [];
+    for (const s of rows) {
+      const linkedComponents = compsBySupplier.get(s.id) ?? [];
+      if (linkedComponents.length === 0) {
+        // Keep supplier-only fallback so users can still request supplier-level docs.
+        targets.push({
+          supplier_id: s.id,
+          component_id: null,
+          supplier_name: s.name,
+          contact_email: s.contact_email,
+          component_display: null,
+        });
+        continue;
+      }
+      linkedComponents.sort((a, b) => a.name.localeCompare(b.name));
+      for (const c of linkedComponents) {
+        targets.push({
+          supplier_id: s.id,
+          component_id: c.id,
+          supplier_name: s.name,
+          contact_email: s.contact_email,
+          component_display: [c.name, c.part_number].filter(Boolean).join(" · ") || c.name,
+        });
+      }
+    }
+
     return {
       ok: true,
-      targets: rows.map((s) => ({
-        supplier_id: s.id,
-        component_id: null,
-        supplier_name: s.name,
-        contact_email: s.contact_email,
-        component_display: null,
-      })),
+      targets,
       cohortFilters: { targeting_mode: "suppliers", supplier_ids: ids },
     };
   }

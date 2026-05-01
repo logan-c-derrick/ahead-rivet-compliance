@@ -45,7 +45,7 @@ export default async function ManualPreviewPage({ params, searchParams }: Props)
           {qs.launched === "1" && (
             <p className="mt-2 text-sm text-tertiary-container bg-tertiary-fixed/30 inline-flex items-center gap-2 px-3 py-1 rounded-lg">
               <MaterialIcon name="check_circle" className="text-sm" />
-              Campaign launched. Copy each email below into Outlook.
+              Campaign launched. Copy or download each email below for Outlook.
             </p>
           )}
           {qs.delivery === "partial" && (
@@ -56,6 +56,13 @@ export default async function ManualPreviewPage({ params, searchParams }: Props)
           )}
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href={`/api/outreach/campaigns/${campaign.id}/manual-email-bundle`}
+            className="inline-flex items-center gap-2 rounded-lg border border-outline-variant/40 px-3 py-2 text-xs font-bold text-primary hover:bg-surface-container-low"
+          >
+            <MaterialIcon name="folder_zip" className="text-sm" />
+            Download All Emails (.zip)
+          </Link>
           <Link
             href={`/api/outreach/campaigns/${campaign.id}/manual-export`}
             className="inline-flex items-center gap-2 rounded-lg border border-outline-variant/40 px-3 py-2 text-xs font-bold text-primary hover:bg-surface-container-low"
@@ -96,6 +103,17 @@ export default async function ManualPreviewPage({ params, searchParams }: Props)
                   bodyText={row.body_text}
                   portalLink={row.portal_link}
                 />
+              </div>
+              <div className="flex items-center justify-end">
+                <Link
+                  href={`/api/outreach/campaigns/${campaign.id}/manual-email?request_id=${encodeURIComponent(
+                    row.request_id
+                  )}`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-outline-variant/40 px-3 py-2 text-xs font-bold text-primary hover:bg-surface-container-low"
+                >
+                  <MaterialIcon name="attach_email" className="text-sm" />
+                  Download Outlook Email (.eml)
+                </Link>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">

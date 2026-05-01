@@ -45,6 +45,16 @@ function htmlToPlainText(html: string): string {
     .trim();
 }
 
+function linkifyPortalLinkInHtml(html: string, portalLink: string): string {
+  if (!portalLink) return html;
+  if (html.includes(`href="${portalLink}"`) || html.includes(`href='${portalLink}'`)) {
+    return html;
+  }
+  const safeHref = portalLink.replace(/"/g, "&quot;");
+  const anchor = `<a href="${safeHref}">${portalLink}</a>`;
+  return html.split(portalLink).join(anchor);
+}
+
 export async function buildManualOutreachPreviewRows(opts: {
   supabase: any;
   organizationId: string;
@@ -173,7 +183,10 @@ export async function buildManualOutreachPreviewRows(opts: {
       portal_unique_link: portalLink,
     };
     const subject = applyTemplate(subjectTemplate, vars);
-    const bodyHtml = messageTemplatedToEmailHtml(applyTemplate(messageTemplate, vars));
+    const bodyHtml = linkifyPortalLinkInHtml(
+      messageTemplatedToEmailHtml(applyTemplate(messageTemplate, vars)),
+      portalLink
+    );
     rows.push({
       campaign_id: c.id,
       campaign_name: c.name,
