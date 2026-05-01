@@ -25,6 +25,17 @@ export type ProductRegulationStatusRow = {
   verification_percent: number;
 };
 
+export type ProductReleaseStatusRow = {
+  id: string;
+  release_key: string;
+  release_title: string | null;
+  regulation_code: string;
+  regulation_name: string;
+  status: string;
+  evaluated_at: string | null;
+  notes: string | null;
+};
+
 function toDateOnly(isoString: string): string {
   // isoString example: 2026-03-20T12:34:56.789Z
   return isoString.slice(0, 10);
@@ -128,6 +139,46 @@ export async function getProductComplianceTable(
       verification_percent,
     };
   });
+}
+
+export async function getProductReleaseStatuses(
+  productId: string
+): Promise<ProductReleaseStatusRow[]> {
+  await requireProfile();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("product_regulation_release_status")
+    .select(`
+      id,
+      status,
+      evaluated_at,
+      notes,
+      regulation_releases(
+        release_key,
+        title,
+        regulations(code, name)
+      )
+    `)
+    .eq("product_id", productId)
+    .order("evaluated_at", { ascending: false, nullsFirst: false })
+    .limit(30);
+
+  if (error) {
+    console.error("Error loading product release statuses:", error);
+    return [];
+  }
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    release_key: row.regulation_releases?.release_key ?? "—",
+    release_title: row.regulation_releases?.title ?? null,
+    regulation_code: row.regulation_releases?.regulations?.code ?? "—",
+    regulation_name: row.regulation_releases?.regulations?.name ?? "—",
+    status: row.status,
+    evaluated_at: row.evaluated_at ?? null,
+    notes: row.notes ?? null,
+  })) as ProductReleaseStatusRow[];
 }
 
 export async function recalculateProductRegulationStatus(productId: string) {

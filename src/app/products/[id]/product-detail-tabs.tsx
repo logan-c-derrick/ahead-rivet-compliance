@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Product, ProductBomComponent } from "../actions";
 import type { ProductRegulationStatusRow } from "../compliance";
+import type { ProductReleaseStatusRow } from "../compliance";
 import { recalculateProductRegulationStatus } from "../compliance";
 
 const TABS = [
@@ -71,9 +72,11 @@ export default async function ProductDetailTabs({
   complianceRows,
   bomRows,
   activeTab,
+  releaseRows,
 }: {
   product: Product;
   complianceRows: ProductRegulationStatusRow[];
+  releaseRows: ProductReleaseStatusRow[];
   bomRows: ProductBomComponent[];
   activeTab: TabId;
 }) {
@@ -254,7 +257,7 @@ export default async function ProductDetailTabs({
           )}
 
           {activeTab === "regulations" && (
-            <PlaceholderRegulationsPanel complianceRows={complianceRows} />
+            <PlaceholderRegulationsPanel complianceRows={complianceRows} releaseRows={releaseRows} />
           )}
 
           {activeTab === "compliance" && (
@@ -357,7 +360,13 @@ function PlaceholderPanel({
   );
 }
 
-function PlaceholderRegulationsPanel({ complianceRows }: { complianceRows: ProductRegulationStatusRow[] }) {
+function PlaceholderRegulationsPanel({
+  complianceRows,
+  releaseRows,
+}: {
+  complianceRows: ProductRegulationStatusRow[];
+  releaseRows: ProductReleaseStatusRow[];
+}) {
   return (
     <div className="space-y-4">
       <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
@@ -387,6 +396,39 @@ function PlaceholderRegulationsPanel({ complianceRows }: { complianceRows: Produ
             </div>
           ))}
         </div>
+      </div>
+      <div className="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-primary font-headline mb-4">Compliance by Release Version</h3>
+        {releaseRows.length === 0 ? (
+          <p className="text-sm text-on-surface-variant">
+            No release-version compliance rows yet. Newly detected regulation releases will appear here automatically.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {releaseRows.slice(0, 12).map((row) => (
+              <div
+                key={row.id}
+                className="grid grid-cols-12 items-center p-4 rounded-xl hover:bg-surface-container-low transition-colors"
+              >
+                <div className="col-span-4">
+                  <div className="font-mono text-xs text-on-surface-variant">{row.release_key}</div>
+                  <div className="text-xs text-on-surface-variant truncate">{row.release_title ?? "—"}</div>
+                </div>
+                <div className="col-span-4 text-sm text-on-surface-variant">
+                  {row.regulation_code} - {row.regulation_name}
+                </div>
+                <div className="col-span-2">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-secondary-fixed/40 text-on-surface-variant">
+                    {row.status}
+                  </span>
+                </div>
+                <div className="col-span-2 text-right text-xs text-on-surface-variant">
+                  {row.evaluated_at ? new Date(row.evaluated_at).toLocaleDateString() : "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

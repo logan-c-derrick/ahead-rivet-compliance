@@ -21,6 +21,20 @@ export default async function RegulationsPage({ searchParams }: Props) {
     )
     .order("code");
 
+  const { data: releaseRows } = await supabase
+    .from("regulation_releases")
+    .select("id, regulation_id, release_key, title, published_at, source_url")
+    .order("published_at", { ascending: false })
+    .limit(100);
+
+  const releasesByRegulation = new Map<string, any[]>();
+  for (const row of releaseRows ?? []) {
+    const release = row as any;
+    const key = String(release.regulation_id);
+    if (!releasesByRegulation.has(key)) releasesByRegulation.set(key, []);
+    releasesByRegulation.get(key)!.push(release);
+  }
+
   const filteredRegulations = (regulations ?? []).filter((reg: any) => {
     if (jurisdictionFilter && String(reg.jurisdiction ?? "").toLowerCase() !== jurisdictionFilter) return false;
     if (!query) return true;
@@ -137,11 +151,16 @@ export default async function RegulationsPage({ searchParams }: Props) {
                   <th className="px-6 py-4">Jurisdiction</th>
                   <th className="px-6 py-4">First published</th>
                   <th className="px-6 py-4">Last updated (source)</th>
+                  <th className="px-6 py-4">Latest release</th>
                   <th className="px-6 py-4 text-right">Effective</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRegulations.map((reg: any) => (
+                  (() => {
+                    const regReleases = releasesByRegulation.get(String(reg.id)) ?? [];
+                    const latestRelease = regReleases[0];
+                    return (
                   <tr
                     key={reg.id}
                     className="group hover:bg-surface-container-low transition-colors"
@@ -169,22 +188,55 @@ export default async function RegulationsPage({ searchParams }: Props) {
                           ? new Date(reg.updated_at).toLocaleString()
                           : "—"}
                     </td>
+                    <td className="px-6 py-5 text-sm text-on-surface-variant">
+                      {latestRelease ? (
+                        <div className="space-y-1">
+                          <div className="font-mono text-xs text-primary">{latestRelease.release_key}</div>
+                          <div className="text-xs truncate max-w-[16rem]">{latestRelease.title ?? "—"}</div>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     <td className="px-6 py-5 text-sm text-right text-on-surface-variant">
                       {reg.effective_date
                         ? new Date(reg.effective_date).toLocaleDateString()
                         : "—"}
                     </td>
                   </tr>
+                    );
+                  })()
                 ))}
                 {filteredRegulations.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-10 text-center text-on-surface-variant">
+                    <td colSpan={7} className="px-6 py-10 text-center text-on-surface-variant">
                       No regulations found for the current filters.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="border-t border-outline-variant/20 px-6 py-4">
+            <p className="text-xs text-on-surface-variant font-semibold uppercase tracking-widest mb-3">
+              Recent release timeline
+            </p>
+            <div className="space-y-2">
+              {(releaseRows ?? []).slice(0, 8).map((row: any) => (
+                <div key={row.id} className="flex items-center justify-between gap-4 text-xs">
+                  <div className="text-on-surface-variant">
+                    <span className="font-mono text-primary mr-2">{row.release_key}</span>
+                    {row.title ?? "Release detected"}
+                  </div>
+                  <div className="text-on-surface-variant/80 shrink-0">
+                    {row.published_at ? new Date(row.published_at).toLocaleDateString() : "—"}
+                  </div>
+                </div>
+              ))}
+              {(releaseRows ?? []).length === 0 ? (
+                <p className="text-xs text-on-surface-variant">No release versions detected yet.</p>
+              ) : null}
+            </div>
           </div>
         </div>
       )}

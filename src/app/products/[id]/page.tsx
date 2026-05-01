@@ -3,7 +3,12 @@ import { getProduct, getProductBomComponents, type ProductBomComponent } from ".
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductDetailTabs from "./product-detail-tabs";
-import { getProductComplianceTable, type ProductRegulationStatusRow } from "../compliance";
+import {
+  getProductComplianceTable,
+  getProductReleaseStatuses,
+  type ProductRegulationStatusRow,
+  type ProductReleaseStatusRow,
+} from "../compliance";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -26,8 +31,15 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
   const { tab } = await searchParams;
   const activeTab = isTabId(tab) ? tab : "overview";
 
-  const complianceRows: ProductRegulationStatusRow[] = await getProductComplianceTable(product.id);
-  const bomRows: ProductBomComponent[] = await getProductBomComponents(product.id);
+  const [complianceRows, releaseRows, bomRows]: [
+    ProductRegulationStatusRow[],
+    ProductReleaseStatusRow[],
+    ProductBomComponent[],
+  ] = await Promise.all([
+    getProductComplianceTable(product.id),
+    getProductReleaseStatuses(product.id),
+    getProductBomComponents(product.id),
+  ]);
 
   return (
     <div className="p-8 space-y-8">
@@ -85,7 +97,13 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
         </div>
       </header>
 
-      <ProductDetailTabs product={product} complianceRows={complianceRows} bomRows={bomRows} activeTab={activeTab} />
+      <ProductDetailTabs
+        product={product}
+        complianceRows={complianceRows}
+        releaseRows={releaseRows}
+        bomRows={bomRows}
+        activeTab={activeTab}
+      />
     </div>
   );
 }

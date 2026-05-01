@@ -57,9 +57,18 @@ export default async function OutreachRequestDetailPage({ params }: Props) {
     created_at: d.created_at,
     downloadUrl: d.downloadUrl,
     subtitle:
-      d.coverage.length > 0
-        ? `Supplier selected: ${d.coverage.map((c) => c.label).join(" · ")}`
-        : "Scope: not specified (legacy upload before part selection)",
+      d.coverage.length > 0 || d.regulationCoverage.length > 0
+        ? [
+            d.coverage.length > 0
+              ? `Parts: ${d.coverage.map((c) => c.label).join(" · ")}`
+              : null,
+            d.regulationCoverage.length > 0
+              ? `Regulations: ${d.regulationCoverage.map((r) => r.label).join(" · ")}`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" | ")
+        : "Scope: not specified (legacy upload before part/regulation selection)",
   }));
 
   return (

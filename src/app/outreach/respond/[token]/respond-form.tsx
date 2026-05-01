@@ -34,6 +34,7 @@ export default function RespondForm({
 }) {
   const [fileRows, setFileRows] = useState<File[]>([]);
   const [selections, setSelections] = useState<string[][]>([]);
+  const [regulationSelections, setRegulationSelections] = useState<string[][]>([]);
   const [clientError, setClientError] = useState<string | null>(null);
   const [serverState, setServerState] = useState<SubmitOutreachResult | null>(null);
   const [pending, setPending] = useState(false);
@@ -45,10 +46,13 @@ export default function RespondForm({
       const arr = list && list.length > 0 ? Array.from(list) : [];
       setFileRows(arr);
       setSelections(defaultSelectionsForFiles(arr.length, context.components));
+      setRegulationSelections(
+        Array.from({ length: arr.length }, () => context.regulations.map((r) => r.regulationId))
+      );
       setClientError(null);
       setServerState(null);
     },
-    [context.components]
+    [context.components, context.regulations]
   );
 
   const toggleComponent = useCallback((fileIdx: number, componentId: string, checked: boolean) => {
@@ -61,6 +65,20 @@ export default function RespondForm({
       return next;
     });
   }, []);
+
+  const toggleRegulation = useCallback(
+    (fileIdx: number, regulationId: string, checked: boolean) => {
+      setRegulationSelections((prev) => {
+        const next = prev.map((row) => [...row]);
+        const set = new Set(next[fileIdx] ?? []);
+        if (checked) set.add(regulationId);
+        else set.delete(regulationId);
+        next[fileIdx] = [...set];
+        return next;
+      });
+    },
+    []
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -83,6 +101,16 @@ export default function RespondForm({
           }
         }
       }
+      if (context.regulations.length > 0) {
+        for (let i = 0; i < fileRows.length; i++) {
+          if ((regulationSelections[i]?.length ?? 0) === 0) {
+            setClientError(
+              `Select at least one regulation for "${fileRows[i].name}". Every file must map to regulation scope.`
+            );
+            return;
+          }
+        }
+      }
 
       const fd = new FormData();
       for (const f of fileRows) {
@@ -92,6 +120,9 @@ export default function RespondForm({
         for (const cid of selections[i] ?? []) {
           fd.append(`component_id_${i}`, cid);
         }
+        for (const rid of regulationSelections[i] ?? []) {
+          fd.append(`regulation_id_${i}`, rid);
+        }
       }
 
       setPending(true);
@@ -99,7 +130,7 @@ export default function RespondForm({
       setPending(false);
       setServerState(result);
     },
-    [fileRows, hasComponentScope, selections, token]
+    [fileRows, hasComponentScope, selections, regulationSelections, token, context.regulations.length]
   );
 
   const showThankYou = serverState?.success || context.alreadySubmitted;
@@ -184,12 +215,11 @@ export default function RespondForm({
           </p>
         </div>
 
-        {fileRows.length > 0 && hasComponentScope ? (
+        {fileRows.length > 0 ? (
           <div className="space-y-4">
             <h2 className="text-sm font-bold text-primary">Map files to parts</h2>
             <p className="text-xs text-on-surface-variant">
-              Each file must cover at least one part. You can assign different files to different
-              parts in a single submission.
+              Map each file to the parts and regulations it supports.
             </p>
             <ul className="space-y-4">
               {fileRows.map((file, fileIdx) => (
@@ -200,31 +230,73 @@ export default function RespondForm({
                   <p className="text-sm font-semibold text-on-surface truncate" title={file.name}>
                     {file.name}
                   </p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
-                    Applies to
-                  </p>
-                  <ul className="space-y-2">
-                    {context.components.map((c) => {
-                      const checked = (selections[fileIdx] ?? []).includes(c.componentId);
-                      return (
-                        <li key={c.componentId}>
-                          <label className="flex gap-3 items-start cursor-pointer rounded-lg border border-outline-variant/15 bg-surface-container-low/40 p-2.5 hover:bg-surface-container-low/70 transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) =>
-                                toggleComponent(fileIdx, c.componentId, e.target.checked)
-                              }
-                              className="mt-1 h-4 w-4 rounded border-outline-variant text-primary"
-                            />
-                            <div className="space-y-0.5 text-sm text-on-surface min-w-0 flex-1">
-                              <span className="block font-medium">{partRowLabel(c)}</span>
-                            </div>
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  {hasComponentScope ? (
+                    <>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">
+                        Applies to parts
+                      </p>
+                      <ul className="space-y-2">
+                        {context.components.map((c) => {
+                          const checked = (selections[fileIdx] ?? []).includes(c.componentId);
+                          return (
+                            <li key={c.componentId}>
+                              <label className="flex gap-3 items-start cursor-pointer rounded-lg border border-outline-variant/15 bg-surface-container-low/40 p-2.5 hover:bg-surface-container-low/70 transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) =>
+                                    toggleComponent(fileIdx, c.componentId, e.target.checked)
+                                  }
+                                  className="mt-1 h-4 w-4 rounded border-outline-variant text-primary"
+                                />
+                                <div className="space-y-0.5 text-sm text-on-surface min-w-0 flex-1">
+                                  <span className="block font-medium">{partRowLabel(c)}</span>
+                                </div>
+                              </label>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </>
+                  ) : null}
+                  <div className="pt-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+                      Regulations this file supports
+                    </p>
+                    <ul className="space-y-2">
+                      {context.regulations.map((r) => {
+                        const checked = (regulationSelections[fileIdx] ?? []).includes(
+                          r.regulationId
+                        );
+                        return (
+                          <li key={`${fileIdx}-${r.regulationId}`}>
+                            <label className="flex gap-3 items-start cursor-pointer rounded-lg border border-outline-variant/15 bg-surface-container-low/40 p-2.5 hover:bg-surface-container-low/70 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) =>
+                                  toggleRegulation(
+                                    fileIdx,
+                                    r.regulationId,
+                                    e.target.checked
+                                  )
+                                }
+                                className="mt-1 h-4 w-4 rounded border-outline-variant text-primary"
+                              />
+                              <div className="space-y-0.5 text-sm text-on-surface min-w-0 flex-1">
+                                <span className="block font-medium">{r.name}</span>
+                                {r.code ? (
+                                  <span className="text-on-surface-variant font-mono text-xs">
+                                    {r.code}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
                 </li>
               ))}
             </ul>

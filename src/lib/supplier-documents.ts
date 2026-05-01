@@ -24,6 +24,7 @@ export type SupplierDocumentRow = {
 /** Includes supplier-selected component coverage when available (migration 017+). */
 export type SupplierDocumentWithCoverage = SupplierDocumentRow & {
   coverage: { id: string; label: string }[];
+  regulationCoverage: { id: string; label: string }[];
 };
 
 export type ComponentSupplierDocument = SupplierDocumentRow & {
@@ -224,6 +225,10 @@ export async function getSupplierDocumentsForOutreachRequest(
       supplier_document_components (
         component_id,
         components (id, name, part_number)
+      ),
+      supplier_document_regulations (
+        regulation_id,
+        regulations (id, name, code)
       )
     `
     )
@@ -240,6 +245,10 @@ export async function getSupplierDocumentsForOutreachRequest(
       supplier_document_components?: Array<{
         component_id: string;
         components: unknown;
+      }>;
+      supplier_document_regulations?: Array<{
+        regulation_id: string;
+        regulations: unknown;
       }>;
     }
   >;
@@ -266,7 +275,23 @@ export async function getSupplierDocumentsForOutreachRequest(
     }
     coverage.sort((a, b) => a.label.localeCompare(b.label));
     const { supplier_document_components: _, ...rest } = row;
-    return { ...rest, coverage };
+    const regulationCoverage: { id: string; label: string }[] = [];
+    const seenReg = new Set<string>();
+    for (const j of row.supplier_document_regulations ?? []) {
+      const rid = j.regulation_id as string;
+      if (seenReg.has(rid)) continue;
+      seenReg.add(rid);
+      const reg = one(
+        j.regulations as { id: string; name: string | null; code: string | null } | null
+      );
+      const label = reg?.code ? `${reg.name ?? "—"} (${reg.code})` : reg?.name ?? "—";
+      regulationCoverage.push({ id: rid, label });
+    }
+    regulationCoverage.sort((a, b) => a.label.localeCompare(b.label));
+    const { supplier_document_regulations: __, ...restNoRegs } = rest as typeof rest & {
+      supplier_document_regulations?: unknown;
+    };
+    return { ...restNoRegs, coverage, regulationCoverage };
   });
 }
 

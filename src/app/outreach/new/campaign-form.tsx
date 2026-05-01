@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFormState } from "react-dom";
+import { useFormState, useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import { RichMessageEditor } from "@/components/outreach/rich-message-editor";
@@ -51,6 +51,7 @@ export default function OutreachCampaignForm({
   const [selectedRegulationIds, setSelectedRegulationIds] = useState<Set<string>>(() => new Set());
   const [subjectTemplate, setSubjectTemplate] = useState(defaultSubjectTemplate);
   const [messageTemplate, setMessageTemplate] = useState(defaultMessageTemplate);
+  const [submitIntent, setSubmitIntent] = useState<"launch" | "draft" | null>(null);
 
   const [state, formAction] = useFormState(
     async (_prev: OutreachActionState, formData: FormData) => {
@@ -64,6 +65,10 @@ export default function OutreachCampaignForm({
       router.push(state.redirectTo);
     }
   }, [state, router]);
+
+  useEffect(() => {
+    if (state) setSubmitIntent(null);
+  }, [state]);
 
   const err = state && "error" in state ? state.error : null;
 
@@ -234,8 +239,9 @@ export default function OutreachCampaignForm({
                 that opens the full campaign. Subject is prefixed with{" "}
                 <code className="text-xs">[TEST]</code>. Leave blank to email each supplier contact.
                 Test email override currently supports <strong>@ahead.com</strong> addresses only.
-                Sending requires <code className="text-xs">RESEND_API_KEY</code> in{" "}
-                <code className="text-xs">.env.local</code> and a server restart.
+                Sending uses your configured provider via{" "}
+                <code className="text-xs">EMAIL_PROVIDER</code> in{" "}
+                <code className="text-xs">.env.local</code>.
               </p>
             </div>
           </div>
@@ -503,25 +509,31 @@ export default function OutreachCampaignForm({
         </section>
 
         <section className="bg-primary p-8 rounded-xl text-white shadow-xl shadow-blue-900/20 space-y-4">
-          <button
-            type="submit"
-            onClick={() => {
+          <SubmitIntentButton
+            intent="launch"
+            submitIntent={submitIntent}
+            onIntent={() => {
+              setSubmitIntent("launch");
               if (intentRef.current) intentRef.current.value = "launch";
             }}
-            className="w-full bg-white text-primary py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors font-body"
-          >
-            <MaterialIcon name="rocket_launch" filled />
-            ACTIVATE CAMPAIGN
-          </button>
-          <button
-            type="submit"
-            onClick={() => {
+            className="w-full bg-white text-primary py-4 rounded-lg font-black tracking-tight flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors font-body disabled:opacity-70 disabled:cursor-not-allowed"
+            idleLabel="ACTIVATE CAMPAIGN"
+            pendingLabel="Launching campaign..."
+            icon="rocket_launch"
+            iconFilled
+          />
+          <SubmitIntentButton
+            intent="draft"
+            submitIntent={submitIntent}
+            onIntent={() => {
+              setSubmitIntent("draft");
               if (intentRef.current) intentRef.current.value = "draft";
             }}
-            className="w-full bg-primary-container/40 text-white/90 py-3 rounded-lg text-sm font-bold hover:bg-primary-container transition-colors font-body"
-          >
-            Save as Draft
-          </button>
+            className="w-full bg-primary-container/40 text-white/90 py-3 rounded-lg text-sm font-bold hover:bg-primary-container transition-colors font-body disabled:opacity-70 disabled:cursor-not-allowed"
+            idleLabel="Save as Draft"
+            pendingLabel="Saving draft..."
+            icon="save"
+          />
           <Link
             href="/outreach"
             className="block w-full text-center text-xs text-white/70 hover:text-white font-body"
@@ -531,5 +543,34 @@ export default function OutreachCampaignForm({
         </section>
       </div>
     </form>
+  );
+}
+
+function SubmitIntentButton({
+  intent,
+  submitIntent,
+  onIntent,
+  className,
+  idleLabel,
+  pendingLabel,
+  icon,
+  iconFilled,
+}: {
+  intent: "launch" | "draft";
+  submitIntent: "launch" | "draft" | null;
+  onIntent: () => void;
+  className: string;
+  idleLabel: string;
+  pendingLabel: string;
+  icon: string;
+  iconFilled?: boolean;
+}) {
+  const { pending } = useFormStatus();
+  const isActive = pending && submitIntent === intent;
+  return (
+    <button type="submit" onClick={onIntent} disabled={pending} className={className}>
+      <MaterialIcon name={isActive ? "hourglass_top" : icon} filled={iconFilled} />
+      {isActive ? pendingLabel : idleLabel}
+    </button>
   );
 }

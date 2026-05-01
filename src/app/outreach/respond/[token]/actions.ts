@@ -9,6 +9,7 @@ import {
 } from "@/lib/outreach-test-email";
 
 export type PublicOutreachRegulationItem = {
+  regulationId: string;
   name: string;
   code: string | null;
 };
@@ -77,7 +78,11 @@ export async function getPublicOutreachContext(
     const r = row.regulations as { name: string; code: string | null } | { name: string; code: string | null }[] | null | undefined;
     const one = Array.isArray(r) ? r[0] : r;
     if (one?.name) {
-      regulations.push({ name: one.name, code: one.code ?? null });
+      regulations.push({
+        regulationId: regId,
+        name: one.name,
+        code: one.code ?? null,
+      });
     }
   }
   if (regulations.length === 0 && req.regulation_id) {
@@ -87,7 +92,13 @@ export async function getPublicOutreachContext(
       .eq("id", req.regulation_id)
       .maybeSingle();
     const lr = regulation as { name: string; code: string | null } | null;
-    if (lr?.name) regulations.push({ name: lr.name, code: lr.code });
+    if (lr?.name) {
+      regulations.push({
+        regulationId: req.regulation_id as string,
+        name: lr.name,
+        code: lr.code,
+      });
+    }
   }
   regulations.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -226,6 +237,26 @@ async function loadAllowedComponentIdsForRequest(
   return [...seen];
 }
 
+async function loadAllowedRegulationIdsForRequest(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  requestId: string,
+  fallbackRegulationId: string | null
+): Promise<string[]> {
+  const seen = new Set<string>();
+  const { data: rows } = await supabase
+    .from("outreach_request_regulations")
+    .select("regulation_id")
+    .eq("outreach_request_id", requestId);
+  for (const row of rows ?? []) {
+    const rid = row.regulation_id as string | null;
+    if (rid) seen.add(rid);
+  }
+  if (seen.size === 0 && fallbackRegulationId) {
+    seen.add(fallbackRegulationId);
+  }
+  return [...seen];
+}
+
 export async function submitOutreachResponse(
   token: string,
   formData: FormData
@@ -314,13 +345,26 @@ export async function submitOutreachResponse(
   }
 
   const allow = new Set(allowedComponentIds);
+  const allowedRegulationIds = new Set(
+    await loadAllowedRegulationIdsForRequest(
+      supabase,
+      requestId,
+      (req.regulation_id as string | null) ?? null
+    )
+  );
   const perFileSelections: string[][] = [];
+  const perFileRegulationSelections: string[][] = [];
   for (let i = 0; i < files.length; i++) {
     const raw = formData
       .getAll(`component_id_${i}`)
       .map((v) => String(v).trim())
       .filter(Boolean);
     perFileSelections.push([...new Set(raw)]);
+    const rawRegs = formData
+      .getAll(`regulation_id_${i}`)
+      .map((v) => String(v).trim())
+      .filter(Boolean);
+    perFileRegulationSelections.push([...new Set(rawRegs)]);
   }
 
   if (allowedComponentIds.length > 0) {
@@ -335,6 +379,23 @@ export async function submitOutreachResponse(
       for (const id of sel) {
         if (!allow.has(id)) {
           return { success: false, error: "Invalid component selection." };
+        }
+      }
+    }
+  }
+
+  if (allowedRegulationIds.size > 0) {
+    for (let i = 0; i < files.length; i++) {
+      const selRegs = perFileRegulationSelections[i] ?? [];
+      if (selRegs.length === 0) {
+        return {
+          success: false,
+          error: `Select at least one regulation for "${files[i].name}".`,
+        };
+      }
+      for (const rid of selRegs) {
+        if (!allowedRegulationIds.has(rid)) {
+          return { success: false, error: "Invalid regulation selection." };
         }
       }
     }
@@ -418,6 +479,26 @@ export async function submitOutreachResponse(
         return {
           success: false,
           error: linkErr.message,
+        };
+      }
+    }
+
+    const selectedRegulationsForFile = perFileRegulationSelections[i] ?? [];
+    if (selectedRegulationsForFile.length > 0) {
+      const { error: regLinkErr } = await supabase
+        .from("supplier_document_regulations")
+        .insert(
+          selectedRegulationsForFile.map((regulation_id) => ({
+            supplier_document_id: documentId,
+            regulation_id,
+          }))
+        );
+      if (regLinkErr) {
+        console.error("supplier_document_regulations insert:", regLinkErr);
+        await rollbackPartialUploads();
+        return {
+          success: false,
+          error: regLinkErr.message,
         };
       }
     }
