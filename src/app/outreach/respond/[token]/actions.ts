@@ -290,7 +290,7 @@ export async function submitOutreachResponse(
   const { data: req, error: re } = await supabase
     .from("outreach_requests")
     .select(
-      "id, organization_id, supplier_id, campaign_id, organizations(name), suppliers(contact_email), outreach_campaigns(cohort_filters)"
+      "id, regulation_id, organization_id, supplier_id, campaign_id, organizations(name), suppliers(contact_email), outreach_campaigns(cohort_filters)"
     )
     .eq("id", tok.outreach_request_id)
     .maybeSingle();
