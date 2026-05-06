@@ -1,6 +1,6 @@
 import { canManageSensitiveActions } from "@/lib/permissions";
 import { requireProfile } from "@/lib/profile";
-import { getProducts } from "./actions";
+import { getProducts, getOemVendors } from "./actions";
 import BomManagement from "./bom-management";
 
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 
 export default async function ProductsPage({ searchParams }: Props) {
   const profile = await requireProfile();
-  const products = await getProducts();
+  const [products, oemVendors] = await Promise.all([getProducts(), getOemVendors()]);
   const { edit: editId } = await searchParams;
 
   return (
@@ -17,6 +17,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       products={products}
       editId={editId ?? null}
       canManage={canManageSensitiveActions(profile.role)}
+      oemVendors={oemVendors}
     />
   );
 }

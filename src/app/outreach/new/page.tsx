@@ -73,6 +73,11 @@ export default async function OutreachCampaignBuilderPage() {
     .order("name")
     .limit(LIST_LIMIT);
 
+  const { data: oemVendorRows } = await supabase
+    .from("oem_vendors")
+    .select("id, code, name, compliance_email, compliance_team_name")
+    .order("name");
+
   const suppliers = supplierRows;
   const products = (productRows ?? []) as { id: string; name: string }[];
   const components = (componentRows ?? []) as unknown as {
@@ -81,6 +86,13 @@ export default async function OutreachCampaignBuilderPage() {
     part_number: string | null;
     supplier_id: string | null;
     suppliers: { name: string } | null;
+  }[];
+  const oemVendors = (oemVendorRows ?? []) as {
+    id: string;
+    code: string;
+    name: string;
+    compliance_email: string | null;
+    compliance_team_name: string | null;
   }[];
 
   const { data: emailDefaults } = await supabase
@@ -127,6 +139,7 @@ export default async function OutreachCampaignBuilderPage() {
           suppliers={suppliers}
           products={products}
           components={components}
+          oemVendors={oemVendors}
           defaultSubjectTemplate={defaultSubjectTemplate}
           defaultMessageTemplate={defaultMessageTemplate}
         />

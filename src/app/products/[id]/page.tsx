@@ -59,7 +59,7 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
             </p>
           </div>
 
-          <div className="flex gap-12 pt-2">
+          <div className="flex flex-wrap gap-8 pt-2">
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
                 SKU
@@ -78,6 +78,19 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
               </span>
               <span className="text-primary font-semibold">{product.lifecycle_status}</span>
             </div>
+            {product.oem_vendor && (
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">
+                  OEM Vendor
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-700">
+                    OEM
+                  </span>
+                  <span className="text-primary font-semibold">{product.oem_vendor.name}</span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

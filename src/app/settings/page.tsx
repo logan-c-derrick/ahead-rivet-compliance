@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   PERMISSION_DENIED_MESSAGE,
   canManageSensitiveActions,
@@ -265,6 +266,24 @@ export default async function SettingsPage({ searchParams }: Props) {
 
         </div>
       </div>
+
+      <section className="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/20">
+        <div className="flex items-center gap-3 mb-4">
+          <MaterialIcon name="corporate_fare" className="text-primary p-2 bg-surface-container-low rounded-lg" />
+          <h3 className="text-xl font-headline font-bold text-on-surface">OEM Vendor Contacts</h3>
+        </div>
+        <p className="text-sm text-on-surface-variant font-body mb-6 max-w-xl">
+          Manage compliance contacts for OEM systems (HPE, Dell, Lenovo, etc.) used in your product line.
+          Enable AI-verified direct outreach to manufacturer compliance teams.
+        </p>
+        <Link
+          href="/settings/oem-vendors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
+        >
+          <MaterialIcon name="settings" className="text-base" />
+          Manage OEM Vendors
+        </Link>
+      </section>
 
       <footer className="mt-20 border-t border-outline-variant/10 pt-8 flex items-center justify-end">
         <div className="flex gap-4">

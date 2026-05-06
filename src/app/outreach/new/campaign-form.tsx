@@ -19,8 +19,15 @@ type ComponentOpt = {
   supplier_id: string | null;
   suppliers: { name: string } | null;
 };
+type OemVendorOpt = {
+  id: string;
+  code: string;
+  name: string;
+  compliance_email: string | null;
+  compliance_team_name: string | null;
+};
 
-export type TargetingMode = "all" | "suppliers" | "product" | "components";
+export type TargetingMode = "all" | "suppliers" | "product" | "components" | "oem";
 
 export default function OutreachCampaignForm({
   regulations,
@@ -28,6 +35,7 @@ export default function OutreachCampaignForm({
   suppliers,
   products,
   components,
+  oemVendors = [],
   defaultSubjectTemplate,
   defaultMessageTemplate,
 }: {
@@ -36,6 +44,7 @@ export default function OutreachCampaignForm({
   suppliers: SupplierOpt[];
   products: ProductOpt[];
   components: ComponentOpt[];
+  oemVendors?: OemVendorOpt[];
   defaultSubjectTemplate: string;
   defaultMessageTemplate: string;
 }) {
@@ -49,6 +58,8 @@ export default function OutreachCampaignForm({
   const [selectedSupplierIds, setSelectedSupplierIds] = useState<Set<string>>(() => new Set());
   const [selectedComponentIds, setSelectedComponentIds] = useState<Set<string>>(() => new Set());
   const [selectedRegulationIds, setSelectedRegulationIds] = useState<Set<string>>(() => new Set());
+  const [selectedOemVendorIds, setSelectedOemVendorIds] = useState<Set<string>>(() => new Set());
+  const [oemFilter, setOemFilter] = useState("");
   const [subjectTemplate, setSubjectTemplate] = useState(defaultSubjectTemplate);
   const [messageTemplate, setMessageTemplate] = useState(defaultMessageTemplate);
   const [submitIntent, setSubmitIntent] = useState<"launch" | "draft" | null>(null);
@@ -99,12 +110,21 @@ export default function OutreachCampaignForm({
   useEffect(() => {
     if (targetingMode !== "suppliers") setSelectedSupplierIds(new Set());
     if (targetingMode !== "components") setSelectedComponentIds(new Set());
+    if (targetingMode !== "oem") setSelectedOemVendorIds(new Set());
   }, [targetingMode]);
 
   return (
     <form action={formAction} className="grid grid-cols-12 gap-8 items-start">
       <input ref={intentRef} type="hidden" name="intent" defaultValue="launch" />
       <input type="hidden" name="targeting_mode" value={targetingMode} />
+      {targetingMode === "oem" && (
+        <input
+          type="hidden"
+          name="target_oem_vendor_ids"
+          value={Array.from(selectedOemVendorIds).join(",")}
+          readOnly
+        />
+      )}
 
       {err && (
         <div className="col-span-12 rounded-xl border border-error/40 bg-error-container/20 p-4 text-sm text-error font-body">
@@ -263,6 +283,7 @@ export default function OutreachCampaignForm({
                 ["suppliers", "Selected suppliers"],
                 ["product", "Product (BOM)"],
                 ["components", "Components"],
+                ["oem", "OEM Direct"],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -428,6 +449,71 @@ export default function OutreachCampaignForm({
               </div>
             </div>
           )}
+          {targetingMode === "oem" && (
+            <div className="rounded-xl border border-outline-variant/20 bg-surface-container-low/40 p-4 space-y-3">
+              <p className="text-xs text-slate-600 font-body">
+                Select one or more OEM vendors to contact their environmental compliance teams directly.
+                The system will auto-provision a supplier record for each selected OEM and send outreach
+                to their pre-configured compliance contact.
+              </p>
+              {oemVendors.length === 0 ? (
+                <p className="text-xs text-amber-700 bg-amber-50 rounded p-2">
+                  No OEM vendors configured. Visit <strong>Settings → OEM Vendors</strong> to add them.
+                </p>
+              ) : (
+                <>
+                  <input
+                    type="search"
+                    value={oemFilter}
+                    onChange={(e) => setOemFilter(e.target.value)}
+                    placeholder="Search OEM vendors…"
+                    className="w-full bg-surface-container-low border-none rounded-lg py-2 px-3 text-sm font-body"
+                  />
+                  <div className="max-h-64 overflow-y-auto space-y-1 border border-outline-variant/10 rounded-lg p-2 bg-white">
+                    {oemVendors
+                      .filter((v) => {
+                        const q = oemFilter.trim().toLowerCase();
+                        return !q || v.name.toLowerCase().includes(q) || v.code.toLowerCase().includes(q);
+                      })
+                      .map((v) => (
+                        <label
+                          key={v.id}
+                          className="flex items-start gap-2 cursor-pointer text-sm font-body py-1.5 px-2 rounded hover:bg-slate-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedOemVendorIds.has(v.id)}
+                            onChange={(e) => {
+                              setSelectedOemVendorIds((prev) => {
+                                const next = new Set(prev);
+                                if (e.target.checked) next.add(v.id);
+                                else next.delete(v.id);
+                                return next;
+                              });
+                            }}
+                            className="rounded text-primary focus:ring-primary border-slate-300 mt-0.5"
+                          />
+                          <span>
+                            <span className="font-medium">{v.name}</span>
+                            <span className="text-slate-400 text-xs"> ({v.code})</span>
+                            {v.compliance_email ? (
+                              <span className="block text-xs text-slate-500">{v.compliance_team_name ?? "Compliance"} · {v.compliance_email}</span>
+                            ) : (
+                              <span className="block text-xs text-amber-600">No compliance email — configure in Settings → OEM Vendors</span>
+                            )}
+                          </span>
+                        </label>
+                      ))}
+                  </div>
+                  {selectedOemVendorIds.size > 0 && (
+                    <p className="text-xs text-primary font-body font-semibold">
+                      {selectedOemVendorIds.size} OEM vendor{selectedOemVendorIds.size > 1 ? "s" : ""} selected
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
@@ -498,13 +584,17 @@ export default function OutreachCampaignForm({
               <strong>Components:</strong> one request per selected component.
             </li>
             <li>
+              <strong>OEM Direct:</strong> select OEM vendors; sends to their pre-configured
+              compliance contact, auto-provisioning a supplier record if needed.
+            </li>
+            <li>
               <strong>Regulations:</strong> check one or many; each target gets one request covering
               all selected regulations.
             </li>
           </ul>
           <p className="text-[10px] text-slate-400 mt-4 font-body">
             Lists up to {suppliers.length} suppliers / {products.length} products / {components.length}{" "}
-            components (loaded for this page).
+            components / {oemVendors.length} OEM vendors (loaded for this page).
           </p>
         </section>
 

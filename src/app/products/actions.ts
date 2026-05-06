@@ -5,6 +5,18 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 
+export interface OemVendor {
+  id: string;
+  code: string;
+  name: string;
+  compliance_team_name: string | null;
+  compliance_email: string | null;
+  compliance_portal_url: string | null;
+  notes: string | null;
+  ai_verified_at: string | null;
+  ai_verified_notes: string | null;
+}
+
 export interface Product {
   id: string;
   organization_id?: string;
@@ -13,6 +25,8 @@ export interface Product {
   description: string | null;
   category: string | null;
   lifecycle_status: string;
+  oem_vendor_id: string | null;
+  oem_vendor?: { id: string; name: string; code: string; compliance_email: string | null } | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +42,19 @@ export interface ProductBomComponent {
   description: string | null;
   unit_price: number | null;
   unit_msrp: number | null;
+}
+
+export async function getOemVendors(): Promise<OemVendor[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("oem_vendors")
+    .select("id, code, name, compliance_team_name, compliance_email, compliance_portal_url, notes, ai_verified_at, ai_verified_notes")
+    .order("name");
+  if (error) {
+    console.error("Error fetching OEM vendors:", error);
+    return [];
+  }
+  return (data as OemVendor[]) ?? [];
 }
 
 export async function getProducts(): Promise<Product[]> {
@@ -54,7 +81,7 @@ export async function getProduct(id: string): Promise<Product | null> {
 
   const { data, error } = await supabase
     .from("products")
-    .select("*")
+    .select("*, oem_vendors(id, name, code, compliance_email)")
     .eq("id", id)
     .eq("organization_id", profile.organization_id)
     .single();
@@ -63,7 +90,11 @@ export async function getProduct(id: string): Promise<Product | null> {
     return null;
   }
 
-  return data as Product;
+  const row = data as any;
+  return {
+    ...row,
+    oem_vendor: row.oem_vendors ?? null,
+  } as Product;
 }
 
 export async function getProductBomComponents(productId: string): Promise<ProductBomComponent[]> {
@@ -135,6 +166,7 @@ async function createProductImpl(
   const description = (formData.get("description") as string)?.trim() || null;
   const category = (formData.get("category") as string)?.trim() || null;
   const lifecycle_status = (formData.get("lifecycle_status") as string) || "active";
+  const oem_vendor_id = (formData.get("oem_vendor_id") as string)?.trim() || null;
 
   if (!name) {
     return { error: "Product name is required" };
@@ -149,6 +181,7 @@ async function createProductImpl(
       description,
       category,
       lifecycle_status,
+      oem_vendor_id,
     });
 
   if (error) {
@@ -240,6 +273,7 @@ export async function updateProduct(
   const description = (formData.get("description") as string)?.trim() || null;
   const category = (formData.get("category") as string)?.trim() || null;
   const lifecycle_status = (formData.get("lifecycle_status") as string) || "active";
+  const oem_vendor_id = (formData.get("oem_vendor_id") as string)?.trim() || null;
 
   if (!name) {
     return { error: "Product name is required" };
@@ -253,6 +287,7 @@ export async function updateProduct(
       description,
       category,
       lifecycle_status,
+      oem_vendor_id,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

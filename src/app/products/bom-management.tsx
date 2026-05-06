@@ -9,6 +9,7 @@ import {
   updateProduct,
   deleteProduct,
   type Product,
+  type OemVendor,
 } from "./actions";
 import { PERMISSION_DENIED_MESSAGE } from "@/lib/permissions";
 
@@ -64,12 +65,16 @@ function ProductFormFields({
   defaultDescription = "",
   defaultCategory = "",
   defaultLifecycle = "active",
+  defaultOemVendorId = "",
+  oemVendors = [],
 }: {
   defaultName?: string;
   defaultSku?: string;
   defaultDescription?: string;
   defaultCategory?: string;
   defaultLifecycle?: string;
+  defaultOemVendorId?: string;
+  oemVendors?: OemVendor[];
 }) {
   return (
     <>
@@ -145,6 +150,29 @@ function ProductFormFields({
           ))}
         </select>
       </div>
+      {oemVendors.length > 0 && (
+        <div>
+          <label htmlFor="oem_vendor_id" className="block text-sm font-medium mb-1 font-body">
+            OEM Vendor
+          </label>
+          <select
+            id="oem_vendor_id"
+            name="oem_vendor_id"
+            defaultValue={defaultOemVendorId}
+            className="w-full px-3 py-2 bg-surface-container-lowest border-none rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm"
+          >
+            <option value="">None (original design)</option>
+            {oemVendors.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-[11px] text-on-surface-variant mt-1 font-body">
+            Tag this product as an OEM-based system to enable direct OEM outreach.
+          </p>
+        </div>
+      )}
     </>
   );
 }
@@ -153,10 +181,12 @@ export default function BomManagement({
   products,
   editId,
   canManage,
+  oemVendors = [],
 }: {
   products: Product[];
   editId: string | null;
   canManage: boolean;
+  oemVendors?: OemVendor[];
 }) {
   const [createState, createAction] = useFormState(createProductFormState, null);
   const [updateState, updateAction] = useFormState(updateProduct, null);
@@ -356,9 +386,19 @@ export default function BomManagement({
                               <span className="text-xs font-bold">P</span>
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-primary">{p.name}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-bold text-primary">{p.name}</p>
+                                {p.oem_vendor_id && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-blue-100 text-blue-700">
+                                    OEM
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10px] text-on-surface-variant">
                                 SKU: {p.sku ?? "—"}
+                                {p.oem_vendor_id && oemVendors.length > 0 && (
+                                  <> · {oemVendors.find((v) => v.id === p.oem_vendor_id)?.name ?? ""}</>
+                                )}
                               </p>
                             </div>
                           </div>
@@ -471,7 +511,7 @@ export default function BomManagement({
             </div>
           )}
           <form action={createAction} className="space-y-4">
-            <ProductFormFields />
+            <ProductFormFields oemVendors={oemVendors} />
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
@@ -507,6 +547,8 @@ export default function BomManagement({
               defaultDescription={editProduct.description ?? ""}
               defaultCategory={editProduct.category ?? ""}
               defaultLifecycle={editProduct.lifecycle_status}
+              defaultOemVendorId={editProduct.oem_vendor_id ?? ""}
+              oemVendors={oemVendors}
             />
             <div className="flex gap-2 pt-2">
               <button

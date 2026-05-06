@@ -276,6 +276,81 @@ async function resolveOutreachTargets(
     };
   }
 
+  if (mode === "oem") {
+    const csv = (formData.get("target_oem_vendor_ids") as string)?.trim() ?? "";
+    const ids = csv ? [...new Set(csv.split(",").map((s) => s.trim()).filter(Boolean))] : [];
+    if (ids.length === 0) {
+      return { ok: false, error: "Select at least one OEM vendor." };
+    }
+
+    const { data: vendors, error: ve } = await supabase
+      .from("oem_vendors")
+      .select("id, code, name, compliance_email, compliance_team_name")
+      .in("id", ids);
+    if (ve) return { ok: false, error: ve.message };
+    const vendorList = (vendors ?? []) as {
+      id: string;
+      code: string;
+      name: string;
+      compliance_email: string | null;
+      compliance_team_name: string | null;
+    }[];
+    if (vendorList.length === 0) {
+      return { ok: false, error: "No matching OEM vendors found." };
+    }
+
+    const targets: OutreachTargetRow[] = [];
+    for (const vendor of vendorList) {
+      // Upsert supplier record for this OEM in the org's supplier list.
+      const { data: existingSupplier } = await supabase
+        .from("suppliers")
+        .select("id, contact_email")
+        .eq("organization_id", profile.organization_id)
+        .ilike("name", vendor.name)
+        .maybeSingle();
+
+      let supplierId: string;
+      if (existingSupplier) {
+        supplierId = existingSupplier.id;
+        if (!existingSupplier.contact_email && vendor.compliance_email) {
+          await supabase
+            .from("suppliers")
+            .update({ contact_email: vendor.compliance_email, updated_at: new Date().toISOString() })
+            .eq("id", supplierId);
+        }
+      } else {
+        const { data: newSupplier, error: insertErr } = await supabase
+          .from("suppliers")
+          .insert({
+            organization_id: profile.organization_id,
+            name: vendor.name,
+            contact_email: vendor.compliance_email,
+            notes: `Auto-provisioned for OEM direct outreach (${vendor.code}).`,
+          })
+          .select("id")
+          .single();
+        if (insertErr || !newSupplier) {
+          return { ok: false, error: `Could not provision supplier for ${vendor.name}: ${insertErr?.message ?? "unknown"}` };
+        }
+        supplierId = (newSupplier as { id: string }).id;
+      }
+
+      targets.push({
+        supplier_id: supplierId,
+        component_id: null,
+        supplier_name: vendor.name,
+        contact_email: vendor.compliance_email,
+        component_display: null,
+      });
+    }
+
+    return {
+      ok: true,
+      targets,
+      cohortFilters: { targeting_mode: "oem", oem_vendor_ids: ids },
+    };
+  }
+
   return { ok: false, error: "Invalid targeting mode." };
 }
 
@@ -416,6 +491,10 @@ function cohortFiltersFromForm(formData: FormData): Record<string, unknown> {
     const fromCsv = csv ? [...new Set(csv.split(",").map((s) => s.trim()).filter(Boolean))] : [];
     const legacy = formData.getAll("target_component_id").map(String).filter(Boolean);
     base.component_ids = fromCsv.length > 0 ? fromCsv : legacy;
+  }
+  if (mode === "oem") {
+    const csv = (formData.get("target_oem_vendor_ids") as string)?.trim() ?? "";
+    base.oem_vendor_ids = csv ? [...new Set(csv.split(",").map((s) => s.trim()).filter(Boolean))] : [];
   }
   return base;
 }
