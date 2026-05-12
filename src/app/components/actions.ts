@@ -321,6 +321,33 @@ export async function deleteComponent(
   return { success: true };
 }
 
+export async function bulkDeleteComponents(
+  ids: string[]
+): Promise<{ success: true } | { error: string }> {
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to delete components." };
+  }
+  if (!ids.length) return { error: "No components selected." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("components")
+    .delete()
+    .in("id", ids)
+    .eq("organization_id", profile.organization_id);
+
+  if (error) {
+    console.error("Error bulk deleting components:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/components");
+  return { success: true };
+}
+
 export type ComponentCsvPreviewRow = {
   rowIndex: number;
   name: string;

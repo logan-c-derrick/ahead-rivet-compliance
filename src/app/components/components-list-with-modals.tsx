@@ -9,6 +9,7 @@ import {
   createComponent,
   updateComponent,
   deleteComponent,
+  bulkDeleteComponents,
   type ComponentWithSupplier,
 } from "./actions";
 import type { ComponentLinkMatchFilter } from "./component-filters";
@@ -211,6 +212,25 @@ export default function ComponentsListWithModals({
     }
   }, [deleteState]);
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [bulkDeleteError, setBulkDeleteError] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  async function handleBulkDelete() {
+    setBulkDeleting(true);
+    setBulkDeleteError(null);
+    const result = await bulkDeleteComponents(Array.from(selectedIds));
+    setBulkDeleting(false);
+    if ("error" in result) {
+      setBulkDeleteError(result.error);
+    } else {
+      setSelectedIds(new Set());
+      setShowBulkDeleteConfirm(false);
+      router.refresh();
+    }
+  }
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const PAGE_SIZE = 50;
@@ -264,6 +284,33 @@ export default function ComponentsListWithModals({
     const start = (safePage - 1) * PAGE_SIZE;
     return filteredComponents.slice(start, start + PAGE_SIZE);
   }, [filteredComponents, safePage]);
+
+  const allPageSelected = pagedComponents.length > 0 && pagedComponents.every((c) => selectedIds.has(c.id));
+
+  function toggleSelectAll() {
+    if (allPageSelected) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        pagedComponents.forEach((c) => next.delete(c.id));
+        return next;
+      });
+    } else {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        pagedComponents.forEach((c) => next.add(c.id));
+        return next;
+      });
+    }
+  }
+
+  function toggleSelectOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   useEffect(() => {
     if (editId && components.length > 0) {
@@ -411,6 +458,31 @@ export default function ComponentsListWithModals({
             </p>
           </div>
 
+          {selectedIds.size > 0 && (
+            <div className="flex items-center justify-between gap-4 px-4 py-3 bg-error-container/20 border border-error/20 rounded-xl">
+              <span className="text-sm font-bold text-error">
+                {selectedIds.size} component{selectedIds.size !== 1 ? "s" : ""} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-xs font-bold text-on-surface-variant hover:text-on-surface"
+                >
+                  Clear selection
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBulkDeleteError(null); setShowBulkDeleteConfirm(true); }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-error text-on-error rounded-lg text-xs font-bold hover:opacity-90"
+                >
+                  <MaterialIcon name="delete" className="text-sm" />
+                  Delete selected
+                </button>
+              </div>
+            </div>
+          )}
+
           {filteredComponents.length === 0 ? (
             <div className="bg-surface-container-lowest rounded-2xl p-8 text-center border border-outline-variant/15">
               <p className="text-on-surface-variant text-sm">No components match your filters.</p>
@@ -431,16 +503,26 @@ export default function ComponentsListWithModals({
               <div className="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-gutter:stable]">
                 <table className="w-full max-w-full text-sm text-left table-fixed border-collapse">
                   <colgroup>
-                    <col className="w-[20%]" />
+                    <col className="w-[3%]" />
+                    <col className="w-[19%]" />
                     <col className="w-[11%]" />
-                    <col className="w-[12%]" />
-                    <col className="w-[12%]" />
+                    <col className="w-[11%]" />
+                    <col className="w-[11%]" />
                     <col className="w-[10%]" />
                     <col className="w-[17%]" />
                     <col className="w-[18%]" />
                   </colgroup>
                   <thead className="bg-surface-container-high/40">
                     <tr>
+                      <th className="px-3 sm:px-4 py-3 sm:py-4 align-bottom">
+                        <input
+                          type="checkbox"
+                          checked={allPageSelected}
+                          onChange={toggleSelectAll}
+                          className="rounded border-outline-variant text-primary focus:ring-primary/20 cursor-pointer"
+                          aria-label="Select all on this page"
+                        />
+                      </th>
                       <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Name</th>
                       <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Part #</th>
                       <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Mfr</th>
@@ -452,7 +534,16 @@ export default function ComponentsListWithModals({
                   </thead>
                   <tbody>
                     {pagedComponents.map((c) => (
-                <tr key={c.id} className="group hover:bg-surface-container-low transition-colors align-top">
+                <tr key={c.id} className={`group hover:bg-surface-container-low transition-colors align-top ${selectedIds.has(c.id) ? "bg-primary/5" : ""}`}>
+                  <td className="px-3 sm:px-4 py-4 sm:py-5">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(c.id)}
+                      onChange={() => toggleSelectOne(c.id)}
+                      className="rounded border-outline-variant text-primary focus:ring-primary/20 cursor-pointer"
+                      aria-label={`Select ${c.name}`}
+                    />
+                  </td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 min-w-0 max-w-0">
                     <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                       <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary">
@@ -637,6 +728,36 @@ export default function ComponentsListWithModals({
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {showBulkDeleteConfirm && (
+        <Modal title="Delete Components" onClose={() => setShowBulkDeleteConfirm(false)}>
+          {bulkDeleteError && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
+              {bulkDeleteError}
+            </div>
+          )}
+          <p className="text-sm text-on-surface-variant">
+            Are you sure you want to delete <strong>{selectedIds.size} component{selectedIds.size !== 1 ? "s" : ""}</strong>? This action cannot be undone.
+          </p>
+          <div className="flex gap-2 pt-4">
+            <button
+              type="button"
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="px-4 py-2 bg-error text-on-error rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-50"
+            >
+              {bulkDeleting ? "Deleting…" : "Delete"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowBulkDeleteConfirm(false)}
+              className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
+            >
+              Cancel
+            </button>
+          </div>
         </Modal>
       )}
 
