@@ -190,6 +190,27 @@ export default function ComponentsListWithModals({
     name: string;
   } | null>(null);
 
+  useEffect(() => {
+    if (createState?.success) {
+      setShowCreate(false);
+      router.refresh();
+    }
+  }, [createState]);
+
+  useEffect(() => {
+    if (updateState?.success) {
+      setEditComponent(null);
+      router.refresh();
+    }
+  }, [updateState]);
+
+  useEffect(() => {
+    if (deleteState?.success) {
+      setDeleteStateRow(null);
+      router.refresh();
+    }
+  }, [deleteState]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const PAGE_SIZE = 50;

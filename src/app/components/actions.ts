@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import Papa from "papaparse";
 import { createClient } from "@/lib/supabase/server";
 import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
@@ -186,7 +185,7 @@ export async function getComponentReleaseStatuses(
   })) as ComponentReleaseStatusRow[];
 }
 
-type CreateComponentState = { error?: string };
+type CreateComponentState = { error?: string; success?: true };
 
 /** Plain `<form action>` entry point (no useFormState). */
 export async function submitComponentForm(formData: FormData): Promise<void> {
@@ -235,10 +234,10 @@ export async function createComponent(
   }
 
   revalidatePath("/components");
-  redirect("/components");
+  return { success: true };
 }
 
-type UpdateComponentState = { error?: string };
+type UpdateComponentState = { error?: string; success?: true };
 export async function updateComponent(
   _prevState: UpdateComponentState | null,
   formData: FormData
@@ -288,10 +287,10 @@ export async function updateComponent(
 
   revalidatePath("/components");
   revalidatePath(`/components/${id}`);
-  redirect("/components");
+  return { success: true };
 }
 
-type DeleteComponentState = { error?: string };
+type DeleteComponentState = { error?: string; success?: true };
 export async function deleteComponent(
   _prevState: DeleteComponentState | null,
   formData: FormData
@@ -319,7 +318,7 @@ export async function deleteComponent(
   }
 
   revalidatePath("/components");
-  redirect("/components");
+  return { success: true };
 }
 
 export type ComponentCsvPreviewRow = {

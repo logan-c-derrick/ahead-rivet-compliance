@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import {
@@ -188,6 +189,7 @@ export default function BomManagement({
   canManage: boolean;
   oemVendors?: OemVendor[];
 }) {
+  const router = useRouter();
   const [createState, createAction] = useFormState(createProductFormState, null);
   const [updateState, updateAction] = useFormState(updateProduct, null);
   const [deleteState, deleteAction] = useFormState(deleteProduct, null);
@@ -197,6 +199,27 @@ export default function BomManagement({
   const [deleteProductState, setDeleteProductState] = useState<{ id: string; name: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState("");
+
+  useEffect(() => {
+    if (createState?.success) {
+      setShowCreate(false);
+      router.refresh();
+    }
+  }, [createState]);
+
+  useEffect(() => {
+    if (updateState?.success) {
+      setEditProduct(null);
+      router.refresh();
+    }
+  }, [updateState]);
+
+  useEffect(() => {
+    if (deleteState?.success) {
+      setDeleteProductState(null);
+      router.refresh();
+    }
+  }, [deleteState]);
 
   useEffect(() => {
     if (editId && products.length > 0) {

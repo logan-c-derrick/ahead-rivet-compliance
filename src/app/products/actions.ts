@@ -148,7 +148,7 @@ export async function getProductBomComponents(productId: string): Promise<Produc
   }));
 }
 
-export type CreateProductState = { error?: string };
+export type CreateProductState = { error?: string; success?: true };
 
 async function createProductImpl(
   formData: FormData
@@ -201,12 +201,45 @@ export async function createProduct(formData: FormData): Promise<void> {
   }
 }
 
-/** `useFormState` — returns validation errors for inline UI. */
+/** `useFormState` — returns validation errors for inline UI. Does not redirect; caller uses router.refresh(). */
 export async function createProductFormState(
   _prev: CreateProductState | null,
   formData: FormData
 ): Promise<CreateProductState> {
-  return createProductImpl(formData);
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Unable to create product." };
+  }
+  const supabase = await createClient();
+
+  const name = (formData.get("name") as string)?.trim();
+  const sku = (formData.get("sku") as string)?.trim() || null;
+  const description = (formData.get("description") as string)?.trim() || null;
+  const category = (formData.get("category") as string)?.trim() || null;
+  const lifecycle_status = (formData.get("lifecycle_status") as string) || "active";
+  const oem_vendor_id = (formData.get("oem_vendor_id") as string)?.trim() || null;
+
+  if (!name) return { error: "Product name is required" };
+
+  const { error } = await supabase.from("products").insert({
+    organization_id: profile.organization_id,
+    name,
+    sku,
+    description,
+    category,
+    lifecycle_status,
+    oem_vendor_id,
+  });
+
+  if (error) {
+    console.error("Error creating product:", error);
+    return { error: error.message };
+  }
+
+  revalidatePath("/products");
+  return { success: true };
 }
 
 /**
@@ -252,7 +285,7 @@ export async function createProductInline(
   return { success: true, product: data as Product };
 }
 
-type UpdateProductState = { error?: string };
+type UpdateProductState = { error?: string; success?: true };
 export async function updateProduct(
   _prevState: UpdateProductState | null,
   formData: FormData
@@ -299,10 +332,10 @@ export async function updateProduct(
   }
 
   revalidatePath("/products");
-  redirect("/products");
+  return { success: true };
 }
 
-type DeleteProductState = { error?: string };
+type DeleteProductState = { error?: string; success?: true };
 export async function deleteProduct(
   _prevState: DeleteProductState | null,
   formData: FormData
@@ -330,5 +363,5 @@ export async function deleteProduct(
   }
 
   revalidatePath("/products");
-  redirect("/products");
+  return { success: true };
 }
