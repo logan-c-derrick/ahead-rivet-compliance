@@ -153,7 +153,8 @@ export default function BomMapWorkflow({
       setProductId(result.product.id);
       setNewProductName("");
       setNewProductSku("");
-      router.refresh();
+      // Do NOT call router.refresh() here — it resets client component state
+      // including productId, causing the product to not be linked on finalize.
     } else {
       setProductCreateError(result.error);
     }

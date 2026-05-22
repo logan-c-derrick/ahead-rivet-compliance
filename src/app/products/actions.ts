@@ -281,7 +281,6 @@ export async function createProductInline(
   }
 
   revalidatePath("/products");
-  revalidatePath("/products/bom/map");
   return { success: true, product: data as Product };
 }
 
