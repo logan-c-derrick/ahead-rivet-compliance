@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useFormState } from "react-dom";
 import MaterialIcon from "@/components/ui/MaterialIcon";
+import MultiSelectFilter from "@/components/ui/MultiSelectFilter";
 import {
   createComponent,
   updateComponent,
@@ -232,7 +233,7 @@ export default function ComponentsListWithModals({
   }
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const PAGE_SIZE = 50;
 
   function pushQuery(updates: Record<string, string | null | undefined>) {
@@ -260,7 +261,7 @@ export default function ComponentsListWithModals({
       if (supplierFilter && c.supplier_id !== supplierFilter) return false;
       if (linkMatch === "with_supplier" && !c.supplier_id) return false;
       if (linkMatch === "without_supplier" && c.supplier_id) return false;
-      if (categoryFilter && (c.category ?? "").trim() !== categoryFilter) return false;
+      if (categoryFilter.size > 0 && !categoryFilter.has((c.category ?? "").trim())) return false;
       if (!q) return true;
       const hay = [
         c.name,
@@ -434,22 +435,15 @@ export default function ComponentsListWithModals({
                 </select>
               </div>
               <div className="w-full sm:w-56 min-w-[200px]">
-                <label htmlFor="component-category" className="block text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant mb-1.5">
+                <label className="block text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant mb-1.5">
                   Category
                 </label>
-                <select
-                  id="component-category"
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-surface-container-lowest border border-outline-variant/20 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="">All categories</option>
-                  {categoryOptions.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                <MultiSelectFilter
+                  label="categories"
+                  options={categoryOptions}
+                  selected={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
               </div>
             </div>
             <p className="text-xs text-on-surface-variant shrink-0 xl:pb-2.5">
@@ -490,7 +484,7 @@ export default function ComponentsListWithModals({
                 type="button"
                 onClick={() => {
                   setSearchQuery("");
-                  setCategoryFilter("");
+                  setCategoryFilter(new Set());
                   pushQuery({ supplier: null, match: null });
                 }}
                 className="mt-3 text-sm font-bold text-primary hover:underline"

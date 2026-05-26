@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useFormState } from "react-dom";
 import MaterialIcon from "@/components/ui/MaterialIcon";
+import MultiSelectFilter from "@/components/ui/MultiSelectFilter";
 import {
   createProductFormState,
   updateProduct,
@@ -199,6 +200,7 @@ export default function BomManagement({
   const [deleteProductState, setDeleteProductState] = useState<{ id: string; name: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [lifecycleFilter, setLifecycleFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (createState?.success) {
@@ -230,6 +232,15 @@ export default function BomManagement({
     }
   }, [editId, products]);
 
+  const categoryOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of products) {
+      const cat = (p.category ?? "").trim();
+      if (cat) set.add(cat);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [products]);
+
   const metrics = {
     ready: products.filter((p) => p.lifecycle_status === "active").length,
     processing: products.filter((p) => p.lifecycle_status === "development").length,
@@ -238,6 +249,7 @@ export default function BomManagement({
 
   const filteredProducts = products.filter((p) => {
     if (lifecycleFilter && p.lifecycle_status !== lifecycleFilter) return false;
+    if (categoryFilter.size > 0 && !categoryFilter.has((p.category ?? "").trim())) return false;
     if (!searchTerm.trim()) return true;
     const q = searchTerm.trim().toLowerCase();
     return (
@@ -335,6 +347,14 @@ export default function BomManagement({
                     </option>
                   ))}
                 </select>
+                {categoryOptions.length > 0 && (
+                  <MultiSelectFilter
+                    label="categories"
+                    options={categoryOptions}
+                    selected={categoryFilter}
+                    onChange={setCategoryFilter}
+                  />
+                )}
                 <button
                   type="button"
                   onClick={exportProducts}
