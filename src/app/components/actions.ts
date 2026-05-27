@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import Papa from "papaparse";
+import { callCompanyAI } from "@/lib/company-ai";
 import { createClient } from "@/lib/supabase/server";
 import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 import {
@@ -345,6 +346,117 @@ export async function bulkDeleteComponents(
   }
 
   revalidatePath("/components");
+  return { success: true };
+}
+
+export type AiEnrichSuggestion = {
+  manufacturer: string | null;
+  manufacturer_sku: string | null;
+  description: string | null;
+  category: string | null;
+  confidence: "high" | "medium" | "low";
+  notes: string;
+};
+
+export type AiEnrichResult =
+  | { ok: true; suggestion: AiEnrichSuggestion; componentId: string }
+  | { ok: false; error: string };
+
+export async function aiEnrichComponent(componentId: string): Promise<AiEnrichResult> {
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase.auth.getUser();
+  if (!profile?.user) return { ok: false, error: "Not authenticated." };
+
+  const { data: profileRow } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", profile.user.id)
+    .single();
+
+  const { data: component, error: ce } = await supabase
+    .from("components")
+    .select("id, name, part_number, manufacturer, manufacturer_sku, description, category")
+    .eq("id", componentId)
+    .eq("organization_id", profileRow?.organization_id ?? "")
+    .single();
+
+  if (ce || !component) return { ok: false, error: "Component not found." };
+
+  const c = component as {
+    id: string; name: string; part_number: string | null;
+    manufacturer: string | null; manufacturer_sku: string | null;
+    description: string | null; category: string | null;
+  };
+
+  const prompt = `You are an electronics component data specialist. Given the following component information, provide the best-known manufacturer details and description. Focus on accuracy — use your knowledge of standard electronic component part numbering conventions.
+
+Component data on file:
+- Name: ${c.name}
+- Part Number: ${c.part_number ?? "unknown"}
+- Manufacturer: ${c.manufacturer ?? "unknown"}
+- Manufacturer SKU: ${c.manufacturer_sku ?? "unknown"}
+- Description: ${c.description ?? "unknown"}
+- Category: ${c.category ?? "unknown"}
+
+Respond with a JSON object ONLY (no markdown, no explanation outside the JSON) with these exact fields:
+{
+  "manufacturer": "official manufacturer/brand name or null if unknown",
+  "manufacturer_sku": "the official manufacturer part number or null if unknown",
+  "description": "concise technical description (1-2 sentences) or null if unknown",
+  "category": "component category (e.g. Capacitor, Resistor, Microcontroller, SSD, Memory, Cable, etc.) or null if unknown",
+  "confidence": "high|medium|low",
+  "notes": "brief explanation of what you found, your sources of reasoning, and any caveats"
+}
+
+Use "high" confidence only if you are very sure the manufacturer SKU is accurate based on the part number. Use "low" if you are guessing. Return null for fields you cannot determine with reasonable confidence.`;
+
+  try {
+    const text = await callCompanyAI([{ role: "user", content: prompt }]);
+    const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    let suggestion: AiEnrichSuggestion;
+    try {
+      suggestion = JSON.parse(cleaned) as AiEnrichSuggestion;
+    } catch {
+      return { ok: false, error: "AI returned an unexpected format. Try again." };
+    }
+    return { ok: true, suggestion, componentId };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `AI request failed: ${msg}` };
+  }
+}
+
+export type ApplyEnrichmentState = { error?: string; success?: true };
+
+export async function applyComponentEnrichment(
+  componentId: string,
+  fields: Partial<Pick<AiEnrichSuggestion, "manufacturer" | "manufacturer_sku" | "description" | "category">>
+): Promise<ApplyEnrichmentState> {
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  if (!componentId) return { error: "Component ID is required." };
+  if (!Object.keys(fields).length) return { error: "No fields to apply." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("components")
+    .update({ ...fields, updated_at: new Date().toISOString() })
+    .eq("id", componentId)
+    .eq("organization_id", profile.organization_id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/components");
+  revalidatePath(`/components/${componentId}`);
   return { success: true };
 }
 

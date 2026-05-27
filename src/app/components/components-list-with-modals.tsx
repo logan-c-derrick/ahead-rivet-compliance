@@ -11,7 +11,10 @@ import {
   updateComponent,
   deleteComponent,
   bulkDeleteComponents,
+  aiEnrichComponent,
+  applyComponentEnrichment,
   type ComponentWithSupplier,
+  type AiEnrichSuggestion,
 } from "./actions";
 import type { ComponentLinkMatchFilter } from "./component-filters";
 
@@ -228,6 +231,63 @@ export default function ComponentsListWithModals({
     } else {
       setSelectedIds(new Set());
       setShowBulkDeleteConfirm(false);
+      router.refresh();
+    }
+  }
+
+  const [enrichTarget, setEnrichTarget] = useState<ComponentWithSupplier | null>(null);
+  const [enrichLoading, setEnrichLoading] = useState(false);
+  const [enrichError, setEnrichError] = useState<string | null>(null);
+  const [enrichSuggestion, setEnrichSuggestion] = useState<AiEnrichSuggestion | null>(null);
+  const [enrichApplying, setEnrichApplying] = useState(false);
+  const [enrichApplyError, setEnrichApplyError] = useState<string | null>(null);
+  const [enrichAccepted, setEnrichAccepted] = useState<Set<keyof AiEnrichSuggestion>>(new Set());
+
+  async function handleEnrichRequest(component: ComponentWithSupplier) {
+    setEnrichTarget(component);
+    setEnrichSuggestion(null);
+    setEnrichError(null);
+    setEnrichApplyError(null);
+    setEnrichAccepted(new Set());
+    setEnrichLoading(true);
+    const result = await aiEnrichComponent(component.id);
+    setEnrichLoading(false);
+    if (!result.ok) {
+      setEnrichError(result.error);
+    } else {
+      const suggested = result.suggestion;
+      const autoAccept = new Set<keyof AiEnrichSuggestion>();
+      if (suggested.manufacturer && !component.manufacturer) autoAccept.add("manufacturer");
+      if (suggested.manufacturer_sku && !component.manufacturer_sku) autoAccept.add("manufacturer_sku");
+      if (suggested.description && !component.description) autoAccept.add("description");
+      if (suggested.category && !component.category) autoAccept.add("category");
+      setEnrichSuggestion(suggested);
+      setEnrichAccepted(autoAccept);
+    }
+  }
+
+  async function handleEnrichApply() {
+    if (!enrichTarget || !enrichSuggestion) return;
+    setEnrichApplying(true);
+    setEnrichApplyError(null);
+    const fields: Partial<Pick<AiEnrichSuggestion, "manufacturer" | "manufacturer_sku" | "description" | "category">> = {};
+    for (const key of (["manufacturer", "manufacturer_sku", "description", "category"] as const)) {
+      if (enrichAccepted.has(key) && enrichSuggestion[key] !== null) {
+        fields[key] = enrichSuggestion[key] as string;
+      }
+    }
+    if (!Object.keys(fields).length) {
+      setEnrichApplyError("No fields selected to apply.");
+      setEnrichApplying(false);
+      return;
+    }
+    const result = await applyComponentEnrichment(enrichTarget.id, fields);
+    setEnrichApplying(false);
+    if (result.error) {
+      setEnrichApplyError(result.error);
+    } else {
+      setEnrichTarget(null);
+      setEnrichSuggestion(null);
       router.refresh();
     }
   }
@@ -558,6 +618,17 @@ export default function ComponentsListWithModals({
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.supplier_name ?? "—"}</td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-right min-w-0">
                     <div className="flex flex-col items-end sm:flex-row sm:justify-end gap-1 sm:gap-2">
+                      {(!c.manufacturer || !c.manufacturer_sku || c.manufacturer_sku === c.part_number) && (
+                        <button
+                          type="button"
+                          onClick={() => handleEnrichRequest(c)}
+                          className="text-tertiary hover:text-tertiary/80 text-xs font-bold hover:underline inline-flex items-center gap-1"
+                          title="AI Enrich — fill in missing manufacturer / SKU data"
+                        >
+                          <MaterialIcon name="auto_awesome" className="text-sm" />
+                          AI Enrich
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setEditComponent(c)}
@@ -752,6 +823,101 @@ export default function ComponentsListWithModals({
               Cancel
             </button>
           </div>
+        </Modal>
+      )}
+
+      {enrichTarget && (
+        <Modal
+          title={`AI Enrich — ${enrichTarget.name}`}
+          onClose={() => { setEnrichTarget(null); setEnrichSuggestion(null); }}
+        >
+          {enrichLoading && (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+              <p className="text-sm text-on-surface-variant">Analyzing component data…</p>
+            </div>
+          )}
+          {enrichError && !enrichLoading && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-3 text-sm text-error mb-4">
+              {enrichError}
+            </div>
+          )}
+          {enrichSuggestion && !enrichLoading && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold ${
+                  enrichSuggestion.confidence === "high"
+                    ? "bg-green-100 text-green-700"
+                    : enrichSuggestion.confidence === "medium"
+                    ? "bg-yellow-100 text-yellow-700"
+                    : "bg-red-100 text-red-700"
+                }`}>
+                  <MaterialIcon name="auto_awesome" className="text-xs" />
+                  {enrichSuggestion.confidence} confidence
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant italic">{enrichSuggestion.notes}</p>
+
+              <div className="space-y-2">
+                {(["manufacturer", "manufacturer_sku", "description", "category"] as const).map((field) => {
+                  const suggested = enrichSuggestion[field];
+                  const current = enrichTarget[field];
+                  if (!suggested) return null;
+                  const label = field === "manufacturer_sku" ? "Manufacturer SKU" : field.charAt(0).toUpperCase() + field.slice(1);
+                  return (
+                    <label key={field} className="flex items-start gap-3 p-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={enrichAccepted.has(field)}
+                        onChange={() => {
+                          setEnrichAccepted((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(field)) next.delete(field);
+                            else next.add(field);
+                            return next;
+                          });
+                        }}
+                        className="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary/20"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant mb-1">{label}</p>
+                        {current && current !== suggested && (
+                          <p className="text-xs text-on-surface-variant line-through mb-0.5 break-words">{current}</p>
+                        )}
+                        <p className="text-sm font-medium text-on-surface break-words">{suggested}</p>
+                        {!current && <span className="text-[10px] text-green-600 font-bold">NEW</span>}
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {enrichApplyError && (
+                <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error">
+                  {enrichApplyError}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={handleEnrichApply}
+                  disabled={enrichApplying || enrichAccepted.size === 0}
+                  className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-40 inline-flex items-center gap-2"
+                >
+                  <MaterialIcon name="check" className="text-sm" />
+                  {enrichApplying ? "Applying…" : `Apply ${enrichAccepted.size} field${enrichAccepted.size !== 1 ? "s" : ""}`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEnrichTarget(null); setEnrichSuggestion(null); }}
+                  className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </Modal>
       )}
 
