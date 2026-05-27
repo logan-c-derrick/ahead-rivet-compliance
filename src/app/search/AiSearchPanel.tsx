@@ -96,7 +96,7 @@ export default function AiSearchPanel() {
             <div>
               <p className="text-sm text-on-surface">{result.explanation}</p>
               <p className="text-xs text-on-surface-variant mt-1">
-                Found <strong>{result.results.length}</strong> result{result.results.length !== 1 ? "s" : ""} for <em>"{result.query}"</em>
+                Found <strong>{result.results.length}</strong> result{result.results.length !== 1 ? "s" : ""} for <em>&ldquo;{result.query}&rdquo;</em>
               </p>
             </div>
           </div>

@@ -38,21 +38,21 @@ export default function ProductsListWithModals({
       setShowCreate(false);
       router.refresh();
     }
-  }, [createState]);
+  }, [createState, router]);
 
   useEffect(() => {
     if (updateState?.success) {
       setEditProduct(null);
       router.refresh();
     }
-  }, [updateState]);
+  }, [updateState, router]);
 
   useEffect(() => {
     if (deleteState?.success) {
       setDeleteProductState(null);
       router.refresh();
     }
-  }, [deleteState]);
+  }, [deleteState, router]);
 
   useEffect(() => {
     if (editId && products.length > 0) {

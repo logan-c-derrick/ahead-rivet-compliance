@@ -201,21 +201,21 @@ export default function ComponentsListWithModals({
       setShowCreate(false);
       router.refresh();
     }
-  }, [createState]);
+  }, [createState, router]);
 
   useEffect(() => {
     if (updateState?.success) {
       setEditComponent(null);
       router.refresh();
     }
-  }, [updateState]);
+  }, [updateState, router]);
 
   useEffect(() => {
     if (deleteState?.success) {
       setDeleteStateRow(null);
       router.refresh();
     }
-  }, [deleteState]);
+  }, [deleteState, router]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
