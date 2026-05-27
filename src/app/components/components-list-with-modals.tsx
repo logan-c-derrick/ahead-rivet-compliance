@@ -16,6 +16,7 @@ import {
   type ComponentWithSupplier,
   type AiEnrichSuggestion,
 } from "./actions";
+import AiDuplicatesPanel from "./AiDuplicatesPanel";
 import type { ComponentLinkMatchFilter } from "./component-filters";
 
 function Modal({
@@ -235,6 +236,7 @@ export default function ComponentsListWithModals({
     }
   }
 
+  const [showDuplicates, setShowDuplicates] = useState(false);
   const [enrichTarget, setEnrichTarget] = useState<ComponentWithSupplier | null>(null);
   const [enrichLoading, setEnrichLoading] = useState(false);
   const [enrichError, setEnrichError] = useState<string | null>(null);
@@ -404,6 +406,14 @@ export default function ComponentsListWithModals({
           </div>
 
           <div className="flex flex-wrap gap-2 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowDuplicates(true)}
+              className="border border-outline-variant/30 text-tertiary px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center justify-center gap-2"
+            >
+              <MaterialIcon name="auto_awesome" className="text-sm" />
+              Find Duplicates
+            </button>
             <Link
               href="/components/bulk"
               className="border border-outline-variant/30 text-primary px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center justify-center gap-2"
@@ -825,6 +835,8 @@ export default function ComponentsListWithModals({
           </div>
         </Modal>
       )}
+
+      {showDuplicates && <AiDuplicatesPanel onClose={() => setShowDuplicates(false)} />}
 
       {enrichTarget && (
         <Modal

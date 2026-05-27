@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireProfile } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 import MaterialIcon from "@/components/ui/MaterialIcon";
+import RegulationAiImpactPanel from "./RegulationAiImpactPanel";
 
 type Props = {
   searchParams: Promise<{ q?: string; jurisdiction?: string }>;
@@ -240,6 +241,10 @@ export default async function RegulationsPage({ searchParams }: Props) {
           </div>
         </div>
       )}
+
+      <RegulationAiImpactPanel
+        regulations={(regulations ?? []).map((r: any) => ({ id: r.id, code: r.code, name: r.name }))}
+      />
     </div>
   );
 }

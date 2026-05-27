@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import { RichMessageEditor } from "@/components/outreach/rich-message-editor";
 import { submitCampaignIntent, type OutreachActionState } from "../actions";
+import { aiDraftOutreachEmail } from "../ai-draft-actions";
 
 type Regulation = { id: string; code: string; name: string };
 
@@ -63,6 +64,27 @@ export default function OutreachCampaignForm({
   const [subjectTemplate, setSubjectTemplate] = useState(defaultSubjectTemplate);
   const [messageTemplate, setMessageTemplate] = useState(defaultMessageTemplate);
   const [submitIntent, setSubmitIntent] = useState<"launch" | "draft" | null>(null);
+  const [aiDrafting, setAiDrafting] = useState(false);
+  const [aiDraftError, setAiDraftError] = useState<string | null>(null);
+
+  async function handleAiDraft() {
+    setAiDrafting(true);
+    setAiDraftError(null);
+    const productId = targetingMode === "product"
+      ? (document.querySelector<HTMLSelectElement>('[name="target_product_id"]')?.value ?? null)
+      : null;
+    const res = await aiDraftOutreachEmail({
+      regulationIds: Array.from(selectedRegulationIds),
+      targetingMode,
+      productId,
+      supplierIds: Array.from(selectedSupplierIds),
+      componentIds: Array.from(selectedComponentIds),
+    });
+    setAiDrafting(false);
+    if (!res.ok) { setAiDraftError(res.error); return; }
+    if (res.subject) setSubjectTemplate(res.subject);
+    if (res.message) setMessageTemplate(res.message);
+  }
 
   const [state, formAction] = useFormState(
     async (_prev: OutreachActionState, formData: FormData) => {
@@ -517,10 +539,27 @@ export default function OutreachCampaignForm({
         </section>
 
         <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm">
-          <h3 className="text-lg font-bold text-primary mb-6 flex items-center gap-2 font-headline">
-            <MaterialIcon name="edit_note" className="text-primary-container" />
-            Communication Template
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-bold text-primary flex items-center gap-2 font-headline">
+              <MaterialIcon name="edit_note" className="text-primary-container" />
+              Communication Template
+            </h3>
+            <div className="flex flex-col items-end gap-1">
+              <button
+                type="button"
+                onClick={handleAiDraft}
+                disabled={aiDrafting || regulations.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-tertiary/30 text-tertiary hover:bg-tertiary/5 disabled:opacity-40 transition-colors"
+              >
+                {aiDrafting ? (
+                  <><div className="w-3 h-3 rounded-full border-2 border-tertiary border-t-transparent animate-spin" />Drafting…</>
+                ) : (
+                  <><MaterialIcon name="auto_awesome" className="text-xs" />AI Draft</>
+                )}
+              </button>
+              {aiDraftError && <p className="text-[10px] text-error max-w-[200px] text-right">{aiDraftError}</p>}
+            </div>
+          </div>
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 font-body">
