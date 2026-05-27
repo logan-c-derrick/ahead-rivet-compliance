@@ -3,6 +3,7 @@ import type { Product, ProductBomComponent } from "../actions";
 import type { ProductRegulationStatusRow } from "../compliance";
 import type { ProductReleaseStatusRow } from "../compliance";
 import { recalculateProductRegulationStatus } from "../compliance";
+import ProductAiRiskPanel from "./ProductAiRiskPanel";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -253,7 +254,10 @@ export default async function ProductDetailTabs({
           )}
 
           {activeTab === "bom" && (
-            <ProductBomPanel bomRows={bomRows} />
+            <div className="space-y-6">
+              <ProductBomPanel bomRows={bomRows} />
+              <ProductAiRiskPanel productId={product.id} bomRows={bomRows} />
+            </div>
           )}
 
           {activeTab === "regulations" && (
