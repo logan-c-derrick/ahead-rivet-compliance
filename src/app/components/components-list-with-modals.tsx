@@ -13,8 +13,10 @@ import {
   bulkDeleteComponents,
   aiEnrichComponent,
   applyComponentEnrichment,
+  bulkAiEnrichComponents,
   type ComponentWithSupplier,
   type AiEnrichSuggestion,
+  type BulkEnrichComponentResult,
 } from "./actions";
 import AiDuplicatesPanel from "./AiDuplicatesPanel";
 import type { ComponentLinkMatchFilter } from "./component-filters";
@@ -294,6 +296,75 @@ export default function ComponentsListWithModals({
     }
   }
 
+  const [bulkEnrichLoading, setBulkEnrichLoading] = useState(false);
+  const [bulkEnrichError, setBulkEnrichError] = useState<string | null>(null);
+  const [bulkEnrichResults, setBulkEnrichResults] = useState<BulkEnrichComponentResult[] | null>(null);
+  const [bulkEnrichAccepted, setBulkEnrichAccepted] = useState<Map<string, Set<keyof AiEnrichSuggestion>>>(new Map());
+  const [bulkEnrichApplying, setBulkEnrichApplying] = useState(false);
+  const [bulkEnrichApplyError, setBulkEnrichApplyError] = useState<string | null>(null);
+  const [bulkEnrichApplied, setBulkEnrichApplied] = useState(false);
+
+  async function handleBulkEnrichRequest() {
+    setBulkEnrichLoading(true);
+    setBulkEnrichError(null);
+    setBulkEnrichResults(null);
+    setBulkEnrichAccepted(new Map());
+    setBulkEnrichApplied(false);
+    setBulkEnrichApplyError(null);
+    const result = await bulkAiEnrichComponents(Array.from(selectedIds));
+    setBulkEnrichLoading(false);
+    if (!result.ok) { setBulkEnrichError(result.error); return; }
+    const accepted = new Map<string, Set<keyof AiEnrichSuggestion>>();
+    for (const r of result.results) {
+      if (!r.suggestion) continue;
+      const auto = new Set<keyof AiEnrichSuggestion>();
+      const comp = components.find((c) => c.id === r.component_id);
+      const s = r.suggestion;
+      if (s.manufacturer && !comp?.manufacturer) auto.add("manufacturer");
+      if (s.manufacturer_sku && !comp?.manufacturer_sku) auto.add("manufacturer_sku");
+      if (s.description && !comp?.description) auto.add("description");
+      if (s.category && !comp?.category) auto.add("category");
+      accepted.set(r.component_id, auto);
+    }
+    setBulkEnrichResults(result.results);
+    setBulkEnrichAccepted(accepted);
+  }
+
+  async function handleBulkEnrichApply() {
+    if (!bulkEnrichResults) return;
+    setBulkEnrichApplying(true);
+    setBulkEnrichApplyError(null);
+    const FIELDS = ["manufacturer", "manufacturer_sku", "description", "category"] as const;
+    for (const r of bulkEnrichResults) {
+      if (!r.suggestion) continue;
+      const accepted = bulkEnrichAccepted.get(r.component_id);
+      if (!accepted?.size) continue;
+      const fields: Partial<Pick<AiEnrichSuggestion, "manufacturer" | "manufacturer_sku" | "description" | "category">> = {};
+      for (const key of FIELDS) {
+        if (accepted.has(key) && r.suggestion[key] !== null) fields[key] = r.suggestion[key] as string;
+      }
+      if (!Object.keys(fields).length) continue;
+      const res = await applyComponentEnrichment(r.component_id, fields);
+      if (res.error) { setBulkEnrichApplyError(`Failed on ${r.component_name}: ${res.error}`); setBulkEnrichApplying(false); return; }
+    }
+    setBulkEnrichApplying(false);
+    setBulkEnrichApplied(true);
+    setSelectedIds(new Set());
+    router.refresh();
+  }
+
+  function toggleBulkEnrichField(componentId: string, field: keyof AiEnrichSuggestion) {
+    setBulkEnrichAccepted((prev) => {
+      const next = new Map(prev);
+      const set = new Set(next.get(componentId) ?? []);
+      if (set.has(field)) set.delete(field); else set.add(field);
+      next.set(componentId, set);
+      return next;
+    });
+  }
+
+  const totalBulkAccepted = Array.from(bulkEnrichAccepted.values()).reduce((sum, s) => sum + s.size, 0);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const PAGE_SIZE = 50;
@@ -527,13 +598,22 @@ export default function ComponentsListWithModals({
               <span className="text-sm font-bold text-error">
                 {selectedIds.size} component{selectedIds.size !== 1 ? "s" : ""} selected
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   type="button"
                   onClick={() => setSelectedIds(new Set())}
                   className="text-xs font-bold text-on-surface-variant hover:text-on-surface"
                 >
                   Clear selection
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBulkEnrichRequest}
+                  disabled={bulkEnrichLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-bold hover:opacity-90 disabled:opacity-40"
+                >
+                  <MaterialIcon name="auto_awesome" className="text-sm" />
+                  {bulkEnrichLoading ? "Enriching…" : "AI Enrich Selected"}
                 </button>
                 <button
                   type="button"
@@ -628,17 +708,15 @@ export default function ComponentsListWithModals({
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.supplier_name ?? "—"}</td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-right min-w-0">
                     <div className="flex flex-col items-end sm:flex-row sm:justify-end gap-1 sm:gap-2">
-                      {(!c.manufacturer || !c.manufacturer_sku || c.manufacturer_sku === c.part_number) && (
-                        <button
-                          type="button"
-                          onClick={() => handleEnrichRequest(c)}
-                          className="text-tertiary hover:text-tertiary/80 text-xs font-bold hover:underline inline-flex items-center gap-1"
-                          title="AI Enrich — fill in missing manufacturer / SKU data"
-                        >
-                          <MaterialIcon name="auto_awesome" className="text-sm" />
-                          AI Enrich
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleEnrichRequest(c)}
+                        className="text-tertiary hover:text-tertiary/80 text-xs font-bold hover:underline inline-flex items-center gap-1"
+                        title="AI Enrich — verify or fill in manufacturer / SKU data"
+                      >
+                        <MaterialIcon name="auto_awesome" className="text-sm" />
+                        AI Enrich
+                      </button>
                       <button
                         type="button"
                         onClick={() => setEditComponent(c)}
@@ -837,6 +915,109 @@ export default function ComponentsListWithModals({
       )}
 
       {showDuplicates && <AiDuplicatesPanel onClose={() => setShowDuplicates(false)} />}
+
+      {(bulkEnrichLoading || bulkEnrichResults !== null || bulkEnrichError) && !bulkEnrichApplied && (
+        <Modal
+          title={`AI Enrich — ${selectedIds.size} component${selectedIds.size !== 1 ? "s" : ""}`}
+          onClose={() => { setBulkEnrichResults(null); setBulkEnrichError(null); setBulkEnrichLoading(false); }}
+        >
+          {bulkEnrichLoading && (
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+              <p className="text-sm text-on-surface-variant">Analyzing {selectedIds.size} components…</p>
+            </div>
+          )}
+          {bulkEnrichError && !bulkEnrichLoading && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-3 text-sm text-error mb-4">{bulkEnrichError}</div>
+          )}
+          {bulkEnrichResults && !bulkEnrichLoading && (
+            <div className="space-y-4">
+              <p className="text-sm text-on-surface-variant">
+                Review AI suggestions below. Check the fields you want to apply. Fields empty in your catalog are pre-checked; existing values are unchecked by default.
+              </p>
+              <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+                {bulkEnrichResults.map((r) => {
+                  if (!r.suggestion) return (
+                    <div key={r.component_id} className="p-3 rounded-xl border border-outline-variant/20 text-sm text-on-surface-variant">
+                      <span className="font-medium text-on-surface">{r.component_name}</span>
+                      {r.error && <span className="ml-2 text-error text-xs">{r.error}</span>}
+                    </div>
+                  );
+                  const s = r.suggestion;
+                  const accepted = bulkEnrichAccepted.get(r.component_id) ?? new Set();
+                  const FIELDS = ["manufacturer", "manufacturer_sku", "description", "category"] as const;
+                  const hasSuggestions = FIELDS.some((f) => s[f] !== null);
+                  return (
+                    <div key={r.component_id} className="rounded-xl border border-outline-variant/20 overflow-hidden">
+                      <div className="px-4 py-2.5 bg-surface-container-low flex items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-primary">{r.component_name}</span>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                          s.confidence === "high" ? "bg-green-100 text-green-700" :
+                          s.confidence === "medium" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>{s.confidence}</span>
+                      </div>
+                      {!hasSuggestions ? (
+                        <p className="px-4 py-3 text-xs text-on-surface-variant italic">No suggestions available for this component.</p>
+                      ) : (
+                        <div className="divide-y divide-outline-variant/10">
+                          {FIELDS.map((field) => {
+                            if (!s[field]) return null;
+                            const comp = components.find((c) => c.id === r.component_id);
+                            const current = comp?.[field] as string | null | undefined;
+                            const label = field === "manufacturer_sku" ? "Mfr SKU" : field.charAt(0).toUpperCase() + field.slice(1);
+                            return (
+                              <label key={field} className="flex items-start gap-3 px-4 py-2.5 hover:bg-surface-container-low cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={accepted.has(field)}
+                                  onChange={() => toggleBulkEnrichField(r.component_id, field)}
+                                  className="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary/20 shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant">{label}: </span>
+                                  {current && current !== s[field] && (
+                                    <span className="text-xs text-on-surface-variant line-through mr-1">{current}</span>
+                                  )}
+                                  <span className="text-sm font-medium text-on-surface break-words">{s[field]}</span>
+                                  {!current && <span className="ml-1 text-[10px] text-green-600 font-bold">NEW</span>}
+                                </div>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {bulkEnrichApplyError && (
+                <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error">{bulkEnrichApplyError}</div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={handleBulkEnrichApply}
+                  disabled={bulkEnrichApplying || totalBulkAccepted === 0}
+                  className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-40 inline-flex items-center gap-2"
+                >
+                  <MaterialIcon name="check" className="text-sm" />
+                  {bulkEnrichApplying ? "Applying…" : `Apply ${totalBulkAccepted} suggestion${totalBulkAccepted !== 1 ? "s" : ""}`}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setBulkEnrichResults(null); setBulkEnrichError(null); }}
+                  className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
 
       {enrichTarget && (
         <Modal

@@ -460,6 +460,101 @@ export async function applyComponentEnrichment(
   return { success: true };
 }
 
+export type BulkEnrichComponentResult = {
+  component_id: string;
+  component_name: string;
+  suggestion: AiEnrichSuggestion | null;
+  error?: string;
+};
+
+export type BulkAiEnrichResult =
+  | { ok: true; results: BulkEnrichComponentResult[] }
+  | { ok: false; error: string };
+
+export async function bulkAiEnrichComponents(ids: string[]): Promise<BulkAiEnrichResult> {
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  if (!ids.length) return { ok: false, error: "No components selected." };
+
+  const profile = await requireProfile();
+  const supabase = await createClient();
+
+  const { data: components, error: ce } = await supabase
+    .from("components")
+    .select("id, name, part_number, manufacturer, manufacturer_sku, description, category")
+    .in("id", ids)
+    .eq("organization_id", profile.organization_id);
+
+  if (ce || !components?.length) return { ok: false, error: "Components not found." };
+
+  const list = (components as any[]).map((c) => ({
+    id: c.id,
+    name: c.name,
+    part_number: c.part_number ?? null,
+    manufacturer: c.manufacturer ?? null,
+    manufacturer_sku: c.manufacturer_sku ?? null,
+    description: c.description ?? null,
+    category: c.category ?? null,
+  }));
+
+  const prompt = `You are an electronics component data specialist. For each component below, provide the best-known manufacturer details and description. Focus on accuracy — use your knowledge of standard electronic component part numbering conventions.
+
+Components (JSON array):
+${JSON.stringify(list, null, 2)}
+
+Respond with a JSON array ONLY (no markdown, no text outside the JSON). Each element must correspond to exactly one input component in the same order:
+[
+  {
+    "component_id": "exact id from input",
+    "manufacturer": "official manufacturer/brand name or null if unknown",
+    "manufacturer_sku": "official manufacturer part number or null if unknown",
+    "description": "concise technical description (1-2 sentences) or null if unknown",
+    "category": "component category (e.g. Capacitor, Resistor, Microcontroller, SSD, Memory, Cable, etc.) or null if unknown",
+    "confidence": "high|medium|low",
+    "notes": "brief explanation of what you found and any caveats"
+  }
+]
+
+The array must have exactly ${list.length} entries — one per input component. Use "high" confidence only if you are very sure. Return null for fields you cannot determine with reasonable confidence.`;
+
+  try {
+    const text = await callCompanyAI([{ role: "user", content: prompt }]);
+    const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    let parsed: Array<{ component_id: string; manufacturer: string | null; manufacturer_sku: string | null; description: string | null; category: string | null; confidence: AiEnrichSuggestion["confidence"]; notes: string }>;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      return { ok: false, error: "AI returned an unexpected format. Please try again." };
+    }
+
+    const byId = new Map(parsed.map((r) => [r.component_id, r]));
+    const results: BulkEnrichComponentResult[] = (components as any[]).map((c) => {
+      const r = byId.get(c.id);
+      if (!r) return { component_id: c.id, component_name: c.name, suggestion: null, error: "No suggestion returned." };
+      return {
+        component_id: c.id,
+        component_name: c.name,
+        suggestion: {
+          manufacturer: r.manufacturer,
+          manufacturer_sku: r.manufacturer_sku,
+          description: r.description,
+          category: r.category,
+          confidence: r.confidence,
+          notes: r.notes,
+        },
+      };
+    });
+
+    return { ok: true, results };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `AI request failed: ${msg}` };
+  }
+}
+
 export type ComponentCsvPreviewRow = {
   rowIndex: number;
   name: string;
