@@ -181,53 +181,37 @@ export async function getProductReleaseStatuses(
   })) as ProductReleaseStatusRow[];
 }
 
-export async function recalculateProductRegulationStatus(productId: string) {
-  await requireProfile();
-  const supabase = await createClient();
-
-  // Components linked to product
+/** Core upsert logic shared by the single-product and bulk recalculate paths. */
+export async function recalculateProductRegulationStatusCore(
+  productId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<void> {
   const { data: linked, error: linkedError } = await supabase
     .from("product_components")
     .select("component_id")
     .eq("product_id", productId);
 
-  if (linkedError) {
-    throw linkedError;
-  }
+  if (linkedError) throw linkedError;
 
   const componentIds = (linked ?? []).map((x: any) => x.component_id).filter(Boolean);
 
-  // All regulations (seed includes 8)
   const { data: regulations, error: regsError } = await supabase
     .from("regulations")
     .select("id")
     .order("code");
 
-  if (regsError) {
-    throw regsError;
-  }
+  if (regsError) throw regsError;
 
-  // Component regulation statuses for linked components
-  let componentRegRows: Array<{
-    component_id: string;
-    regulation_id: string;
-    status: string;
-  }> = [];
-
+  let componentRegRows: Array<{ component_id: string; regulation_id: string; status: string }> = [];
   if (componentIds.length > 0) {
     const { data: compRegs, error: compRegsError } = await supabase
       .from("component_regulations")
       .select("component_id, regulation_id, status")
       .in("component_id", componentIds);
-
-    if (compRegsError) {
-      throw compRegsError;
-    }
-
+    if (compRegsError) throw compRegsError;
     componentRegRows = (compRegs ?? []) as any;
   }
 
-  // Build quick lookup: component_id -> regulation_id -> status
   const statusByComponentAndReg = new Map<string, Map<string, string>>();
   for (const row of componentRegRows) {
     if (!statusByComponentAndReg.has(row.component_id)) {
@@ -240,45 +224,33 @@ export async function recalculateProductRegulationStatus(productId: string) {
 
   const upsertRows = (regulations ?? []).map((reg: any) => {
     let computedStatus = "pending";
-
     if (componentIds.length === 0) {
-      // No components linked: treat as not-ready.
       computedStatus = "pending";
     } else {
-      const statusesForReg: string[] = componentIds.map((componentId) => {
-        const regMap = statusByComponentAndReg.get(componentId);
-        return regMap?.get(reg.id) ?? "missing_data";
+      const statusesForReg = componentIds.map((cid) => {
+        return statusByComponentAndReg.get(cid)?.get(reg.id) ?? "missing_data";
       });
-
-      if (statusesForReg.some((s) => s === "non_compliant")) {
-        computedStatus = "non_compliant";
-      } else if (statusesForReg.some((s) => s === "pending")) {
-        computedStatus = "pending";
-      } else if (statusesForReg.some((s) => s === "missing_data")) {
-        computedStatus = "at_risk";
-      } else if (statusesForReg.every((s) => s === "compliant")) {
-        computedStatus = "compliant";
-      } else {
-        computedStatus = "pending";
-      }
+      if (statusesForReg.some((s) => s === "non_compliant")) computedStatus = "non_compliant";
+      else if (statusesForReg.some((s) => s === "pending")) computedStatus = "pending";
+      else if (statusesForReg.some((s) => s === "missing_data")) computedStatus = "at_risk";
+      else if (statusesForReg.every((s) => s === "compliant")) computedStatus = "compliant";
+      else computedStatus = "pending";
     }
-
-    return {
-      product_id: productId,
-      regulation_id: reg.id,
-      status: computedStatus,
-      compliance_date: today,
-      notes: null,
-    };
+    return { product_id: productId, regulation_id: reg.id, status: computedStatus, compliance_date: today, notes: null };
   });
 
   const { error: upsertError } = await supabase
     .from("product_regulation_status")
     .upsert(upsertRows, { onConflict: "product_id,regulation_id" });
 
-  if (upsertError) {
-    throw upsertError;
-  }
+  if (upsertError) throw upsertError;
+}
+
+export async function recalculateProductRegulationStatus(productId: string) {
+  await requireProfile();
+  const supabase = await createClient();
+
+  await recalculateProductRegulationStatusCore(productId, supabase);
 
   revalidatePath(`/products/${productId}?tab=compliance`);
   redirect(`/products/${productId}?tab=compliance`);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/profile";
 import MaterialIcon from "@/components/ui/MaterialIcon";
+import RecalculateAllButton from "./recalculate-all-button";
 
 function statusPillClass(status: string) {
   switch (status) {
@@ -21,35 +22,115 @@ type Props = {
   searchParams: Promise<{ q?: string; status?: string }>;
 };
 
+// Compliance data older than this is flagged as stale (at_risk even if previously compliant)
+const STALE_DAYS = 365;
+
 export default async function DashboardPage({ searchParams }: Props) {
-  await requireProfile();
+  const profile = await requireProfile();
   const { q, status } = await searchParams;
   const query = (q ?? "").trim().toLowerCase();
   const statusFilter = (status ?? "").trim().toLowerCase();
   const supabase = await createClient();
 
-  const { data: regStatuses, error: statusError } = await supabase
-    .from("product_regulation_status")
-    .select(
-      "status, compliance_date, notes, regulation_id, regulations(code, name), product_id, products(name, sku)"
-    )
-    .order("compliance_date", { ascending: false })
-    .limit(250);
+  const staleThreshold = new Date();
+  staleThreshold.setDate(staleThreshold.getDate() - STALE_DAYS);
 
-  if (statusError) {
-    console.error("Error loading product_regulation_status:", statusError);
+  // Fetch all data in parallel
+  const [
+    { data: regStatusRows },
+    { data: allProducts },
+    { data: allRegulations },
+    { data: outreachRows },
+    { data: latestRegs },
+    { data: recentUpdateEvents },
+  ] = await Promise.all([
+    supabase
+      .from("product_regulation_status")
+      .select("status, compliance_date, notes, regulation_id, regulations(code, name), product_id, products(name, sku, organization_id)")
+      .order("compliance_date", { ascending: false })
+      .limit(500),
+    supabase
+      .from("products")
+      .select("id, name, sku, lifecycle_status")
+      .eq("organization_id", profile.organization_id)
+      .order("name"),
+    supabase
+      .from("regulations")
+      .select("id, code, name")
+      .order("code"),
+    supabase
+      .from("outreach_requests")
+      .select("id, status")
+      .order("requested_at", { ascending: false })
+      .limit(50),
+    supabase
+      .from("regulation_releases")
+      .select("release_key, title, regulations(code)")
+      .order("published_at", { ascending: false })
+      .limit(2),
+    supabase
+      .from("regulation_update_events")
+      .select("id, impacted_components, impacted_products, created_at, regulation_releases(release_key)")
+      .order("created_at", { ascending: false })
+      .limit(3),
+  ]);
+
+  const regulations = (allRegulations ?? []) as any[];
+  const products = (allProducts ?? []) as any[];
+
+  // Apply staleness: compliant rows with old compliance_date → at_risk
+  const statuses = ((regStatusRows ?? []) as any[]).map((r) => {
+    if (
+      r.status === "compliant" &&
+      r.compliance_date &&
+      new Date(r.compliance_date) < staleThreshold
+    ) {
+      return { ...r, status: "at_risk", stale: true };
+    }
+    return { ...r, stale: false };
+  });
+
+  // Find products with NO compliance rows at all — treat as pending
+  const trackedProductIds = new Set(statuses.map((r: any) => r.product_id));
+  const untrackedProducts = products.filter((p) => !trackedProductIds.has(p.id));
+
+  // Build synthetic "pending" rows for untracked products so they appear in the dashboard
+  const syntheticRows: any[] = [];
+  for (const product of untrackedProducts) {
+    for (const reg of regulations) {
+      syntheticRows.push({
+        product_id: product.id,
+        regulation_id: reg.id,
+        status: "pending",
+        compliance_date: null,
+        notes: null,
+        synthetic: true,
+        stale: false,
+        products: { name: product.name, sku: product.sku },
+        regulations: { code: reg.code, name: reg.name },
+      });
+    }
   }
 
-  const statuses = (regStatuses ?? []) as any[];
-  const total = statuses.length;
-  const compliantCount = statuses.filter((r) => r.status === "compliant").length;
-  const nonCompliantCount = statuses.filter((r) => r.status === "non_compliant").length;
-  const atRiskCount = statuses.filter((r) => r.status === "at_risk").length;
-  const pendingCount = statuses.filter((r) => r.status === "pending").length;
+  const allStatuses = [...statuses, ...syntheticRows];
+  const total = allStatuses.length;
+  const compliantCount = allStatuses.filter((r) => r.status === "compliant").length;
+  const nonCompliantCount = allStatuses.filter((r) => r.status === "non_compliant").length;
+  const atRiskCount = allStatuses.filter((r) => r.status === "at_risk").length;
+  const pendingCount = allStatuses.filter((r) => r.status === "pending").length;
 
   const compliancePercent = total === 0 ? 0 : (compliantCount / total) * 100;
 
-  const urgentRows = statuses
+  // Per-regulation breakdown for chart
+  const regBreakdown = regulations.slice(0, 6).map((reg: any) => {
+    const rows = allStatuses.filter((r) => r.regulation_id === reg.id);
+    const regTotal = rows.length;
+    const regCompliant = rows.filter((r) => r.status === "compliant").length;
+    const pct = regTotal === 0 ? 0 : Math.round((regCompliant / regTotal) * 100);
+    return { code: reg.code, pct, total: regTotal };
+  });
+
+  const urgentRows = allStatuses
     .filter((r) => r.status === "non_compliant" || r.status === "at_risk" || r.status === "pending")
     .filter((r) => (statusFilter ? r.status === statusFilter : true))
     .filter((r) => {
@@ -65,28 +146,19 @@ export default async function DashboardPage({ searchParams }: Props) {
         regName.includes(query)
       );
     })
-    .slice(0, 6);
+    // Deduplicate: one row per product (worst status wins) for the urgent table
+    .reduce<any[]>((acc, row) => {
+      const existing = acc.find((r) => r.product_id === row.product_id && r.regulation_id === row.regulation_id);
+      if (!existing) acc.push(row);
+      return acc;
+    }, [])
+    .sort((a, b) => {
+      const order: Record<string, number> = { non_compliant: 0, at_risk: 1, pending: 2 };
+      return (order[a.status] ?? 3) - (order[b.status] ?? 3);
+    })
+    .slice(0, 8);
 
-  const { data: outreachRows } = await supabase
-    .from("outreach_requests")
-    .select("id, status")
-    .order("requested_at", { ascending: false })
-    .limit(50);
-
-  const pendingOutreachCount = (outreachRows ?? []).filter((r: any) => r.status === "pending")
-    .length;
-
-  const { data: latestRegs } = await supabase
-    .from("regulation_releases")
-    .select("release_key, title, regulations(code)")
-    .order("published_at", { ascending: false })
-    .limit(2);
-
-  const { data: recentUpdateEvents } = await supabase
-    .from("regulation_update_events")
-    .select("id, impacted_components, impacted_products, created_at, regulation_releases(release_key)")
-    .order("created_at", { ascending: false })
-    .limit(3);
+  const pendingOutreachCount = (outreachRows ?? []).filter((r: any) => r.status === "pending").length;
 
   return (
     <div className="p-8 space-y-8">
@@ -98,7 +170,8 @@ export default async function DashboardPage({ searchParams }: Props) {
           <h2 className="text-4xl font-extrabold tracking-tight text-primary font-headline">Compliance Summary</h2>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          <RecalculateAllButton productCount={products.length} />
           <Link
             href={`/dashboard/export${query ? `?q=${encodeURIComponent(query)}` : ""}${
               statusFilter ? `${query ? "&" : "?"}status=${encodeURIComponent(statusFilter)}` : ""
@@ -141,28 +214,45 @@ export default async function DashboardPage({ searchParams }: Props) {
               />
             </div>
             <p className="text-sm text-on-surface-variant font-body flex items-center gap-1">
-              <MaterialIcon name="trending_up" className="text-tertiary-fixed-dim text-base" />
-              +1.4% from previous month
+              <MaterialIcon name="info" className="text-tertiary-fixed-dim text-base" />
+              {compliantCount} of {total} product-regulation pairs verified
             </p>
+            {untrackedProducts.length > 0 && (
+              <p className="text-xs text-amber-600 font-semibold flex items-center gap-1">
+                <MaterialIcon name="warning" className="text-sm" />
+                {untrackedProducts.length} product{untrackedProducts.length !== 1 ? "s" : ""} never assessed — click Recalculate All
+              </p>
+            )}
           </div>
         </div>
 
         <div className="col-span-12 lg:col-span-8 grid grid-cols-2 gap-6">
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-primary">Status by Regulation</h3>
-              <MaterialIcon name="more_horiz" className="text-on-surface-variant" />
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-primary">Compliance by Regulation</h3>
+              <span className="text-[10px] text-on-surface-variant">% of products verified</span>
             </div>
-            <div className="flex-1 flex items-end justify-between gap-4 px-2">
-              {["RoHS", "REACH", "Prop 65", "TAA"].map((code) => (
-                <div key={code} className="w-full flex flex-col items-center gap-2">
-                  <div className="w-full bg-primary/20 rounded-t-md h-28 relative group">
-                    <div className="absolute bottom-0 w-full bg-primary rounded-t-md h-10 group-hover:opacity-80 transition-opacity" />
+            {regBreakdown.length === 0 ? (
+              <p className="text-xs text-on-surface-variant flex-1 flex items-center">No regulation data.</p>
+            ) : (
+              <div className="flex-1 flex items-end justify-between gap-2 px-1">
+                {regBreakdown.map(({ code, pct }) => (
+                  <div key={code} className="flex-1 flex flex-col items-center gap-1.5">
+                    <span className="text-[10px] font-bold text-primary">{pct}%</span>
+                    <div className="w-full bg-primary/15 rounded-t-md h-24 relative">
+                      <div
+                        className={`absolute bottom-0 w-full rounded-t-md transition-all ${
+                          pct === 100 ? "bg-tertiary-fixed-dim" :
+                          pct >= 50 ? "bg-primary" : "bg-error/60"
+                        }`}
+                        style={{ height: `${Math.max(4, pct)}%` }}
+                      />
+                    </div>
+                    <span className="text-[9px] font-bold text-on-surface-variant text-center leading-tight">{code}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-on-surface-variant">{code}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="bg-surface-container-low p-6 rounded-xl flex flex-col">
@@ -231,9 +321,10 @@ export default async function DashboardPage({ searchParams }: Props) {
 
             <div className="px-6 pb-6 overflow-x-auto">
               {urgentRows.length === 0 ? (
-                <div className="py-10 text-center text-on-surface-variant text-sm font-body">
-                  No compliance data yet. Open a product and click{" "}
-                  <span className="font-bold text-primary">Recalculate Compliance</span> to populate regulation statuses.
+                <div className="py-10 text-center text-on-surface-variant text-sm font-body space-y-2">
+                  <MaterialIcon name="check_circle" className="text-4xl text-tertiary-fixed-dim mx-auto block" />
+                  <p className="font-bold text-primary">All products are compliant!</p>
+                  <p className="text-xs">Use <strong>Recalculate All</strong> to refresh statuses.</p>
                 </div>
               ) : (
                 <table className="w-full text-left border-separate border-spacing-y-2">
@@ -302,8 +393,11 @@ export default async function DashboardPage({ searchParams }: Props) {
                             <p className="text-xs text-on-surface-variant">
                               {row.compliance_date
                                 ? `Verified: ${new Date(row.compliance_date).toLocaleDateString()}`
-                                : "—"}
+                                : row.synthetic ? <span className="text-amber-600 font-semibold">Never assessed</span> : "—"}
                             </p>
+                            {row.stale && (
+                              <p className="text-[10px] text-amber-600 font-semibold mt-0.5">Data &gt;1yr old</p>
+                            )}
                           </td>
                           <td className="py-4 pr-4 rounded-r-xl text-right">
                             <Link
