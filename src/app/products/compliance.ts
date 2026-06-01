@@ -181,23 +181,33 @@ export async function getProductReleaseStatuses(
   })) as ProductReleaseStatusRow[];
 }
 
-/** Core upsert logic shared by the single-product and bulk recalculate paths. */
+/** Core upsert logic shared by the single-product and bulk recalculate paths.
+ *  Only processes regulations marked is_default=true (RoHS + REACH).
+ *  Skips components flagged compliance_exempt=true. */
 export async function recalculateProductRegulationStatusCore(
   productId: string,
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<void> {
   const { data: linked, error: linkedError } = await supabase
     .from("product_components")
-    .select("component_id")
+    .select("component_id, components(compliance_exempt)")
     .eq("product_id", productId);
 
   if (linkedError) throw linkedError;
 
-  const componentIds = (linked ?? []).map((x: any) => x.component_id).filter(Boolean);
+  // Only include non-exempt components in compliance calculations
+  const componentIds = (linked ?? [])
+    .filter((x: any) => !x.components?.compliance_exempt)
+    .map((x: any) => x.component_id)
+    .filter(Boolean);
 
+  const exemptCount = (linked ?? []).filter((x: any) => x.components?.compliance_exempt).length;
+
+  // Only auto-calculate for default regulations (RoHS + REACH)
   const { data: regulations, error: regsError } = await supabase
     .from("regulations")
     .select("id")
+    .eq("is_default", true)
     .order("code");
 
   if (regsError) throw regsError;
@@ -224,7 +234,12 @@ export async function recalculateProductRegulationStatusCore(
 
   const upsertRows = (regulations ?? []).map((reg: any) => {
     let computedStatus = "pending";
-    if (componentIds.length === 0) {
+    const effectiveComponentCount = componentIds.length;
+
+    if (effectiveComponentCount === 0 && exemptCount > 0) {
+      // All components are exempt — product is compliant by exemption
+      computedStatus = "compliant";
+    } else if (effectiveComponentCount === 0) {
       computedStatus = "pending";
     } else {
       const statusesForReg = componentIds.map((cid) => {
@@ -239,11 +254,12 @@ export async function recalculateProductRegulationStatusCore(
     return { product_id: productId, regulation_id: reg.id, status: computedStatus, compliance_date: today, notes: null };
   });
 
-  const { error: upsertError } = await supabase
-    .from("product_regulation_status")
-    .upsert(upsertRows, { onConflict: "product_id,regulation_id" });
-
-  if (upsertError) throw upsertError;
+  if (upsertRows.length > 0) {
+    const { error: upsertError } = await supabase
+      .from("product_regulation_status")
+      .upsert(upsertRows, { onConflict: "product_id,regulation_id" });
+    if (upsertError) throw upsertError;
+  }
 }
 
 export async function recalculateProductRegulationStatus(productId: string) {

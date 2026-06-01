@@ -14,6 +14,8 @@ import {
   aiEnrichComponent,
   applyComponentEnrichment,
   bulkAiEnrichComponents,
+  bulkSetExempt,
+  setExemptByCategory,
   type ComponentWithSupplier,
   type AiEnrichSuggestion,
   type BulkEnrichComponentResult,
@@ -365,6 +367,34 @@ export default function ComponentsListWithModals({
 
   const totalBulkAccepted = Array.from(bulkEnrichAccepted.values()).reduce((sum, s) => sum + s.size, 0);
 
+  const [showExemptCategories, setShowExemptCategories] = useState(false);
+  const [exemptCategoryLoading, setExemptCategoryLoading] = useState<string | null>(null);
+  const [exemptCategoryResults, setExemptCategoryResults] = useState<Record<string, string>>({});
+  const [bulkExemptLoading, setBulkExemptLoading] = useState(false);
+  const [bulkExemptError, setBulkExemptError] = useState<string | null>(null);
+
+  async function handleBulkSetExempt(exempt: boolean) {
+    setBulkExemptLoading(true);
+    setBulkExemptError(null);
+    const res = await bulkSetExempt(Array.from(selectedIds), exempt);
+    setBulkExemptLoading(false);
+    if ("error" in res) { setBulkExemptError(res.error); return; }
+    setSelectedIds(new Set());
+    router.refresh();
+  }
+
+  async function handleCategoryExempt(category: string, exempt: boolean) {
+    setExemptCategoryLoading(category);
+    const res = await setExemptByCategory(category, exempt);
+    setExemptCategoryLoading(null);
+    if ("error" in res) {
+      setExemptCategoryResults((p) => ({ ...p, [category]: `Error: ${res.error}` }));
+    } else {
+      setExemptCategoryResults((p) => ({ ...p, [category]: `${exempt ? "Exempted" : "Unexempted"} ${res.updated} components` }));
+      router.refresh();
+    }
+  }
+
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const PAGE_SIZE = 50;
@@ -386,6 +416,21 @@ export default function ComponentsListWithModals({
       if (cat) set.add(cat);
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [components]);
+
+  const categoryExemptStats = useMemo(() => {
+    const map = new Map<string, { total: number; exempt: number }>();
+    for (const c of components) {
+      const cat = (c.category ?? "").trim();
+      if (!cat) continue;
+      if (!map.has(cat)) map.set(cat, { total: 0, exempt: 0 });
+      const s = map.get(cat)!;
+      s.total++;
+      if (c.compliance_exempt) s.exempt++;
+    }
+    return Array.from(map.entries())
+      .map(([category, stats]) => ({ category, ...stats }))
+      .sort((a, b) => b.total - a.total);
   }, [components]);
 
   const filteredComponents = useMemo(() => {
@@ -477,6 +522,14 @@ export default function ComponentsListWithModals({
           </div>
 
           <div className="flex flex-wrap gap-2 shrink-0 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => { setShowExemptCategories(true); setExemptCategoryResults({}); }}
+              className="border border-outline-variant/30 text-on-surface-variant px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-surface-container-low transition-colors inline-flex items-center justify-center gap-2"
+            >
+              <MaterialIcon name="block" className="text-sm" />
+              Exempt Categories
+            </button>
             <button
               type="button"
               onClick={() => setShowDuplicates(true)}
@@ -617,6 +670,25 @@ export default function ComponentsListWithModals({
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleBulkSetExempt(true)}
+                  disabled={bulkExemptLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-high text-on-surface-variant rounded-lg text-xs font-bold hover:bg-surface-container-highest disabled:opacity-40"
+                >
+                  <MaterialIcon name="block" className="text-sm" />
+                  Mark Exempt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkSetExempt(false)}
+                  disabled={bulkExemptLoading}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-high text-on-surface-variant rounded-lg text-xs font-bold hover:bg-surface-container-highest disabled:opacity-40"
+                >
+                  <MaterialIcon name="check_circle" className="text-sm" />
+                  Remove Exemption
+                </button>
+                {bulkExemptError && <span className="text-xs text-error">{bulkExemptError}</span>}
+                <button
+                  type="button"
                   onClick={() => { setBulkDeleteError(null); setShowBulkDeleteConfirm(true); }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-error text-on-error rounded-lg text-xs font-bold hover:opacity-90"
                 >
@@ -704,7 +776,15 @@ export default function ComponentsListWithModals({
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.part_number ?? "—"}</td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.manufacturer ?? "—"}</td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm font-mono text-xs min-w-0 max-w-0 break-all [overflow-wrap:anywhere]">{c.manufacturer_sku ?? "—"}</td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.category ?? "—"}</td>
+                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">
+                    {c.category ?? "—"}
+                    {c.compliance_exempt && (
+                      <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-surface-container-high text-[9px] font-bold text-on-surface-variant uppercase tracking-wide">
+                        <MaterialIcon name="block" className="text-[9px]" />
+                        Exempt
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.supplier_name ?? "—"}</td>
                   <td className="px-3 sm:px-6 py-4 sm:py-5 text-right min-w-0">
                     <div className="flex flex-col items-end sm:flex-row sm:justify-end gap-1 sm:gap-2">
@@ -909,6 +989,76 @@ export default function ComponentsListWithModals({
               className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
             >
               Cancel
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {showExemptCategories && (
+        <Modal title="Exempt Categories from Compliance" onClose={() => setShowExemptCategories(false)}>
+          <p className="text-sm text-on-surface-variant mb-4">
+            Exempt categories (e.g. Firmware, BIOS, Shell Scripts) are excluded from RoHS/REACH compliance calculations.
+            Individual components in exempt categories will show an <strong>Exempt</strong> badge and won&apos;t affect product compliance status.
+          </p>
+          <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+            {categoryExemptStats.map(({ category, total, exempt }) => {
+              const allExempt = exempt === total;
+              const noneExempt = exempt === 0;
+              const msg = exemptCategoryResults[category];
+              const loading = exemptCategoryLoading === category;
+              return (
+                <div key={category} className="flex items-center gap-3 p-3 rounded-xl border border-outline-variant/20 hover:bg-surface-container-low">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-medium text-on-surface">{category}</span>
+                    <span className="ml-2 text-xs text-on-surface-variant">{total} component{total !== 1 ? "s" : ""}</span>
+                    {exempt > 0 && exempt < total && (
+                      <span className="ml-2 text-xs text-amber-600 font-semibold">{exempt} exempt</span>
+                    )}
+                    {allExempt && (
+                      <span className="ml-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-surface-container-high text-[9px] font-bold text-on-surface-variant uppercase">
+                        <MaterialIcon name="block" className="text-[9px]" />All exempt
+                      </span>
+                    )}
+                    {msg && <p className="text-[10px] text-primary mt-0.5">{msg}</p>}
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    {!allExempt && (
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryExempt(category, true)}
+                        disabled={loading}
+                        className="px-2.5 py-1 rounded-lg border border-outline-variant/30 text-xs font-bold text-on-surface-variant hover:bg-surface-container-high disabled:opacity-40 inline-flex items-center gap-1"
+                      >
+                        {loading ? <div className="w-3 h-3 rounded-full border border-on-surface-variant border-t-transparent animate-spin" /> : <MaterialIcon name="block" className="text-xs" />}
+                        Exempt all
+                      </button>
+                    )}
+                    {!noneExempt && (
+                      <button
+                        type="button"
+                        onClick={() => handleCategoryExempt(category, false)}
+                        disabled={loading}
+                        className="px-2.5 py-1 rounded-lg border border-outline-variant/30 text-xs font-bold text-primary hover:bg-primary/5 disabled:opacity-40 inline-flex items-center gap-1"
+                      >
+                        {loading ? <div className="w-3 h-3 rounded-full border border-primary border-t-transparent animate-spin" /> : <MaterialIcon name="check_circle" className="text-xs" />}
+                        Unexempt all
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-on-surface-variant italic mt-4">
+            After changing exemptions, click <strong>Recalculate All</strong> on the Dashboard to update product compliance statuses.
+          </p>
+          <div className="flex justify-end pt-3">
+            <button
+              type="button"
+              onClick={() => setShowExemptCategories(false)}
+              className="px-4 py-2 border border-outline-variant/20 rounded-xl text-sm font-bold hover:bg-surface-container-lowest"
+            >
+              Done
             </button>
           </div>
         </Modal>

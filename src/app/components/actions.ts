@@ -23,6 +23,7 @@ export interface Component {
   manufacturer_sku: string | null;
   category: string | null;
   supplier_id: string | null;
+  compliance_exempt: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -55,6 +56,7 @@ export async function getComponents(): Promise<ComponentWithSupplier[]> {
     ...row,
     supplier_name: row.suppliers?.name ?? null,
     suppliers: undefined,
+    compliance_exempt: row.compliance_exempt ?? false,
   })) as ComponentWithSupplier[];
 }
 
@@ -320,6 +322,71 @@ export async function deleteComponent(
 
   revalidatePath("/components");
   return { success: true };
+}
+
+export async function setComponentExempt(
+  id: string,
+  exempt: boolean
+): Promise<{ success: true } | { error: string }> {
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("components")
+    .update({ compliance_exempt: exempt, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("organization_id", profile.organization_id);
+  if (error) return { error: error.message };
+  revalidatePath("/components");
+  return { success: true };
+}
+
+export async function bulkSetExempt(
+  ids: string[],
+  exempt: boolean
+): Promise<{ success: true; updated: number } | { error: string }> {
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  if (!ids.length) return { error: "No components selected." };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("components")
+    .update({ compliance_exempt: exempt, updated_at: new Date().toISOString() })
+    .in("id", ids)
+    .eq("organization_id", profile.organization_id);
+  if (error) return { error: error.message };
+  revalidatePath("/components");
+  return { success: true, updated: ids.length };
+}
+
+export async function setExemptByCategory(
+  category: string,
+  exempt: boolean
+): Promise<{ success: true; updated: number } | { error: string }> {
+  let profile;
+  try {
+    profile = await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("components")
+    .update({ compliance_exempt: exempt, updated_at: new Date().toISOString() })
+    .eq("category", category)
+    .eq("organization_id", profile.organization_id)
+    .select("id");
+  if (error) return { error: error.message };
+  revalidatePath("/components");
+  return { success: true, updated: (data ?? []).length };
 }
 
 export async function bulkDeleteComponents(
