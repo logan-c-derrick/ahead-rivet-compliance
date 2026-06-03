@@ -4,8 +4,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductDetailTabs from "./product-detail-tabs";
 import {
+  getAllRegulations,
   getProductComplianceTable,
   getProductReleaseStatuses,
+  type RegulationRow,
   type ProductRegulationStatusRow,
   type ProductReleaseStatusRow,
 } from "../compliance";
@@ -31,14 +33,16 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
   const { tab } = await searchParams;
   const activeTab = isTabId(tab) ? tab : "overview";
 
-  const [complianceRows, releaseRows, bomRows]: [
+  const [complianceRows, releaseRows, bomRows, allRegulations]: [
     ProductRegulationStatusRow[],
     ProductReleaseStatusRow[],
     ProductBomComponent[],
+    RegulationRow[],
   ] = await Promise.all([
     getProductComplianceTable(product.id),
     getProductReleaseStatuses(product.id),
     getProductBomComponents(product.id),
+    getAllRegulations(),
   ]);
 
   return (
@@ -115,6 +119,7 @@ export default async function ProductDetailPage({ params, searchParams }: Props)
         complianceRows={complianceRows}
         releaseRows={releaseRows}
         bomRows={bomRows}
+        allRegulations={allRegulations}
         activeTab={activeTab}
       />
     </div>

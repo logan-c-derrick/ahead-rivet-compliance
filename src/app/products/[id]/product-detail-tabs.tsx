@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { Product, ProductBomComponent } from "../actions";
-import type { ProductRegulationStatusRow } from "../compliance";
+import type { ProductRegulationStatusRow, RegulationRow } from "../compliance";
 import type { ProductReleaseStatusRow } from "../compliance";
-import { recalculateProductRegulationStatus } from "../compliance";
 import ProductAiRiskPanel from "./ProductAiRiskPanel";
+import ProductRegulationManager from "./ProductRegulationManager";
 
 const TABS = [
   { id: "overview", label: "Overview" },
@@ -74,11 +74,13 @@ export default async function ProductDetailTabs({
   bomRows,
   activeTab,
   releaseRows,
+  allRegulations,
 }: {
   product: Product;
   complianceRows: ProductRegulationStatusRow[];
   releaseRows: ProductReleaseStatusRow[];
   bomRows: ProductBomComponent[];
+  allRegulations: RegulationRow[];
   activeTab: TabId;
 }) {
   const total = complianceRows.length;
@@ -265,9 +267,10 @@ export default async function ProductDetailTabs({
           )}
 
           {activeTab === "compliance" && (
-            <CompliancePanel
+            <ProductRegulationManager
               productId={product.id}
               complianceRows={complianceRows}
+              allRegulations={allRegulations}
             />
           )}
 
@@ -438,86 +441,3 @@ function PlaceholderRegulationsPanel({
   );
 }
 
-function CompliancePanel({
-  productId,
-  complianceRows,
-}: {
-  productId: string;
-  complianceRows: ProductRegulationStatusRow[];
-}) {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h3 className="text-lg font-bold text-primary font-headline">Product Compliance Roll-up</h3>
-          <p className="text-sm text-on-surface-variant mt-1">
-            Aggregated from component-level regulation statuses.
-          </p>
-        </div>
-
-        <form action={recalculateProductRegulationStatus.bind(null, productId)}>
-          <button
-            type="submit"
-            className="bg-primary text-on-primary px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
-          >
-            Recalculate Compliance
-          </button>
-        </form>
-      </div>
-
-      <div className="bg-surface-container-lowest rounded-2xl p-2 shadow-sm overflow-hidden">
-        <table className="w-full text-left border-separate border-spacing-y-2 px-4">
-          <thead>
-            <tr className="text-on-surface-variant font-bold text-[11px] uppercase tracking-widest">
-              <th className="pb-4 pl-4">Regulation Code</th>
-              <th className="pb-4">Regulation Name</th>
-              <th className="pb-4">BOM verified</th>
-              <th className="pb-4">Product Status</th>
-              <th className="pb-4">Compliance Date</th>
-              <th className="pb-4 pr-4">Notes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {complianceRows.map((row) => (
-              <tr
-                key={row.regulation_code}
-                className="group hover:bg-surface-container-low transition-colors"
-              >
-                <td className="py-4 pl-4 rounded-l-xl">
-                  <div className="font-bold text-primary">{row.regulation_code}</div>
-                </td>
-                <td className="py-4">
-                  <div className="text-sm text-on-surface-variant">{row.regulation_name}</div>
-                </td>
-                <td className="py-4 text-sm text-on-surface-variant">
-                  {row.bom_component_count === 0 ? (
-                    "—"
-                  ) : (
-                    <>
-                      {row.compliant_component_count}/{row.bom_component_count} ({row.verification_percent}%)
-                    </>
-                  )}
-                </td>
-                <td className="py-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusPillClass(
-                      row.status
-                    )}`}
-                  >
-                    {row.status}
-                  </span>
-                </td>
-                <td className="py-4 text-sm text-on-surface-variant">
-                  {row.compliance_date ? new Date(row.compliance_date).toLocaleDateString() : "—"}
-                </td>
-                <td className="py-4 pr-4 rounded-r-xl text-sm text-on-surface-variant">
-                  {row.notes ?? "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}

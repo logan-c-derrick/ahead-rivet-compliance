@@ -3,17 +3,19 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { requireProfile } from "@/lib/profile";
+import { getPermissionErrorMessage, requireProfile, requireRole } from "@/lib/profile";
 
 export type RegulationRow = {
   id: string;
   code: string;
   name: string;
+  is_default: boolean;
 };
 
 export type ProductRegulationStatusRow = {
   regulation_code: string;
   regulation_name: string;
+  is_default: boolean;
   status: string;
   compliance_date: string | null;
   notes: string | null;
@@ -41,16 +43,37 @@ function toDateOnly(isoString: string): string {
   return isoString.slice(0, 10);
 }
 
+export async function getAllRegulations(): Promise<RegulationRow[]> {
+  await requireProfile();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("regulations")
+    .select("id, code, name, is_default")
+    .order("is_default", { ascending: false })
+    .order("code");
+  return (data ?? []) as RegulationRow[];
+}
+
 export async function getProductComplianceTable(
   productId: string
 ): Promise<ProductRegulationStatusRow[]> {
-  // Ensures auth + profile row exists; RLS also enforces the org boundary.
   await requireProfile();
   const supabase = await createClient();
 
+  // Only show: (1) default regulations always, (2) non-default regs that have an explicit row
+  const { data: statusRows, error: statusError } = await supabase
+    .from("product_regulation_status")
+    .select("regulation_id, status, compliance_date, notes")
+    .eq("product_id", productId);
+
+  if (statusError) console.error("Error fetching product_regulation_status:", statusError);
+
+  const explicitRegIds = new Set((statusRows ?? []).map((r: any) => r.regulation_id));
+
   const { data: regulations, error: regsError } = await supabase
     .from("regulations")
-    .select("id, code, name")
+    .select("id, code, name, is_default")
+    .order("is_default", { ascending: false })
     .order("code");
 
   if (regsError) {
@@ -58,31 +81,28 @@ export async function getProductComplianceTable(
     return [];
   }
 
-  const { data: linkedRows, error: linkedError } = await supabase
+  // Filter: default regs always included; non-default only if explicitly added
+  const applicableRegs = (regulations ?? []).filter(
+    (r: any) => r.is_default || explicitRegIds.has(r.id)
+  );
+
+  const { data: linkedRows } = await supabase
     .from("product_components")
-    .select("component_id")
+    .select("component_id, components(compliance_exempt)")
     .eq("product_id", productId);
 
-  if (linkedError) {
-    console.error("Error fetching product_components:", linkedError);
-  }
-
   const componentIds = (linkedRows ?? [])
-    .map((x: { component_id: string }) => x.component_id)
+    .filter((x: any) => !x.components?.compliance_exempt)
+    .map((x: any) => x.component_id)
     .filter(Boolean);
 
   let componentRegRows: Array<{ component_id: string; regulation_id: string; status: string }> = [];
   if (componentIds.length > 0) {
-    const { data: cr, error: crErr } = await supabase
+    const { data: cr } = await supabase
       .from("component_regulations")
       .select("component_id, regulation_id, status")
       .in("component_id", componentIds);
-
-    if (crErr) {
-      console.error("Error fetching component_regulations:", crErr);
-    } else {
-      componentRegRows = (cr ?? []) as typeof componentRegRows;
-    }
+    componentRegRows = (cr ?? []) as typeof componentRegRows;
   }
 
   const statusByComponentAndReg = new Map<string, Map<string, string>>();
@@ -93,19 +113,7 @@ export async function getProductComplianceTable(
     statusByComponentAndReg.get(row.component_id)!.set(row.regulation_id, row.status);
   }
 
-  const { data: statusRows, error: statusError } = await supabase
-    .from("product_regulation_status")
-    .select("regulation_id, status, compliance_date, notes")
-    .eq("product_id", productId);
-
-  if (statusError) {
-    console.error("Error fetching product_regulation_status:", statusError);
-  }
-
-  const statusByReg = new Map<
-    string,
-    { status: string; compliance_date: string | null; notes: string | null }
-  >();
+  const statusByReg = new Map<string, { status: string; compliance_date: string | null; notes: string | null }>();
   (statusRows ?? []).forEach((row: any) => {
     statusByReg.set(row.regulation_id, {
       status: row.status,
@@ -116,7 +124,7 @@ export async function getProductComplianceTable(
 
   const bomCount = componentIds.length;
 
-  return (regulations ?? []).map((r: any) => {
+  return applicableRegs.map((r: any) => {
     const s = statusByReg.get(r.id);
     let compliant = 0;
     if (bomCount > 0) {
@@ -125,20 +133,86 @@ export async function getProductComplianceTable(
         if (st === "compliant") compliant += 1;
       }
     }
-    const verification_percent =
-      bomCount === 0 ? 0 : Math.round((100 * compliant) / bomCount);
-
     return {
       regulation_code: r.code,
       regulation_name: r.name,
+      is_default: r.is_default,
       status: s?.status ?? "pending",
       compliance_date: s?.compliance_date ?? null,
       notes: s?.notes ?? null,
       bom_component_count: bomCount,
       compliant_component_count: compliant,
-      verification_percent,
+      verification_percent: bomCount === 0 ? 0 : Math.round((100 * compliant) / bomCount),
     };
   });
+}
+
+export type ProductRegulationActionResult = { ok: true } | { ok: false; error: string };
+
+export async function addProductRegulation(
+  productId: string,
+  regulationId: string
+): Promise<ProductRegulationActionResult> {
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { error } = await supabase
+    .from("product_regulation_status")
+    .upsert(
+      { product_id: productId, regulation_id: regulationId, status: "pending", compliance_date: today, notes: null },
+      { onConflict: "product_id,regulation_id", ignoreDuplicates: true }
+    );
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/products/${productId}`);
+  return { ok: true };
+}
+
+export async function removeProductRegulation(
+  productId: string,
+  regulationId: string
+): Promise<ProductRegulationActionResult> {
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("product_regulation_status")
+    .delete()
+    .eq("product_id", productId)
+    .eq("regulation_id", regulationId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/products/${productId}`);
+  return { ok: true };
+}
+
+export async function updateProductOptionalRegulationStatus(
+  productId: string,
+  regulationId: string,
+  status: string,
+  notes: string | null
+): Promise<ProductRegulationActionResult> {
+  try {
+    await requireRole(["admin", "compliance_manager"]);
+  } catch (error) {
+    return { ok: false, error: getPermissionErrorMessage(error) ?? "Insufficient permissions." };
+  }
+  const supabase = await createClient();
+  const today = new Date().toISOString().slice(0, 10);
+  const { error } = await supabase
+    .from("product_regulation_status")
+    .upsert(
+      { product_id: productId, regulation_id: regulationId, status, compliance_date: today, notes },
+      { onConflict: "product_id,regulation_id" }
+    );
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(`/products/${productId}`);
+  return { ok: true };
 }
 
 export async function getProductReleaseStatuses(
