@@ -715,22 +715,12 @@ export default function ComponentsListWithModals({
               </button>
             </div>
           ) : (
-            <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden w-full min-w-0 max-w-full">
-              <div className="w-full max-w-full min-w-0 overflow-x-auto overscroll-x-contain [scrollbar-gutter:stable]">
-                <table className="w-full max-w-full text-sm text-left table-fixed border-collapse">
-                  <colgroup>
-                    <col className="w-[3%]" />
-                    <col className="w-[19%]" />
-                    <col className="w-[11%]" />
-                    <col className="w-[11%]" />
-                    <col className="w-[11%]" />
-                    <col className="w-[10%]" />
-                    <col className="w-[17%]" />
-                    <col className="w-[18%]" />
-                  </colgroup>
+            <div className="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden w-full">
+              <div className="overflow-x-auto overscroll-x-contain [scrollbar-gutter:stable]">
+                <table className="w-full text-sm text-left border-collapse" style={{ minWidth: "860px" }}>
                   <thead className="bg-surface-container-high/40">
                     <tr>
-                      <th className="px-3 sm:px-4 py-3 sm:py-4 align-bottom">
+                      <th className="px-3 py-3 w-10 align-middle">
                         <input
                           type="checkbox"
                           checked={allPageSelected}
@@ -739,19 +729,19 @@ export default function ComponentsListWithModals({
                           aria-label="Select all on this page"
                         />
                       </th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Name</th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Part #</th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Mfr</th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Mfr SKU</th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Category</th>
-                      <th className="text-left px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Supplier</th>
-                      <th className="text-right px-3 sm:px-6 py-3 sm:py-4 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant align-bottom min-w-0">Actions</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[22%]">Name</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[10%]">Part #</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[11%]">Manufacturer</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[12%]">Mfr SKU</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[13%]">Category</th>
+                      <th className="text-left px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap w-[12%]">Supplier</th>
+                      <th className="text-right px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-on-secondary-fixed-variant whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {pagedComponents.map((c) => (
-                <tr key={c.id} className={`group hover:bg-surface-container-low transition-colors align-top ${selectedIds.has(c.id) ? "bg-primary/5" : ""}`}>
-                  <td className="px-3 sm:px-4 py-4 sm:py-5">
+                <tr key={c.id} className={`group hover:bg-surface-container-low transition-colors align-middle ${selectedIds.has(c.id) ? "bg-primary/5" : ""}`}>
+                  <td className="px-3 py-3 w-10">
                     <input
                       type="checkbox"
                       checked={selectedIds.has(c.id)}
@@ -760,34 +750,43 @@ export default function ComponentsListWithModals({
                       aria-label={`Select ${c.name}`}
                     />
                   </td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 min-w-0 max-w-0">
-                    <div className="flex items-start gap-2 sm:gap-3 min-w-0">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary">
+                  <td className="px-4 py-3 max-w-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 shrink-0 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
                         <MaterialIcon name="settings_input_component" className="text-sm" />
                       </div>
                       <Link
                         href={`/components/${c.id}`}
-                        className="font-bold text-primary hover:underline break-words min-w-0 [overflow-wrap:anywhere]"
+                        className="font-bold text-primary hover:underline truncate min-w-0"
+                        title={c.name}
                       >
                         {c.name}
                       </Link>
                     </div>
                   </td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.part_number ?? "—"}</td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.manufacturer ?? "—"}</td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm font-mono text-xs min-w-0 max-w-0 break-all [overflow-wrap:anywhere]">{c.manufacturer_sku ?? "—"}</td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">
-                    {c.category ?? "—"}
+                  <td className="px-4 py-3 text-on-surface-variant text-xs max-w-0">
+                    <span className="block truncate" title={c.part_number ?? ""}>{c.part_number ?? "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 text-on-surface-variant text-xs max-w-0">
+                    <span className="block truncate" title={c.manufacturer ?? ""}>{c.manufacturer ?? "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 text-on-surface-variant font-mono text-xs max-w-0">
+                    <span className="block truncate" title={c.manufacturer_sku ?? ""}>{c.manufacturer_sku ?? "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 text-on-surface-variant text-xs max-w-0">
+                    <span className="block truncate" title={c.category ?? ""}>{c.category ?? "—"}</span>
                     {c.compliance_exempt && (
-                      <span className="ml-1.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-surface-container-high text-[9px] font-bold text-on-surface-variant uppercase tracking-wide">
+                      <span className="mt-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-surface-container-high text-[9px] font-bold text-on-surface-variant uppercase tracking-wide">
                         <MaterialIcon name="block" className="text-[9px]" />
                         Exempt
                       </span>
                     )}
                   </td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-on-surface-variant text-sm min-w-0 max-w-0 break-words [overflow-wrap:anywhere]">{c.supplier_name ?? "—"}</td>
-                  <td className="px-3 sm:px-6 py-4 sm:py-5 text-right min-w-0">
-                    <div className="flex flex-col items-end sm:flex-row sm:justify-end gap-1 sm:gap-2">
+                  <td className="px-4 py-3 text-on-surface-variant text-xs max-w-0">
+                    <span className="block truncate" title={c.supplier_name ?? ""}>{c.supplier_name ?? "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <div className="inline-flex items-center justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => handleEnrichRequest(c)}
@@ -795,7 +794,7 @@ export default function ComponentsListWithModals({
                         title="AI Enrich — verify or fill in manufacturer / SKU data"
                       >
                         <MaterialIcon name="auto_awesome" className="text-sm" />
-                        AI Enrich
+                        Enrich
                       </button>
                       <button
                         type="button"
