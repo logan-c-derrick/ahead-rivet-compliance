@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -14,10 +15,15 @@ export interface Profile {
   role: string;
 }
 
-export async function getProfile(): Promise<Profile | null> {
+// Deduplicate auth + profile fetches within a single server request.
+// Without this, every server action that calls requireProfile() triggers
+// two sequential Supabase network calls (auth.getUser + profiles table).
+// React cache() memoizes per-request, so no matter how many server
+// actions fire during one render, the round trips happen exactly once.
+export const getProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  
+
   if (!user) return null;
 
   const { data: profile, error } = await supabase
@@ -28,7 +34,7 @@ export async function getProfile(): Promise<Profile | null> {
 
   if (error || !profile) return null;
   return profile;
-}
+});
 
 export async function requireProfile(): Promise<Profile> {
   const profile = await getProfile();

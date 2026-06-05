@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
@@ -7,7 +8,9 @@ type CookieToSet = {
   options?: Parameters<Awaited<ReturnType<typeof cookies>>["set"]>[2];
 };
 
-export async function createClient() {
+// Cache the client per-request so cookies() is read once and the same
+// Supabase instance is reused across all server actions in the same render.
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -20,8 +23,6 @@ export async function createClient() {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet: CookieToSet[]) {
-        // Server Components can't always set cookies (Next limitation).
-        // Middleware sets cookies on navigation.
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
@@ -30,4 +31,4 @@ export async function createClient() {
       }
     }
   });
-}
+});
