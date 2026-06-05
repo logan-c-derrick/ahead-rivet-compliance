@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { canManageSensitiveActions } from "@/lib/permissions";
 import { requireProfile } from "@/lib/profile";
 import { getProducts, getOemVendors } from "./actions";

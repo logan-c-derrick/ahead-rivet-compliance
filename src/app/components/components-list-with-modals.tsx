@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useFormState } from "react-dom";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import MultiSelectFilter from "@/components/ui/MultiSelectFilter";
 import {
@@ -190,36 +189,50 @@ export default function ComponentsListWithModals({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [createState, createAction] = useFormState(createComponent, null);
-  const [updateState, updateAction] = useFormState(updateComponent, null);
-  const [deleteState, deleteAction] = useFormState(deleteComponent, null);
   const [showCreate, setShowCreate] = useState(false);
   const [editComponent, setEditComponent] = useState<ComponentWithSupplier | null>(null);
-  const [deleteStateRow, setDeleteStateRow] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [deleteStateRow, setDeleteStateRow] = useState<{ id: string; name: string } | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (createState?.success) {
-      setShowCreate(false);
-      router.refresh();
-    }
-  }, [createState, router]);
+  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await createComponent(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setShowCreate(false);
+    setModalError(null);
+    router.refresh();
+  }
 
-  useEffect(() => {
-    if (updateState?.success) {
-      setEditComponent(null);
-      router.refresh();
-    }
-  }, [updateState, router]);
+  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await updateComponent(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setEditComponent(null);
+    setModalError(null);
+    router.refresh();
+  }
 
-  useEffect(() => {
-    if (deleteState?.success) {
-      setDeleteStateRow(null);
-      router.refresh();
-    }
-  }, [deleteState, router]);
+  async function handleDelete(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await deleteComponent(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setDeleteStateRow(null);
+    setModalError(null);
+    router.refresh();
+  }
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
@@ -898,26 +911,18 @@ export default function ComponentsListWithModals({
       )}
 
       {showCreate && (
-        <Modal title="Create Component" onClose={() => setShowCreate(false)}>
-          {createState?.error && (
-            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
-              {createState.error}
-            </div>
+        <Modal title="Create Component" onClose={() => { setShowCreate(false); setModalError(null); }}>
+          {modalError && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">{modalError}</div>
           )}
-          <form action={createAction} className="space-y-4">
+          <form onSubmit={handleCreate} className="space-y-4">
             <ComponentFormFields supplierOptions={supplierOptions} />
             <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold"
-              >
+              <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-50 inline-flex items-center gap-2">
+                {saving && <div className="w-3 h-3 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />}
                 Create
               </button>
-              <button
-                type="button"
-                onClick={() => setShowCreate(false)}
-                className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
-              >
+              <button type="button" onClick={() => { setShowCreate(false); setModalError(null); }} className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold">
                 Cancel
               </button>
             </div>
@@ -926,13 +931,11 @@ export default function ComponentsListWithModals({
       )}
 
       {editComponent && (
-        <Modal title="Edit Component" onClose={() => setEditComponent(null)}>
-          {updateState?.error && (
-            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
-              {updateState.error}
-            </div>
+        <Modal title="Edit Component" onClose={() => { setEditComponent(null); setModalError(null); }}>
+          {modalError && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">{modalError}</div>
           )}
-          <form action={updateAction} className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-4">
             <input type="hidden" name="id" value={editComponent.id} />
             <ComponentFormFields
               supplierOptions={supplierOptions}
@@ -945,17 +948,11 @@ export default function ComponentsListWithModals({
               defaultSupplierId={editComponent.supplier_id ?? ""}
             />
             <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold"
-              >
+              <button type="submit" disabled={saving} className="px-4 py-2 bg-primary text-on-primary rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-50 inline-flex items-center gap-2">
+                {saving && <div className="w-3 h-3 rounded-full border-2 border-on-primary border-t-transparent animate-spin" />}
                 Update
               </button>
-              <button
-                type="button"
-                onClick={() => setEditComponent(null)}
-                className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
-              >
+              <button type="button" onClick={() => { setEditComponent(null); setModalError(null); }} className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold">
                 Cancel
               </button>
             </div>
@@ -1264,29 +1261,20 @@ export default function ComponentsListWithModals({
       )}
 
       {deleteStateRow && (
-        <Modal title="Delete Component" onClose={() => setDeleteStateRow(null)}>
-          {deleteState?.error && (
-            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">
-              {deleteState.error}
-            </div>
+        <Modal title="Delete Component" onClose={() => { setDeleteStateRow(null); setModalError(null); }}>
+          {modalError && (
+            <div className="rounded-xl border border-red-300 bg-error-container/20 p-2 text-sm text-error mb-4">{modalError}</div>
           )}
-          <p className="text-sm text-slate-700">
-            Are you sure you want to delete <strong>{deleteStateRow.name}</strong>? This
-            action cannot be undone.
+          <p className="text-sm text-on-surface-variant">
+            Are you sure you want to delete <strong>{deleteStateRow.name}</strong>? This action cannot be undone.
           </p>
-          <form action={deleteAction} className="flex gap-2 pt-4">
+          <form onSubmit={handleDelete} className="flex gap-2 pt-4">
             <input type="hidden" name="id" value={deleteStateRow.id} />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-error text-on-error rounded-xl hover:opacity-90 text-sm font-bold"
-            >
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-error text-on-error rounded-xl hover:opacity-90 text-sm font-bold disabled:opacity-50 inline-flex items-center gap-2">
+              {saving && <div className="w-3 h-3 rounded-full border-2 border-on-error border-t-transparent animate-spin" />}
               Delete
             </button>
-            <button
-              type="button"
-              onClick={() => setDeleteStateRow(null)}
-              className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold"
-            >
+            <button type="button" onClick={() => { setDeleteStateRow(null); setModalError(null); }} className="px-4 py-2 border border-outline-variant/20 rounded-xl hover:bg-surface-container-lowest text-sm font-bold">
               Cancel
             </button>
           </form>

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { requireProfile } from "@/lib/profile";
 import { getComponents } from "./actions";

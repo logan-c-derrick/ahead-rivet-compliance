@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useFormState } from "react-dom";
 import MaterialIcon from "@/components/ui/MaterialIcon";
 import {
   createProductFormState,
@@ -23,36 +22,50 @@ export default function ProductsListWithModals({
   editId: string | null;
 }) {
   const router = useRouter();
-  const [createState, createAction] = useFormState(createProductFormState, null);
-  const [updateState, updateAction] = useFormState(updateProduct, null);
   const [showCreate, setShowCreate] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [deleteProductState, setDeleteProductState] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-  const [deleteState, deleteAction] = useFormState(deleteProduct, null);
+  const [deleteProductState, setDeleteProductState] = useState<{ id: string; name: string } | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (createState?.success) {
-      setShowCreate(false);
-      router.refresh();
-    }
-  }, [createState, router]);
+  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await createProductFormState(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setShowCreate(false);
+    setModalError(null);
+    router.refresh();
+  }
 
-  useEffect(() => {
-    if (updateState?.success) {
-      setEditProduct(null);
-      router.refresh();
-    }
-  }, [updateState, router]);
+  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await updateProduct(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setEditProduct(null);
+    setModalError(null);
+    router.refresh();
+  }
 
-  useEffect(() => {
-    if (deleteState?.success) {
-      setDeleteProductState(null);
-      router.refresh();
-    }
-  }, [deleteState, router]);
+  async function handleDelete(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setSaving(true);
+    setModalError(null);
+    const result = await deleteProduct(null, formData);
+    setSaving(false);
+    if (result?.error) { setModalError(result.error); return; }
+    setDeleteProductState(null);
+    setModalError(null);
+    router.refresh();
+  }
 
   useEffect(() => {
     if (editId && products.length > 0) {
@@ -147,44 +160,26 @@ export default function ProductsListWithModals({
         </div>
       )}
 
-      {/* Create modal */}
       {showCreate && (
-        <Modal title="Create Product" onClose={() => setShowCreate(false)}>
-          {createState?.error && (
-            <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">
-              {createState.error}
-            </div>
-          )}
-          <form action={createAction} className="space-y-4">
+        <Modal title="Create Product" onClose={() => { setShowCreate(false); setModalError(null); }}>
+          {modalError && <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">{modalError}</div>}
+          <form onSubmit={handleCreate} className="space-y-4">
             <ProductFormFields />
             <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm"
-              >
+              <button type="submit" disabled={saving} className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm disabled:opacity-50 inline-flex items-center gap-2">
+                {saving && <div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
                 Create
               </button>
-              <button
-                type="button"
-                onClick={() => setShowCreate(false)}
-                className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm"
-              >
-                Cancel
-              </button>
+              <button type="button" onClick={() => { setShowCreate(false); setModalError(null); }} className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm">Cancel</button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Edit modal */}
       {editProduct && (
-        <Modal title="Edit Product" onClose={closeEdit}>
-          {updateState?.error && (
-            <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">
-              {updateState.error}
-            </div>
-          )}
-          <form action={updateAction} className="space-y-4">
+        <Modal title="Edit Product" onClose={() => { closeEdit(); setModalError(null); }}>
+          {modalError && <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">{modalError}</div>}
+          <form onSubmit={handleUpdate} className="space-y-4">
             <input type="hidden" name="id" value={editProduct.id} />
             <ProductFormFields
               defaultName={editProduct.name}
@@ -194,50 +189,29 @@ export default function ProductsListWithModals({
               defaultLifecycle={editProduct.lifecycle_status}
             />
             <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm"
-              >
+              <button type="submit" disabled={saving} className="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-sm disabled:opacity-50 inline-flex items-center gap-2">
+                {saving && <div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
                 Update
               </button>
-              <button
-                type="button"
-                onClick={closeEdit}
-                className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm"
-              >
-                Cancel
-              </button>
+              <button type="button" onClick={() => { closeEdit(); setModalError(null); }} className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm">Cancel</button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Delete confirmation modal */}
       {deleteProductState && (
-        <Modal title="Delete Product" onClose={closeDelete}>
-          {deleteState?.error && (
-            <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">
-              {deleteState.error}
-            </div>
-          )}
+        <Modal title="Delete Product" onClose={() => { closeDelete(); setModalError(null); }}>
+          {modalError && <div className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-700 mb-4">{modalError}</div>}
           <p className="text-sm text-slate-700">
             Are you sure you want to delete <strong>{deleteProductState.name}</strong>? This action cannot be undone.
           </p>
-          <form action={deleteAction} className="flex gap-2 pt-4">
+          <form onSubmit={handleDelete} className="flex gap-2 pt-4">
             <input type="hidden" name="id" value={deleteProductState.id} />
-            <button
-              type="submit"
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
-            >
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm disabled:opacity-50 inline-flex items-center gap-2">
+              {saving && <div className="w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin" />}
               Delete
             </button>
-            <button
-              type="button"
-              onClick={closeDelete}
-              className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm"
-            >
-              Cancel
-            </button>
+            <button type="button" onClick={() => { closeDelete(); setModalError(null); }} className="px-4 py-2 border rounded-lg hover:bg-slate-50 text-sm">Cancel</button>
           </form>
         </Modal>
       )}
