@@ -1,5 +1,5 @@
 import { getUser } from "@/lib/auth";
-import SignOutButton from "@/app/dashboard/signout-button";
+import SignOutButton from "@/app/(app)/dashboard/signout-button";
 import Link from "next/link";
 
 export default async function ProfileMissingPage() {

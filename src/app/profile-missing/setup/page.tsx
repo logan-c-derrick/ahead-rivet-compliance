@@ -1,7 +1,7 @@
 import { getUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import SignOutButton from "@/app/dashboard/signout-button";
+import SignOutButton from "@/app/(app)/dashboard/signout-button";
 import ProfileSetupFormWrapper from "./form-wrapper";
 
 export default async function ProfileSetupPage() {
